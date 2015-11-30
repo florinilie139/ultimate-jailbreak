@@ -1,0 +1,9 @@
+zm_vip_extra_5_items.sma
+zm_vip_extra_adv_antidotegun.sma
+zm_vip_extra_buy_survnem.sma
+zm_vip_extra_gc_extra_item_ng.sma
+zm_vip_extra_goldendg.sma
+zm_vip_zkill_bomb_v1-2.sma
+zp_bazooka_new_update.sma
+zp_extra_plasma_rifle.sma
+zp_extra_sawnoff.sma
