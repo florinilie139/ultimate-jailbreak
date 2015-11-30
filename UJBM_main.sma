@@ -4210,7 +4210,7 @@ public shop_choice_T(id, menu, item)
             if (money >= SHIELDCOST) 
             {
                 cs_set_user_money (id, money - SHIELDCOST, 0)
-                give_item(id, "weapon_shield")
+                Give_Item(id,0)
                 BuyTimes[id]++
             }
             else
