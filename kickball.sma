@@ -855,7 +855,7 @@ public FwdTouchWorld(Ball, World)
 
 public FwdTouch(ent, id)
 {
-    if(pev_valid(ent)){
+    if(pev_valid(ent) && pev_valid(id)){
         static szNameEnt[32], szNameId[32]
         pev(ent,pev_classname, szNameEnt,sizeof szNameEnt - 1)
         pev(id, pev_classname, szNameId, sizeof szNameId - 1)
