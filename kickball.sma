@@ -37,7 +37,6 @@ new bool:g_bScored
 
 new Float:g_vOrigin[3]
 new Float:g_fOriginBox[33][2][3]
-new Float:g_fLastTouch
 new g_OwnerOrigin[3]
 
 new g_Owner
@@ -57,7 +56,8 @@ public plugin_init()
     register_logevent("EventRoundStart", 2, "1=Round_Start")
     
     register_forward(FM_PlayerPreThink, "PlayerPreThink", 0)
-    register_forward(FM_Touch, "FwdTouch", 0)
+    //register_forward(FM_Touch, "FwdTouch", 0)
+    register_touch("JailNet", g_szBallName, "FwdTouch")
     
     RegisterHam(Ham_ObjectCaps, "player", "FwdHamObjectCaps", 1)
     
@@ -855,20 +855,7 @@ public FwdTouchWorld(Ball, World)
 
 public FwdTouch(ent, id)
 {
-    if(pev_valid(ent) && pev_valid(id)){
-        static szNameEnt[32], szNameId[32]
-        pev(ent,pev_classname, szNameEnt,sizeof szNameEnt - 1)
-        pev(id, pev_classname, szNameId, sizeof szNameId - 1)
-        
-        static Float:fGameTime
-        fGameTime = get_gametime()
-        
-        if(equal(szNameEnt, "JailNet") && equal(szNameId, g_szBallName) && (fGameTime - g_fLastTouch) > 0.1)
-        {
-            Goal()
-            g_fLastTouch = fGameTime
-        }
-    }
+    Goal()
 }
 
 CreateBall(id, Float:vOrigin[ 3 ] = { 0.0, 0.0, 0.0 })
