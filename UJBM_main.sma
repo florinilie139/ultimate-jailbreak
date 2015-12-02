@@ -350,6 +350,7 @@ public plugin_init()
     register_clcmd("-voicerecord", "cmd_voiceoff")
     register_clcmd("say /dorinta", "cmd_lastrequest")
     register_clcmd("say /ajutor", "cmd_help")
+    register_clcmd("say /apple", "cmd_apple")
     register_clcmd("say /voice", "cmd_simon_micr")    
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
@@ -1726,6 +1727,10 @@ public cmd_help(id)
     remove_task(TASK_HELP + id)
     
     show_motd(id,"rules.txt","Ultimate Jail Break Manager");
+}
+public cmd_apple(id)
+{
+    show_motd(id,"apple.htm","APPLE");
 }
 public cmd_showvip(id)
 {
