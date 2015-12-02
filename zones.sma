@@ -5,6 +5,10 @@
 #include <ujbm>
 
 #define MAX_NETS 10
+#define TASK_LASTTOUCH 3300
+#define TASK_SHOWNET 1000
+#define REFRESH_TIME 2.0
+#define CHANGE_TIME 5.0
 
 new const PLUGIN_NAME[] = "Zones"
 new const PLUGIN_AUTHOR[] = "(|EcLiPsE|)"
@@ -32,6 +36,14 @@ new _szType[][32]=
     "WORKOUT"
 }
 
+new _colors[][3] = 
+{
+    {   0,   0, 255},
+    {   0, 255, 255},
+    { 255, 255, 255},
+    { 255,   0, 255}
+}
+
 new g_szFile[128]
 new g_szMapname[32]
 new g_buildingstage[33]
@@ -43,7 +55,8 @@ new bool:g_bHighlight[33]
 new bool:g_buildingNet[33]
 
 new Float:g_fOriginBox[33][2][3]
-new Float:g_fLastTouch
+new Float:g_fLastTouch[33]
+new g_LastTouch[33]
 
 new g_iMainMenu
 new g_iNetMenu
@@ -55,7 +68,15 @@ public plugin_init()
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
     
     register_forward(FM_PlayerPreThink, "PlayerPreThink", 0)
-    register_forward(FM_Touch, "FwdTouch", 0)
+    //register_forward(FM_Touch, "FwdTouch", 0)
+    for(new i = 0; i < typeZn; i ++)
+    {
+        register_touch(_szType[i], "player", "FwdTouch");
+    }
+    for(new i = 1; i < 33; i ++)
+    {
+        g_LastTouch[i] = -1;
+    }
     
     RegisterHam(Ham_Killed, "player", "player_killed", 1)
     
@@ -134,7 +155,7 @@ public LoadAll(id)
     
     fclose(iFile)
     
-    ColorChat(id, "[AnNA]Inarcare cu succes")
+    ColorChat(id, "Inarcare cu succes")
 }
 
 public SaveAll(id)
@@ -174,7 +195,7 @@ public SaveAll(id)
     
     fclose(iFile)
             
-    ColorChat(id, "[AnNA]Salvare cu succes")
+    ColorChat(id, "Salvare cu succes")
     
     return PLUGIN_HANDLED
 }
@@ -233,7 +254,7 @@ public HandleMainMenu(id, key)
                 }
             }
                 
-            ColorChat(id, "[AnNA]Stergere cu succes a ^x03 %d^x01 zone", net)
+            ColorChat(id, "Stergere cu succes a ^x03 %d^x01 zone", net)
         }
         case 3: SaveAll(id)
         case 9: return PLUGIN_HANDLED
@@ -278,14 +299,14 @@ public HandleNetMenu(id, key)
         {
             if(g_buildingNet[id])
             {
-                ColorChat(id, "[AnNA]Deja in modul de creare a plasei")
+                ColorChat(id, "Deja in modul de creare a plasei")
                 ShowNetMenu(id)
                 
                 return PLUGIN_HANDLED
             }
             if(countnets >= MAX_NETS)
             {
-                ColorChat(id, "[AnNA]Scuze, sa atins limita de plase (%d).", countnets)
+                ColorChat(id, "Scuze, sa atins limita de plase (%d).", countnets)
                 ShowNetMenu(id)
                 
                 return PLUGIN_HANDLED
@@ -293,21 +314,21 @@ public HandleNetMenu(id, key)
             
             g_buildingNet[id] = true
             
-            ColorChat(id, "[AnNA]Seteaza originea din dreapta sus a cutitei")
+            ColorChat(id, "Seteaza originea din dreapta sus a cutitei")
         }
         case 1:
         {
             if(!g_bHighlight[id])
             {
-                set_task(1.0, "taskShowNet", 1000 + id, "", 0, "b", 0)
+                set_task(1.0, "taskShowNet", TASK_SHOWNET + id, "", 0, "b", 0)
                 g_bHighlight[id] = true
                 
-                ColorChat(id, "[AnNA]Net highlight has been^x04 Enabled^x01.")
+                ColorChat(id, "Net highlight has been^x04 Enabled^x01.")
             } else {
-                remove_task(1000+id)
+                remove_task(TASK_SHOWNET+id)
                 g_bHighlight[id] = false
                 
-                ColorChat(id, "[AnNA]Net highlight has been^x03 Disabled^x01.")
+                ColorChat(id, "Net highlight has been^x03 Disabled^x01.")
             }
         }
         case 2:
@@ -362,9 +383,9 @@ public HandleNetMenu(id, key)
                 
             }
             if(bFound)
-                ColorChat(id, "[AnNA]Plasa stearsa cu succes")
+                ColorChat(id, "Plasa stearsa cu succes")
             else
-                ColorChat(id, "[AnNA]Plasa nu a fost gasita")
+                ColorChat(id, "Plasa nu a fost gasita")
         }
         case 3:
         {
@@ -436,7 +457,7 @@ public PlayerPreThink(id)
             
             g_fOriginBox[id][FIRST_POINT] = fOrigin
             
-            ColorChat(id, "[AnNA]Acum selecteaza originea pentru partea de stanga jos a cutiei.")
+            ColorChat(id, "Acum selecteaza originea pentru partea de stanga jos a cutiei.")
         }
         else
         {
@@ -447,40 +468,61 @@ public PlayerPreThink(id)
             
             CreateNet(_szType[g_buildingnettype[id]],g_fOriginBox[id][FIRST_POINT], g_fOriginBox[id][SECOND_POINT])
             
-            ColorChat(id, "[AnNA]Cutie #%d creata cu succes", ++countnets)
+            ColorChat(id, "Cutie #%d creata cu succes", ++countnets)
         }
     }
     
     return PLUGIN_HANDLED
 }
 
+public getZonesType (Classname[32])
+{
+    for(new i = 0; i <typeZn; i++)
+    {
+        if(equal(Classname,_szType[i]))
+        {
+            return i
+        }
+    }
+    return -1
+}
 
 public FwdTouch(ent, id)
 {
-    if(pev_valid(ent) && is_user_alive(id))
+    if(is_user_alive(id))
     {
         static szNameEnt[32]
         pev(ent,pev_classname, szNameEnt,sizeof szNameEnt - 1)
         
         static Float:fGameTime
         fGameTime = get_gametime()
-        for(new i = 0; i < typeZn; i ++)
+        if((fGameTime - g_fLastTouch[id]) > REFRESH_TIME)
         {
-            if(equal(szNameEnt, _szType[i]) && (fGameTime - g_fLastTouch) > 1.0)
-            {
-                set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
-                show_hudmessage(id, "** Esti in zona ct! **")
-                
-                g_fLastTouch = fGameTime
-                break;
-            }
+            set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
+            show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
+            
+            g_fLastTouch[id] = fGameTime
+            g_LastTouch[id] = getZonesType(szNameEnt)
+            remove_task(TASK_LASTTOUCH + id)
+            set_task(CHANGE_TIME,"resetLastTouch",TASK_LASTTOUCH + id)
         }
     }
 }
 
+public resetLastTouch ( id )
+{
+    id -= TASK_LASTTOUCH;
+    g_LastTouch[id] = -1;
+}
+
 public player_killed(victim, attacker, shouldgib)
 {
-    
+    new szName[50]
+    if(g_LastTouch[victim] == CTZONE)
+    {
+        get_user_name(victim,szName,50)
+        ColorChat(0,"%s a murit in Zona Ct",szName)
+    }
 }
 
 stock Float:get_float_difference(Float:num1, Float:num2)
@@ -496,18 +538,17 @@ stock Float:get_float_difference(Float:num1, Float:num2)
 
 public taskShowNet(id)
 {
-    id -= 1000
+    id -= TASK_SHOWNET
     
     if(!is_user_connected(id))
     {
-        remove_task(1000 + id)
+        remove_task(TASK_SHOWNET + id)
         return
     }
     
     new ent
     new Float:fOrigin[3], Float:fMins[3], Float:fMaxs[3]
     new vMaxs[3], vMins[3]
-    new iColor[3] = { 0, 0, 255 }
     for(new i = 0; i < typeZn; i ++)
     {
         ent = 0
@@ -527,18 +568,18 @@ public taskShowNet(id)
             FVecIVec(fMins, vMins)
             FVecIVec(fMaxs, vMaxs)
 
-            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMins[0], vMaxs[1], vMaxs[2], iColor)
-            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMaxs[0], vMins[1], vMaxs[2], iColor)
-            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMaxs[0], vMaxs[1], vMins[2], iColor)
-            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMaxs[0], vMins[1], vMins[2], iColor)
-            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMins[0], vMaxs[1], vMins[2], iColor)
-            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMins[0], vMins[1], vMaxs[2], iColor)
-            fm_draw_line(id, vMins[0], vMaxs[1], vMaxs[2], vMins[0], vMaxs[1], vMins[2], iColor)
-            fm_draw_line(id, vMins[0], vMaxs[1], vMins[2], vMaxs[0], vMaxs[1], vMins[2], iColor)
-            fm_draw_line(id, vMaxs[0], vMaxs[1], vMins[2], vMaxs[0], vMins[1], vMins[2], iColor)
-            fm_draw_line(id, vMaxs[0], vMins[1], vMins[2], vMaxs[0], vMins[1], vMaxs[2], iColor)
-            fm_draw_line(id, vMaxs[0], vMins[1], vMaxs[2], vMins[0], vMins[1], vMaxs[2], iColor)
-            fm_draw_line(id, vMins[0], vMins[1], vMaxs[2], vMins[0], vMaxs[1], vMaxs[2], iColor)
+            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMins[0], vMaxs[1], vMaxs[2], _colors[i])
+            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMaxs[0], vMins[1], vMaxs[2], _colors[i])
+            fm_draw_line(id, vMaxs[0], vMaxs[1], vMaxs[2], vMaxs[0], vMaxs[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMaxs[0], vMins[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMins[0], vMaxs[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMins[1], vMins[2], vMins[0], vMins[1], vMaxs[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMaxs[1], vMaxs[2], vMins[0], vMaxs[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMaxs[1], vMins[2], vMaxs[0], vMaxs[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMaxs[0], vMaxs[1], vMins[2], vMaxs[0], vMins[1], vMins[2], _colors[i])
+            fm_draw_line(id, vMaxs[0], vMins[1], vMins[2], vMaxs[0], vMins[1], vMaxs[2], _colors[i])
+            fm_draw_line(id, vMaxs[0], vMins[1], vMaxs[2], vMins[0], vMins[1], vMaxs[2], _colors[i])
+            fm_draw_line(id, vMins[0], vMins[1], vMaxs[2], vMins[0], vMaxs[1], vMaxs[2], _colors[i])
         }
     }
 }
