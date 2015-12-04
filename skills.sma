@@ -450,12 +450,15 @@ public cmd_reset (id, menu, item)
         for(new j = 0; j <= 15; j++)
             g_PlayerSkill[id][j] = 0
         g_PlayerPoints[id][0] = g_PlayerPoints[id][1]
-        set_user_rendering(id)
-        if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
-        {
-            set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
-            set_user_info(id, "model", "jbbossi_temp")
-            entity_set_int(id, EV_INT_body, 3+random_num(1,2))
+        if(is_user_alive(id))
+        {    
+            set_user_rendering(id)
+            if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
+            {
+                set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
+                set_user_info(id, "model", "jbbossi_temp")
+                entity_set_int(id, EV_INT_body, 3+random_num(1,2))
+            }
         }
         g_IsDisguise[id] = 0
         g_UseInfra[id] = false
