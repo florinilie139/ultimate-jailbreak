@@ -1004,6 +1004,13 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
         {
             case(0):
             {
+                if(ateam == CS_TEAM_T && vteam == CS_TEAM_CT)
+                {
+                    if(!g_PlayerRevolt)
+                    revolt_start()
+                    set_bit(g_PlayerRevolt, attacker)
+                    clear_bit(g_PlayerFreeday, attacker)
+                }
                 if(ateam == CS_TEAM_CT && vteam == CS_TEAM_T)
                 {
                     if(get_bit(g_PlayerRevolt, victim))
@@ -1053,13 +1060,7 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
                 }
             }
         }
-        if(is_not_game() && ateam == CS_TEAM_T && vteam == CS_TEAM_CT)
-        {
-            if(!g_PlayerRevolt)
-                revolt_start()
-            set_bit(g_PlayerRevolt, attacker)
-            clear_bit(g_PlayerFreeday, attacker)
-        }
+        
     }
     return HAM_IGNORED
 }
@@ -1178,19 +1179,6 @@ public player_killed(victim, attacker, shouldgib)
             
             if (vteam == CS_TEAM_T)
             {
-                if(kteam == CS_TEAM_CT)
-                {
-                    /*g_CountKilled[attacker]++
-                    if(g_CountKilled[attacker] == 5)
-                    {
-                        user_kill(attacker);
-                        format(message, 200, "[Anti-Fk] %s a fost pedepsit",nameCT);
-                        message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
-                        write_string(message);
-                        message_end();
-                    }*/
-                }
-                
                 killed = 1;
                 remove_task(TASK_LAST)
                 set_task(2.1, "task_last", TASK_LAST)
@@ -1234,17 +1222,29 @@ public player_killed(victim, attacker, shouldgib)
                             }
                         }
                         case(CS_TEAM_T):
-                        {
-                            if(get_bit(g_PlayerWanted,victim)){
-                                
-                                
-                                if(kteam == CS_TEAM_CT)
-                                {
-                                    format(message, 200,"[JB.ECILA.RO]^x01Gardianul ^x03 %s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
+                        { 
+                            if(kteam == CS_TEAM_CT)
+                            {
+                                /*g_CountKilled[attacker]++
+                                    if(g_CountKilled[attacker] == 5)
+                                    {
+                                    user_kill(attacker);
+                                    format(message, 200, "[Anti-Fk] %s a fost pedepsit",nameCT);
                                     message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                     write_string(message);
                                     message_end();
+                                }*/
+                                if(get_bit(g_PlayerWanted,victim))
+                                {
+                                    format(message, 200,"[JB.ECILA.RO]^x01Gardianul ^x03 %s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
                                 }
+                                else if(get_bit(g_PlayerFreeday,victim))
+                                {
+                                    format(message, 200,"[JB.ECILA.RO]^x01Gardianul ^x03 %s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
+                                }
+                                message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
+                                write_string(message);
+                                message_end();
                             }
                             clear_bit(g_PlayerRevolt, victim)
                             clear_bit(g_PlayerWanted, victim)
