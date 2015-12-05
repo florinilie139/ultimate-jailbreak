@@ -2,7 +2,7 @@
 #include <engine>
 #include <fakemeta>
 #include <hamsandwich>
-#include <ujbm>
+#include <zones>
 
 #define MAX_NETS 10
 #define TASK_LASTTOUCH 3300
@@ -21,13 +21,6 @@ enum
     SECOND_POINT
 }
 
-enum _:typeZn
-{
-    CTZONE = 0,
-    CANTEEN,
-    CELLS,
-    WORKOUT
-}
 new _szType[][32]=
 {
     "CTZONE",
@@ -86,6 +79,18 @@ public plugin_init()
     
     g_SayText = get_user_msgid("SayText")
     
+}
+
+public plugin_natives() 
+{ 
+    register_library("zones"); 
+    register_native ("whatzoneisin", "_whatzoneisin",0)
+} 
+
+public _whatzoneisin(iPlugin, iParams) 
+{ 
+    new id = get_param(1);
+    return g_LastTouch[id];
 }
 
 public CreateMenus()
@@ -200,13 +205,31 @@ public SaveAll(id)
     return PLUGIN_HANDLED
 }
 
+public DeleteAll(id)
+{
+    new ent
+    new net
+    
+    for(new i = 0; i < typeZn; i ++)
+    {
+        ent = 0    
+        while((ent = find_ent_by_class(ent, _szType[i])) > 0)
+        {
+            remove_entity(ent)
+            countnets--
+            net++
+        }
+    }
+    ColorChat(id, "Stergere cu succes a ^x03 %d^x01 zone", net)
+}
+
 public ShowMainMenu(id)
 {
     new szBuffer[512], iLen
     new col[3], col2[3]
     
-    col = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\r" : "\d"
-    col2 = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\w" : "\d"
+    col = (get_user_flags(id) & ADMIN_RCON) ? "\r" : "\d"
+    col2 = (get_user_flags(id) & ADMIN_RCON) ? "\w" : "\d"
     
     iLen = formatex(szBuffer, sizeof szBuffer - 1, "\r[\y%s`\r] \wJail zones^n^n", PLUGIN_PREFIX)
     
@@ -222,7 +245,7 @@ public ShowMainMenu(id)
 
 public HandleMainMenu(id, key)
 {
-    if((key == 1 || key == 2 || key == 3) && !((get_user_flags(id) & ADMIN_RCON) || id==get_simon())) {
+    if((key == 1 || key == 2 || key == 3) && !(get_user_flags(id) & ADMIN_RCON)) {
         ShowMainMenu(id)
         return PLUGIN_HANDLED
     }
@@ -236,25 +259,12 @@ public HandleMainMenu(id, key)
         }
         case 1:
         {
+            DeleteAll(id)
             LoadAll(id)            
         }
         case 2:
         {
-            new ent
-            new net
-            
-            for(new i = 0; i < typeZn; i ++)
-            {
-                ent = 0    
-                while((ent = find_ent_by_class(ent, _szType[i])) > 0)
-                {
-                    remove_entity(ent)
-                    countnets--
-                    net++
-                }
-            }
-                
-            ColorChat(id, "Stergere cu succes a ^x03 %d^x01 zone", net)
+            DeleteAll(id)
         }
         case 3: SaveAll(id)
         case 9: return PLUGIN_HANDLED
@@ -271,8 +281,8 @@ public ShowNetMenu(id)
     new szBuffer[512], iLen
     new col[3], col2[3]
 
-    col = ((get_user_flags(id) & ADMIN_RCON) || id == get_simon())? "\r" : "\d"
-    col2 = ((get_user_flags(id) & ADMIN_RCON) || id == get_simon())? "\w" : "\d"
+    col = (get_user_flags(id) & ADMIN_RCON)? "\r" : "\d"
+    col2 = (get_user_flags(id) & ADMIN_RCON)? "\w" : "\d"
     
     iLen = formatex(szBuffer, sizeof szBuffer - 1, "\r[\y%s`\r] \wJail Net^n^n", PLUGIN_PREFIX)
     
@@ -288,7 +298,7 @@ public ShowNetMenu(id)
 
 public HandleNetMenu(id, key)
 {
-    if(key != 9 && !((get_user_flags(id) & ADMIN_RCON) || id==get_simon())) {
+    if(key != 9 && !(get_user_flags(id) & ADMIN_RCON)) {
         ShowNetMenu(id)
         return PLUGIN_HANDLED
     }
