@@ -139,11 +139,11 @@ public plugin_init ()
 
 public _give_points (id,level,cid)
 {
-    new id[3],points[3]
-    read_argv(1, id, 2)
+    new ids[3],points[3]
+    read_argv(1, ids, 2)
     read_argv(2, points, 2)
     
-    add_points(str_to_num(id),str_to_num(points))
+    add_points(str_to_num(ids),str_to_num(points))
 }
 
 public LoadVips ()
