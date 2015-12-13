@@ -3463,6 +3463,7 @@ public cmd_game_gunday()
 }
 public  cmd_game_coladay()
 {
+    server_cmd("jb_unblock_weapons")
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3473,7 +3474,6 @@ public  cmd_game_coladay()
     g_DoNotAttack = 1;
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     
-    server_cmd("sleep_enabled 0")
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac")
