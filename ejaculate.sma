@@ -108,7 +108,7 @@ if (inum>0) {
 	}
 	else
 	{
-		client_print(id,print_chat,"Unde e ma cadavru?")
+		client_print(id,print_chat,"Unde e cadavrul, labagiule?")
 		return PLUGIN_HANDLED
 	}
 }
