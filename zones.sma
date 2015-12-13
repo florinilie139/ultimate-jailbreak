@@ -1,14 +1,19 @@
 #include <amxmodx>
 #include <engine>
 #include <fakemeta>
+#include <fakemeta_util>
 #include <hamsandwich>
+#include <cstrike>
 #include <zones>
+#include <ujbm>
 
 #define MAX_NETS 10
 #define TASK_LASTTOUCH 3300
 #define TASK_SHOWNET 1000
 #define REFRESH_TIME 2.0
 #define CHANGE_TIME 5.0
+#define MAX_HEALTH 150
+#define MAX_EATEN 300
 
 new const PLUGIN_NAME[] = "Zones"
 new const PLUGIN_AUTHOR[] = "(|EcLiPsE|)"
@@ -19,6 +24,11 @@ enum
 {
     FIRST_POINT = 0,
     SECOND_POINT
+}
+
+enum _FOOD
+{
+    _name[20], _price, _health, _energizer
 }
 
 new _szType[][32]=
@@ -38,6 +48,7 @@ new _colors[][3] =
 }
 
 new g_szFile[128]
+new g_szFoodFile[128]
 new g_szMapname[32]
 new g_buildingstage[33]
 new g_buildingnettype[33]
@@ -50,9 +61,13 @@ new bool:g_buildingNet[33]
 new Float:g_fOriginBox[33][2][3]
 new Float:g_fLastTouch[33]
 new g_LastTouch[33]
+new g_FoodList[30][_FOOD];
+new g_NrFood;
+new g_TotalEaten[33];
+new g_MenuType[33];
 
-new g_iMainMenu
-new g_iNetMenu
+new g_iMainMenu;
+new g_iNetMenu;
 
 new g_SayText
 
@@ -69,13 +84,17 @@ public plugin_init()
     for(new i = 1; i < 33; i ++)
     {
         g_LastTouch[i] = -1;
+        g_MenuType[i] = 0;
     }
     
     RegisterHam(Ham_Killed, "player", "player_killed", 1)
+    RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
     
     CreateMenus()
     
     register_clcmd("say /zones", "ShowMainMenu")
+    register_clcmd("say /mancare","ShowFoodMenu")
+    
     
     g_SayText = get_user_msgid("SayText")
     
@@ -112,6 +131,7 @@ public plugin_precache()
     new szDatadir[64]
     get_localinfo("amxx_configsdir", szDatadir, charsmax(szDatadir))
     
+    formatex(g_szFoodFile, charsmax(g_szFoodFile), "%s/food.ini",szDatadir)
     formatex(szDatadir, charsmax( szDatadir ), "%s/zones", szDatadir)
     
     if(!dir_exists( szDatadir))
@@ -123,8 +143,10 @@ public plugin_precache()
     {
         LoadAll(0)
     }
+    LoadFood()
     
 }
+
 public LoadAll(id)
 {
     new szData[512]
@@ -162,6 +184,33 @@ public LoadAll(id)
     
     ColorChat(id, "Inarcare cu succes")
 }
+
+public LoadFood()
+{
+    new lineNum   =  0,pointNum  = 0,configLine[80],iLen,price[6],health[10],energizer[3]
+
+    if(file_exists(g_szFoodFile)){
+        while(read_file(g_szFoodFile,lineNum++,configLine,79,iLen)) 
+        {
+            if(!configLine[0] || configLine[0] == ';' || configLine[0] == ' ' || ( configLine[0] == '/' && configLine[1] == '/' ))
+            continue
+            
+            if (iLen > 0)
+            {
+                parse(configLine, g_FoodList[pointNum][_name], 19, price, 5, health, 9, energizer, 2)
+                
+                g_FoodList[pointNum][_price] = str_to_num(price)
+                g_FoodList[pointNum][_health] = str_to_num(health)
+                g_FoodList[pointNum][_energizer] = str_to_num(energizer)
+                
+                pointNum++
+            }
+        }
+    }
+    g_NrFood = pointNum
+    return PLUGIN_CONTINUE
+}
+
 
 public SaveAll(id)
 {
@@ -419,6 +468,162 @@ public HandleNetMenu(id, key)
     return PLUGIN_HANDLED
 }
 
+public ShowFoodMenu (id)
+{
+    static menu, option[64], num[2];
+    if(!is_user_alive(id) || (get_gamemode() != 0 && get_gamemode() != 1) || get_wanted(id) || g_LastTouch[id]!=CANTEEN || g_TotalEaten[id]>=MAX_EATEN)
+        return PLUGIN_CONTINUE    
+        
+    g_MenuType[id]=g_MenuType[id]|1;
+    new money;
+    money = cs_get_user_money(id);
+    
+    menu = menu_create("Meniu Cantina", "FoodMenuSelect")
+    
+    if(g_MenuType[id]&2)
+    {
+        menu_additem(menu,"Arata din nou meniul","showmenu",0)
+    }
+    else
+    {
+        menu_additem(menu,"Nu mai arata meniul","showmeun",0)
+    }
+    
+    for(new i = 0; i < g_NrFood; i++)
+    {
+        if(money < g_FoodList[i][_price])
+        {
+            formatex(option, charsmax(option), "\d%s Pret $%d HP %d\w", g_FoodList[i][_name],g_FoodList[i][_price],g_FoodList[i][_health])
+            menu_additem(menu, option, "exit", 0)   
+        }
+        else
+        {
+            if(g_FoodList[i][_energizer] == 1)
+            {
+                formatex(option, charsmax(option), "\r%s Pret $%d HP %d\w", g_FoodList[i][_name],g_FoodList[i][_price],g_FoodList[i][_health])
+            }
+            else
+            {
+                formatex(option, charsmax(option), "%s Pret $%d HP %d", g_FoodList[i][_name],g_FoodList[i][_price],g_FoodList[i][_health])
+            }
+            formatex(num, charsmax(option), "%d", i)
+            menu_additem(menu, option, num, 0)   
+        }
+    }
+    menu_display(id, menu)
+    return PLUGIN_CONTINUE
+    
+}
+
+public FoodMenuSelect (id, menu, item)
+{
+    if(item == MENU_EXIT )
+    {
+        g_MenuType[id]=g_MenuType[id]&2;
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    menu_destroy(menu)
+    
+    if(equal(data,"exit"))
+    {
+        g_MenuType[id]=g_MenuType[id]&2;
+        client_print(id,print_center,"Nu ai destui bani");
+        ShowFoodMenu(id)
+        return PLUGIN_HANDLED
+    }
+    if(equal(data,"showmenu"))
+    {
+        g_MenuType[id]=g_MenuType[id]^2;
+    }
+    
+    new num = str_to_num(data)
+    new money = cs_get_user_money(id)
+    
+    if(money < g_FoodList[num][_price])
+    {
+        client_print(id,print_center,"Nu ai destui bani");
+        ShowFoodMenu(id)
+        return PLUGIN_HANDLED
+    }
+    cs_set_user_money(id,money - g_FoodList[num][_price])
+    new health = get_user_health(id) + g_FoodList[num][_health]
+    if(health  > MAX_HEALTH)
+    {
+        fm_set_user_health(id,MAX_HEALTH)
+    }
+    else
+    {
+        fm_set_user_health(id,health)
+    }
+    g_TotalEaten[id]+=g_FoodList[num][_health];
+    if(g_TotalEaten[id]>=MAX_EATEN)
+    {
+        new ids[1]
+        ids[0]=id
+        set_task(1.0,"make_puke",4210+id,ids,1,"a",4)
+    }
+    if(g_FoodList[num][_energizer]==1)
+    {
+        server_cmd("give_coffee %d",id);
+    }
+    client_print(id,print_center,"Ai terminat de mancat");
+    return PLUGIN_HANDLED
+}
+
+
+public make_puke(ids[]) 
+{ 
+    new id=ids[0]
+    new vec[3] 
+    new aimvec[3] 
+    new velocityvec[3] 
+    new length 
+    get_user_origin(id,vec) 
+    get_user_origin(id,aimvec,3) 
+
+    vec[2]+=20
+    
+    new distance = get_distance(vec,aimvec) 
+    new speed = floatround(distance*1.9)
+    
+    velocityvec[0]=aimvec[0]-vec[0] 
+    velocityvec[1]=aimvec[1]-vec[1] 
+    velocityvec[2]=aimvec[2]-vec[2] 
+
+    length=sqrt(velocityvec[0]*velocityvec[0]+velocityvec[1]*velocityvec[1]+velocityvec[2]*velocityvec[2]) 
+
+    velocityvec[0]=velocityvec[0]*speed/length 
+    velocityvec[1]=velocityvec[1]*speed/length 
+    velocityvec[2]=velocityvec[2]*speed/length 
+
+    message_begin(MSG_BROADCAST,SVC_TEMPENTITY)
+    write_byte(101)
+    write_coord(vec[0])
+    write_coord(vec[1])
+    write_coord(vec[2])
+    write_coord(velocityvec[0]) 
+    write_coord(velocityvec[1]) 
+    write_coord(velocityvec[2]) 
+    write_byte(195) // color
+    write_byte(160) // speed
+    message_end()
+
+} 
+
+public sqrt(num) 
+{ 
+	new div = num 
+	new result = 1 
+	while (div > result) { 
+		div = (div + result) / 2 
+		result = num / div 
+	} 
+	return div 
+} 
+
 CreateNet(szType[32], Float:firstPoint[3], Float:lastPoint[3])
 {
     new ent
@@ -515,6 +720,11 @@ public FwdTouch(ent, id)
             g_LastTouch[id] = getZonesType(szNameEnt)
             remove_task(TASK_LASTTOUCH + id)
             set_task(CHANGE_TIME,"resetLastTouch",TASK_LASTTOUCH + id)
+            
+            if(g_LastTouch[id] == CANTEEN && g_MenuType[id]==0)
+            {
+                ShowFoodMenu(id);
+            }
         }
     }
 }
@@ -533,6 +743,11 @@ public player_killed(victim, attacker, shouldgib)
         get_user_name(victim,szName,50)
         ColorChat(0,"%s a murit in Zona Ct",szName)
     }
+}
+
+public player_spawn (id)
+{
+    g_TotalEaten[id] = 0;
 }
 
 stock Float:get_float_difference(Float:num1, Float:num2)
