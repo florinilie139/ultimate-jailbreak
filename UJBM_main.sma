@@ -42,8 +42,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jbbossi_temp/jbbossi_temp.mdl"
-#define JBMODELSHORT "jbbossi_temp"
+#define JBMODELLOCATION "models/player/jbbossi_craciun/jbbossi_craciun.mdl"
+#define JBMODELSHORT "jbbossi_craciun"
 
 // Offsets
 #define m_iPrimaryWeapon    116
