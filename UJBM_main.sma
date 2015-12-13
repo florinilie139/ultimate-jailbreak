@@ -42,6 +42,9 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
+#define JBMODELLOCATION "models/player/jbbossi_temp/jbbossi_temp.mdl"
+#define JBMODELSHORT "jbbossi_temp"
+
 // Offsets
 #define m_iPrimaryWeapon    116
 #define m_iVGUI            510
@@ -413,7 +416,7 @@ public plugin_init()
 }
 public plugin_precache()
 {
-    precache_model("models/player/jbbossi_temp/jbbossi_temp.mdl")
+    precache_model(JBMODELLOCATION)
     static i
     BeaconSprite = precache_model("sprites/shockwave.spr")    
     for(i = 0; i < sizeof(_RpgModels); i++)
@@ -840,7 +843,7 @@ public player_spawn(id)
             g_PlayerReason[id] = random_num(1, 10)
             player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
             client_infochanged(id)
-            set_user_info(id, "model", "jbbossi_temp")
+            set_user_info(id, "model", JBMODELSHORT)
             entity_set_int(id, EV_INT_body, 1+random_num(1,2))
             if (g_GameMode == Freeday || get_bit(g_PlayerFreeday,id))
             { 
@@ -858,7 +861,7 @@ public player_spawn(id)
         {
             G_Info[0][id]=0
             g_PlayerSimon[id]++
-            set_user_info(id, "model", "jbbossi_temp")
+            set_user_info(id, "model", JBMODELSHORT)
             entity_set_int(id, EV_INT_body, 3+random_num(1,2))
             cs_set_user_armor(id, 100, CS_ARMOR_VESTHELM)
             new r = random_num(1,3)
@@ -2812,7 +2815,7 @@ public client_infochanged(id)
     if (is_user_connected(id))
     {
         if (IsVip[id] == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
-            set_user_info(id, "model", "jbbossi_temp")
+            set_user_info(id, "model", JBMODELSHORT)
         load_vip(id)
     }     
 } 
@@ -5326,7 +5329,7 @@ bool:check_model(id)
 {
     new model[32];
     get_user_info(id,"model",model,31);
-    if(equali(model,"jbbossi_temp"))
+    if(equali(model,JBMODELSHORT))
         return true;
     return false;
 }
