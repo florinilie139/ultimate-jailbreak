@@ -537,6 +537,7 @@ public FoodMenuSelect (id, menu, item)
     if(equal(data,"showmenu"))
     {
         g_MenuType[id]=g_MenuType[id]^2;
+        return PLUGIN_HANDLED
     }
     
     new num = str_to_num(data)

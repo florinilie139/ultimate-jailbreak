@@ -353,7 +353,6 @@ public plugin_init()
     register_clcmd("-voicerecord", "cmd_voiceoff")
     register_clcmd("say /dorinta", "cmd_lastrequest")
     register_clcmd("say /ajutor", "cmd_help")
-    register_clcmd("say /apple", "cmd_apple")
     register_clcmd("say /voice", "cmd_simon_micr")    
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
@@ -373,8 +372,6 @@ public plugin_init()
     register_clcmd("say /whosimon","cmd_whosimon")
     register_clcmd("say /gunshop","gunsmenu")
     register_clcmd("say_team /gunshop","gunsmenu")
-    register_clcmd("say /vip","cmd_showvip")
-    register_clcmd("say /admin","cmd_showadmin")
     register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     
@@ -1730,18 +1727,6 @@ public cmd_help(id)
     remove_task(TASK_HELP + id)
     
     show_motd(id,"rules.txt","Ultimate Jail Break Manager");
-}
-public cmd_apple(id)
-{
-    show_motd(id,"apple.htm","APPLE");
-}
-public cmd_showvip(id)
-{
-    show_motd(id,"Vip.txt","VIP")
-}
-public cmd_showadmin(id)
-{
-    show_motd(id,"admin.txt","Preturi Admin")
 }
 public cmd_minmodels(id)
 {
@@ -3277,6 +3262,7 @@ public cmd_game_hns()
     get_players(Players, playerCount, "ac") 
     for (i=0; i<playerCount; i++) 
     {
+        set_user_gravity(Players[i], 1.0)
         if (cs_get_user_team(Players[i]) == CS_TEAM_T)
         {
             /*give_item(Players[i], "weapon_knife")
@@ -3453,6 +3439,7 @@ public cmd_game_gunday()
         }
         give_item(Players[i], _WeaponsFree[n])
         cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
+        set_user_gravity(Players[i], 1.0)
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     jail_open()
@@ -3484,7 +3471,7 @@ public  cmd_game_coladay()
     {
         fade_screen(Players[i],false)
         set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
-        
+        set_user_gravity(Players[i], 1.0)
         give_item( Players[i], "weapon_hegrenade" );
         cs_set_user_bpammo( Players[i], CSW_HEGRENADE, 1)
     }
@@ -3505,6 +3492,7 @@ public cmd_game_gravity()
 
     for (i=0; i<playerCount; i++) 
     {
+        set_user_gravity(Players[i], 1.0)
         if (cs_get_user_team(Players[i]) == CS_TEAM_T)
         {
             give_item(Players[i], "weapon_flashbang")
