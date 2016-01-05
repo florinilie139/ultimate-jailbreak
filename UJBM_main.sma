@@ -446,6 +446,7 @@ public plugin_natives()
     register_native ("set_wanted", "_set_wanted",0)
     register_native ("get_last", "_get_last",0)
     register_native ("get_vip","_get_vip",0)
+    register_native ("get_model","_get_model",0)
 } 
 public _get_simon(iPlugin, iParams)
 { 
@@ -490,6 +491,10 @@ public bool:_get_vip(iPlugin, iParams)
     new id = get_param(1);
     if (IsVip[id]>0)return true;
     return false;
+}  
+public _get_model(iPlugin, iParams) 
+{ 
+    set_string(1, JBMODELSHORT, get_param(2));  
 }  
 public precache_spawn(ent)
 {
