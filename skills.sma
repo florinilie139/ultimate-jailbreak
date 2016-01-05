@@ -83,6 +83,7 @@ new Resetused[33]
 enum _:_arg { _nume[100], _skill[32], _points[2] }
 new Leaved[200][_arg]
 new TotalSaved
+new gp_SpecialVip
 
 public plugin_init ()
 {
@@ -121,8 +122,10 @@ public plugin_init ()
     register_clcmd("say /top","cmd_top")
     register_clcmd("say /list","cmd_list")
     register_clcmd("say /rskill","cmd_askreset")
+    register_concmd("amx_reload_skills", "reload_skills_all", ADMIN_RCON, "Reloads all skills" );
     register_srvcmd("give_points","_give_points")
     new skillh = register_cvar("skill_help", "1")
+    gp_SpecialVip = register_cvar("special_vip","0")
     //register_concmd("amx_addpoints","admin_points",ADMIN_LEVEL_E,"<nick> <Points to give>")
     register_concmd("amx_skills","admin_verify_skills",ADMIN_ALL,"<nick> # Verify a player's skills")
     register_clcmd("fuckthisshit2","cmd_quit")
@@ -176,6 +179,22 @@ public plugin_precache(){
 
 public client_putinserver(id)
 {
+    reload_skills(id)
+}
+
+public reload_skills_all(id, level, cid )
+{
+    if( !cmd_access( id, level, cid, 1 ) )
+    return PLUGIN_HANDLED;
+    
+    for(new i =1;i<33;i++)
+        if(is_user_connected(i))
+            reload_skills(i);
+    return PLUGIN_HANDLED;
+}
+
+public reload_skills(id)
+{
     for(new j = 0; j <= 15; j++)
         g_PlayerSkill[id][j] = 0
     g_PlayerPoints[id][0] = 0
@@ -190,18 +209,23 @@ public client_putinserver(id)
     ShowAc[id] = false
     IsVip[id] = 0
     Resetused[id] = false
-    load_vip(id)//load_vip_special(id)
-    new name[100]
-    get_user_name(id,name,99)
-    for(new id2 = 0; id2<TotalSaved;id2++)
-        if(equal(name,Leaved[id2][_name])){
-            for(new i = 1; i<=15; i++){
-                g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
+    if(get_pcvar_num(gp_SpecialVip)!=0)
+        load_vip_special(id)
+    else
+    {
+        load_vip(id)
+        new name[100]
+        get_user_name(id,name,99)
+        for(new id2 = 0; id2<TotalSaved;id2++)
+            if(equal(name,Leaved[id2][_name])){
+                for(new i = 1; i<=15; i++){
+                    g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
+                }
+                g_PlayerPoints[id][0] = Leaved[id2][_points];
+                g_PlayerPoints[id][1] = Leaved[id2][_points+1];
+                break;
             }
-            g_PlayerPoints[id][0] = Leaved[id2][_points];
-            g_PlayerPoints[id][1] = Leaved[id2][_points+1];
-            break;
-        }
+    }
 }
 public client_infochanged( id )
 {
@@ -243,8 +267,14 @@ public load_vip (id)
 }
 public load_vip_special (id)
 {
-    for(new j=1;j<14;j++){
-        new skil = j
+    new limit[15]
+    if(get_pcvar_num(gp_SpecialVip)==2)
+        formatex(limit,14,"abcdefghijklm")
+    else
+        formatex(limit,14,"abef")
+        
+    for(new j=0;j<strlen(limit);j++){
+        new skil = limit[j]-'a' + 1
         switch(skil){
             case 1..6,8,10:g_PlayerSkill[id][skil] = 3
             case 7,9,11,12:g_PlayerSkill[id][skil] = 2
@@ -286,7 +316,8 @@ public save_vip(id)
 
 public client_disconnect (id)
 {
-    save_vip(id)
+    if(get_pcvar_num(gp_SpecialVip)==0)
+        save_vip(id)
 }
 public setData(player) {
     
@@ -1568,7 +1599,7 @@ public cmd_sendcommand(id)
     read_argv(1, arg, charsmax(arg))
     
     back = get_pcvar_num(gp_Activity)
-    set_cvar_num("amx_show_activity",0)
+    set_pcvar_num(gp_Activity,0)
     server_cmd(arg);
-    set_cvar_num("amx_show_activity",back)
+    set_pcvar_num(gp_Activity,back)
 }
