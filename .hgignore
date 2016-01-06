@@ -1,0 +1,7 @@
+
+syntax: regexp
+amxxpc.*
+compile.*
+syntax: glob
+desktop.ini
+dlsym
