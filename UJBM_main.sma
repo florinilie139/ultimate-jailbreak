@@ -3195,7 +3195,7 @@ public cmd_pregame(
         }
     }
     set_task(countdown,gameName,TASK_GIVEITEMS)
-    g_Countdown=countdown
+    g_Countdown=floatround(countdown)
     cmd_saytime()
     return PLUGIN_CONTINUE
 }
