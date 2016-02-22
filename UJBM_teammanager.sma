@@ -46,7 +46,7 @@ public plugin_init()
 	register_message(get_user_msgid("ShowMenu"), "message_ShowMenu");
 	register_message(get_user_msgid("VGUIMenu"), "message_VGUIMenu");
 	g_MsgShowMenu = get_user_msgid("ShowMenu")
-	register_concmd("jb_nomic", "adm_nomic", ADMIN_KICK)
+	//register_concmd("jb_nomic", "adm_nomic", ADMIN_KICK)
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
 	register_clcmd("chooseteam","show_team_menu",0,"")
 	register_clcmd("jointeam", "jointeam")
