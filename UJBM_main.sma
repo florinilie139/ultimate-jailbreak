@@ -353,6 +353,7 @@ public plugin_init()
     register_clcmd("-voicerecord", "cmd_voiceoff")
     register_clcmd("say /dorinta", "cmd_lastrequest")
     register_clcmd("say /ajutor", "cmd_help")
+    //register_clcmd("say /dorm", "cmd_nosleep")
     register_clcmd("say /voice", "cmd_simon_micr")    
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
@@ -901,7 +902,7 @@ public task_unfreeze(id)
     
     remove_task(TASK_SAFETIME + id)
     
-    if( is_user_alive(id) && cs_get_user_team(id) ==  CS_TEAM_T)
+    if( is_user_alive(id) && cs_get_user_team(id) ==  CS_TEAM_T && is_not_game())
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
 }
 public task_inviz(id)
@@ -1424,7 +1425,8 @@ public round_first()
 public round_end()
 {
     server_cmd("jb_unblock_weapons")
-    //server_cmd("bh_noslowdown 1")
+    server_cmd("bh_enabled 1")
+    server_cmd("sleep_enabled 1")
     g_PlayerRevolt = 0
     if(g_JailDay%7 > 0 && g_JailDay%7 < 6 && is_not_game()){
         g_PlayerLastFreeday = g_PlayerFreeday
@@ -1455,8 +1457,6 @@ public round_end()
     new playerCount, i 
     new alT=0,alC=0;
     get_players(Players, playerCount, "c") 
-    server_cmd("bh_enabled 1")
-    server_cmd("sleep_enabled 1")
     for (i=0; i<playerCount; i++) 
     {
         if (!is_not_game()) 
@@ -1559,6 +1559,7 @@ public round_start()
                 set_task(10.0,"cmd_expire_time",TASK_ROUND)
             }
             else{
+                g_GamePrepare = 1;
                 set_task(1.0,"CheckVoteDay",TASK_ROUND)
             }
         }
@@ -1743,6 +1744,12 @@ public cmd_minmodels(id)
     query_client_cvar(id, "cl_minmodels", "cvar_result_func"); 
 }
 
+public cmd_nosleep(id)
+{
+    if(!is_user_alive(id) || g_Duel >=2 || !is_not_game() || cs_get_user_team(id) == CS_TEAM_CT)
+        return PLUGIN_HANDLED
+    return PLUGIN_CONTINUE
+}
 public cmd_freeday(id)
 {
     if (g_GameMode == NormalDay)
@@ -1979,7 +1986,7 @@ public lastrequestgames_select(id, menu, item)
                         if ( cs_get_user_team(Players[i]) == CS_TEAM_CT)
                         {
                             set_user_maxspeed(Players[i], 200.0)
-                            set_user_health(Players[i], 400)
+                            set_user_health(Players[i], 300)
                             give_item(Players[i], "item_assaultsuit")
                             cs_set_user_nvg (Players[i],true);
                             entity_set_int(Players[i], EV_INT_body, 6)
@@ -2368,7 +2375,7 @@ public hud_status(task)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
-                cmd_simon(random_num(0,g_MaxClients))
+                cmd_simon(random_num(1,g_MaxClients))
             }
             else  if (g_Simon  != 0)
             {
@@ -2551,6 +2558,7 @@ public duel_guns(id, menu, item)
             set_user_health(g_DuelB, 2000)
             cs_set_user_bpammo(g_DuelB,CSW_M249,0)
             entity_set_int(g_DuelB, EV_INT_body, 6)
+            server_cmd("jb_block_weapons")
         }
         case  CSW_FLASHBANG:
         {
@@ -2565,6 +2573,7 @@ public duel_guns(id, menu, item)
             set_user_health(g_DuelB, 2000)
             entity_set_int(g_DuelB, EV_INT_body, 6)
             current_weapon_fl(g_DuelB)
+            server_cmd("jb_block_weapons")
         }
         case 33:
         {
@@ -2592,6 +2601,7 @@ public duel_guns(id, menu, item)
             give_item( g_DuelB, "weapon_hegrenade" );
             cs_set_user_bpammo(g_DuelB, CSW_HEGRENADE, 1)
             set_user_health(g_DuelB, 200)
+            server_cmd("jb_block_weapons")
         }
         default:
         {
@@ -2603,10 +2613,10 @@ public duel_guns(id, menu, item)
             gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelB, 100)
+            server_cmd("jb_block_weapons")
             
         }    
     }
-    server_cmd("jb_block_weapons")
     set_task(1.0, "Beacon", g_DuelA)
     set_task(1.0, "Beacon", g_DuelB)
     return PLUGIN_HANDLED
@@ -2864,14 +2874,16 @@ public cmd_saytime()
 
 public CheckVoteDay()
 {
-    new player
-    for(player = 1; player < 33; player++ ){
-        if(!is_user_alive(player))
-            continue
-        remove_task(TASK_SAFETIME + player);
-        set_pev(player, pev_flags, pev(player, pev_flags)| FL_FROZEN)
-        StartVote(player);
-    }
+    //new player
+    //for(player = 1; player < 33; player++ ){
+    //    if(!is_user_alive(player))
+    //        continue
+    //    remove_task(TASK_SAFETIME + player);
+    //    set_pev(player, pev_flags, pev(player, pev_flags)| FL_FROZEN)
+    //      StartVote(player);
+    //}
+    g_DayTimer = 0;
+    EndVote()
 }
 
 public StartVote(id){
@@ -2976,31 +2988,30 @@ public EndVote()
     {
         remove_task(TASK_DAYTIMER);
         new bigger = 0;
-        for( new i=1; i<12; i++ )
-        {
-            if( g_ResultVote[i] > g_ResultVote[bigger] )
-            {
-                bigger = i;
-            }
-        }
+        bigger = random_num(1,10);
+        //for( new i=1; i<12; i++ )
+        //{
+        //    if( g_ResultVote[i] > g_ResultVote[bigger] )
+        //    {
+        //        bigger = i;
+        //    }
+        //}
         
-        if( bigger == 0 )
-        {
-            bigger = random_num(1,11);
+        //if( bigger == 0 )
+        //{
+            
             //fnColorPrint(0, "%L", LANG_SERVER, "JB_DAY_M15");
-        }
+        //}
         g_DayTimer = 0;
-        for( new i=0; i<12; i++ )
-        {
-            g_ResultVote[i] = 0;
-        }
+        //for( new i=0; i<12; i++ )
+        //{
+        //    g_ResultVote[i] = 0;
+        //}
         if(bigger == 1 || bigger == 4 || bigger == 8 )
         {
-            while(g_Simon==0)
-            {
-                resetsimon()
-                cmd_simon(random_num(0,g_MaxClients))
-            }
+            new Players[32],playerCount;
+            get_players(Players, playerCount, "ae", "CT") 
+            g_Simon = Players[random(playerCount)];
         }
         new player
         for(player = 1; player < 33; player++){
@@ -3008,6 +3019,7 @@ public EndVote()
                 continue
             set_pev(player, pev_flags, pev(player, pev_flags)& ~FL_FROZEN)
         }
+        g_GamePrepare = 0;
         switch(bigger)
         {
             case(1):
@@ -3042,9 +3054,9 @@ public EndVote()
             }
             case(6):
             {
-                client_print(0, print_console, "server gives coladay")
-                log_amx("server gives coladay")
-                cmd_pregame("cmd_game_coladay", 1, 30.0)
+                client_print(0, print_console, "server gives sparta")
+                log_amx("server gives sparta day")
+                cmd_game_sparta()
             }
             case(7):
             {
@@ -3073,9 +3085,9 @@ public EndVote()
             }
             case(11):
             {
-                client_print(0, print_console, "server gives sparta")
-                log_amx("server gives sparta day")
-                cmd_game_sparta()
+                client_print(0, print_console, "server gives coladay")
+                log_amx("server gives coladay")
+                cmd_pregame("cmd_game_coladay", 1, 30.0)
             }
             case(12):
             {
@@ -3183,7 +3195,7 @@ public cmd_pregame(
         }
     }
     set_task(countdown,gameName,TASK_GIVEITEMS)
-    g_Countdown=30
+    g_Countdown=countdown
     cmd_saytime()
     return PLUGIN_CONTINUE
 }
@@ -5203,7 +5215,7 @@ public help_trollface()
     format(Msg, 511, "^x01Powered by ^x03%s ^x01%s by ^x03%s",PLUGIN_CVAR,PLUGIN_VERSION,PLUGIN_AUTHOR);
     new iPlayers[32], iNum, i;
     get_players(iPlayers, iNum);
-    for(i = 0; i <= iNum; i++)
+    for(i = 0; i < iNum; i++)
     {
         new x = iPlayers[i];
         
