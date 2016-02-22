@@ -52,7 +52,7 @@ new const g_Prices[] = { 5, 10, 15, 20, 25, 30, 35, 40} //  5, 10, 15, 20, 25, 3
 new const g_Alpha[] =  { 255, 140, 80, 15, 0}
 new const Float:g_Gravity[] = { 1.0, 0.8125, 0.625, 0.4375, 0.25}
 new const g_maxhp[] = { 100, 125, 150, 200, 300}
-new const Float:g_freezet[] = {0.0, 1.0, 2.0, 4.0, 6.0}
+new const Float:g_freezet[] = {0.0, 0.5, 1.0, 1.5, 2.0}
 
 new laser
 
