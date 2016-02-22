@@ -714,8 +714,8 @@ public FwdTouch(ent, id)
         fGameTime = get_gametime()
         if((fGameTime - g_fLastTouch[id]) > REFRESH_TIME)
         {
-            set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
-            show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
+            //set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
+            //show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
             
             g_fLastTouch[id] = fGameTime
             g_LastTouch[id] = getZonesType(szNameEnt)
