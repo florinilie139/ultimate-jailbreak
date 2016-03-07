@@ -20,25 +20,25 @@ new DisabledCallback;
 new EnabledCallback;
 
 // pcvar that the client is currently modifying
-new CurrentCvar[MAX_PLAYERS];
+new CurrentCvar[MAX_PLAYERS + 1];
 
 // Name of the cvar being modified
-new CurrentCvarName[MAX_PLAYERS][32];
+new CurrentCvarName[MAX_PLAYERS + 1][32];
 
 // Plugin ID that the client is modifying
-new CurrentPlid[MAX_PLAYERS];
+new CurrentPlid[MAX_PLAYERS + 1];
 
 // Page that the client is currently on
-new CurrentPage[MAX_PLAYERS];
+new CurrentPage[MAX_PLAYERS + 1];
 
 // Menu function ID that the client is in
-new CurrentMenuFunction[MAX_PLAYERS] = { -1,... };
+new CurrentMenuFunction[MAX_PLAYERS + 1] = { -1,... };
 
-new CurrentCommand[MAX_PLAYERS][32];
+new CurrentCommand[MAX_PLAYERS + 1][32];
 new cvarmenu_cmdid;
 new cmdmenu_cmdid;
 
-new ExplicitPlugin[MAX_PLAYERS];
+new ExplicitPlugin[MAX_PLAYERS + 1];
 
 public plugin_init()
 {
@@ -470,19 +470,16 @@ public CvarMenuSelection(id, menu, item)
 		{
 			DisplayPluginMenuDefault(id);
 		}
-		return PLUGIN_HANDLED;
 	}
 	else if (item==MENU_BACK)
 	{
 		--CurrentPage[id];
 		client_print(id,print_chat,"MENU_BACK");
-		return PLUGIN_HANDLED;
 	}
 	else if (item==MENU_MORE)
 	{
 		++CurrentPage[id];
 		client_print(id,print_chat,"MENU_MORE");
-		return PLUGIN_HANDLED;
 	}
 	else
 	{
@@ -515,10 +512,9 @@ public CvarMenuSelection(id, menu, item)
 		client_cmd(id,"messagemode amx_changecvar");
 		
 		menu_destroy(menu);
-		return PLUGIN_HANDLED;
 	}
 	
-	return 0;
+	return PLUGIN_HANDLED;
 }
 /**
  * Displays the cvar menu to a client.
@@ -785,7 +781,6 @@ public CommandExecuteCommand(id)
  */
 public CommandMenuSelection(id, menu, item)
 {
-	
 	if (item==MENU_EXIT)
 	{
 		menu_destroy(menu);
@@ -797,19 +792,16 @@ public CommandMenuSelection(id, menu, item)
 		{
 			client_cmd(id,"amx_plugincmdmenu");
 		}
-		return PLUGIN_HANDLED;
 	}
 	else if (item==MENU_BACK)
 	{
 		--CurrentPage[id];
 		client_print(id,print_chat,"MENU_BACK");
-		return PLUGIN_HANDLED;
 	}
 	else if (item==MENU_MORE)
 	{
 		++CurrentPage[id];
 		client_print(id,print_chat,"MENU_MORE");
-		return PLUGIN_HANDLED;
 	}
 	else
 	{
@@ -821,10 +813,9 @@ public CommandMenuSelection(id, menu, item)
 		menu_destroy(menu);
 		
 		DisplaySpecificCommand(id,str_to_num(Command));
-		return PLUGIN_HANDLED;
 	}
 	
-	return 0;
+	return PLUGIN_HANDLED;
 }
 /**
  * This blocks "say" and "say_team" commands. 

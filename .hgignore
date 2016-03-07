@@ -1,7 +1,8 @@
 
 syntax: regexp
-amxxpc.*
-compile.*
+amxxpc\.*
+compile\.*
+[^\.]*\.amxx
 syntax: glob
 desktop.ini
 dlsym

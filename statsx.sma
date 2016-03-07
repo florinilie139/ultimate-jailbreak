@@ -107,56 +107,56 @@ new BODY_PART[8][] =
 #define KILLED_TEAM             3   // Killer's team
 #define KILLED_KILLER_STATSFIX  4   // Fix to register the last hit/kill
 
-new g_izKilled[MAX_PLAYERS][5]
+new g_izKilled[MAX_PLAYERS + 1][5]
 
 // Menu variables and configuration
 #define MAX_PPL_MENU_ACTIONS    2   // Number of player menu actions
 #define PPL_MENU_OPTIONS        7   // Number of player options per displayed menu
 
-new g_iPluginMode                                   = 0
+new g_iPluginMode                                       = 0
 
-new g_izUserMenuPosition[MAX_PLAYERS]               = {0, ...}
-new g_izUserMenuAction[MAX_PLAYERS]                 = {0, ...}
-new g_izUserMenuPlayers[MAX_PLAYERS][32]
+new g_izUserMenuPosition[MAX_PLAYERS + 1]               = {0, ...}
+new g_izUserMenuAction[MAX_PLAYERS + 1]                 = {0, ...}
+new g_izUserMenuPlayers[MAX_PLAYERS + 1][MAX_PLAYERS]
 
-new g_izSpecMode[MAX_PLAYERS]                       = {0, ...}
+new g_izSpecMode[MAX_PLAYERS + 1]                       = {0, ...}
 
-new g_izShowStatsFlags[MAX_PLAYERS]                 = {0, ...}
-new g_izStatsSwitch[MAX_PLAYERS]                    = {0, ...}
-new Float:g_fzShowUserStatsTime[MAX_PLAYERS]        = {0.0, ...}
-new Float:g_fShowStatsTime                          = 0.0
-new Float:g_fFreezeTime                             = 0.0
-new Float:g_fFreezeLimitTime                        = 0.0
-new Float:g_fHUDDuration                            = 0.0
+new g_izShowStatsFlags[MAX_PLAYERS + 1]                 = {0, ...}
+new g_izStatsSwitch[MAX_PLAYERS + 1]                    = {0, ...}
+new Float:g_fzShowUserStatsTime[MAX_PLAYERS + 1]        = {0.0, ...}
+new Float:g_fShowStatsTime                              = 0.0
+new Float:g_fFreezeTime                                 = 0.0
+new Float:g_fFreezeLimitTime                            = 0.0
+new Float:g_fHUDDuration                                = 0.0
 
-new g_iRoundEndTriggered                            = 0
-new g_iRoundEndProcessed                            = 0
+new g_iRoundEndTriggered                                = 0
+new g_iRoundEndProcessed                                = 0
 
-new g_pFreezeTime                                   = 0
-new g_pRoundTime                                    = 0
-new g_pHudDuration                                  = 0
-new g_pHudFreezeLimit                               = 0
+new g_pFreezeTime                                       = 0
+new g_pRoundTime                                        = 0
+new g_pHudDuration                                      = 0
+new g_pHudFreezeLimit                                   = 0
 
-new Float:g_fStartGame                              = 0.0
-new g_izTeamScore[MAX_TEAMS]                        = {0, ...}
-new g_izTeamEventScore[MAX_TEAMS]                   = {0, ...}
+new Float:g_fStartGame                                  = 0.0
+new g_izTeamScore[MAX_TEAMS]                            = {0, ...}
+new g_izTeamEventScore[MAX_TEAMS]                       = {0, ...}
 new g_izTeamRndStats[MAX_TEAMS][8]
 new g_izTeamGameStats[MAX_TEAMS][8]
-new g_izUserUserID[MAX_PLAYERS]                     = {0, ...}
-new g_izUserAttackerDistance[MAX_PLAYERS]           = {0, ...}
-new g_izUserVictimDistance[MAX_PLAYERS][MAX_PLAYERS]
-new g_izUserRndName[MAX_PLAYERS][MAX_NAME_LENGTH]
-new g_izUserRndStats[MAX_PLAYERS][8]
-new g_izUserGameStats[MAX_PLAYERS][8]
+new g_izUserUserID[MAX_PLAYERS + 1]                     = {0, ...}
+new g_izUserAttackerDistance[MAX_PLAYERS + 1]           = {0, ...}
+new g_izUserVictimDistance[MAX_PLAYERS + 1][MAX_PLAYERS + 1]
+new g_izUserRndName[MAX_PLAYERS + 1][MAX_NAME_LENGTH]
+new g_izUserRndStats[MAX_PLAYERS + 1][8]
+new g_izUserGameStats[MAX_PLAYERS + 1][8]
 
 // Common buffer to improve performance, as Small always zero-initializes all vars
-new g_sBuffer[MAX_BUFFER_LENGTH + 1]                = ""
-new g_sScore[MAX_TEXT_LENGTH + 1]                   = ""
-new g_sAwardAndScore[MAX_BUFFER_LENGTH + 1]         = ""
+new g_sBuffer[MAX_BUFFER_LENGTH + 1]                    = ""
+new g_sScore[MAX_TEXT_LENGTH + 1]                       = ""
+new g_sAwardAndScore[MAX_BUFFER_LENGTH + 1]             = ""
 
-new t_sText[MAX_TEXT_LENGTH + 1]                    = ""
-new t_sName[MAX_NAME_LENGTH + 1]                    = ""
-new t_sWpn[MAX_WEAPON_LENGTH + 1]                   = ""
+new t_sText[MAX_TEXT_LENGTH + 1]                        = ""
+new t_sName[MAX_NAME_LENGTH + 1]                        = ""
+new t_sWpn[MAX_WEAPON_LENGTH + 1]                       = ""
 
 new g_HudSync_EndRound
 new g_HudSync_SpecInfo
@@ -607,7 +607,7 @@ add_attacker_hits(id, iAttacker, sBuffer[MAX_BUFFER_LENGTH + 1])
 
 			iLen += formatex(sBuffer[iLen], charsmax(sBuffer) - iLen, "%L:^n", id, "HITS_YOU_IN", t_sName)
 
-			for (new i = 1; i < 8; i++)
+			for (new i = 1; i < sizeof(izBody); i++)
 			{
 				if (!izBody[i])
 					continue
@@ -640,7 +640,7 @@ format_kill_ainfo(id, iKiller, sBuffer[MAX_BUFFER_LENGTH + 1])
 
 		if (izStats[STATS_HITS])
 		{
-			for (new i = 1; i < 8; i++)
+			for (new i = 1; i < sizeof(izBody); i++)
 			{
 				if (!izBody[i])
 					continue
@@ -680,7 +680,7 @@ format_kill_vinfo(id, iKiller, sBuffer[MAX_BUFFER_LENGTH + 1])
 
 	if (izStats[STATS_HITS])
 	{
-		for (new i = 1; i < 8; i++)
+		for (new i = 1; i < sizeof(izBody); i++)
 		{
 			if (!izBody[i])
 				continue
@@ -749,7 +749,7 @@ format_rankstats(id, sBuffer[MAX_BUFFER_LENGTH + 1], iMyId = 0)
 	ucfirst(lAcc)
 
 	iRankPos = get_user_stats(id, izStats, izBody)
-	iLen = formatex(sBuffer, charsmax(sBuffer), "<body bgcolor=#000000><font color=#FFB000><pre>")
+	iLen = formatex(sBuffer, charsmax(sBuffer), "<meta charset=utf-8><body bgcolor=#000000><font color=#FFB000><pre>")
 	iLen += formatex(sBuffer[iLen], charsmax(sBuffer) - iLen, "%L %L^n^n", id, (!iMyId || iMyId == id) ? "YOUR" : "PLAYERS", id, "RANK_IS", iRankPos, get_statsnum())
 	iLen += formatex(sBuffer[iLen], charsmax(sBuffer) - iLen, "%6s: %d  (%d with hs)^n%6s: %d^n%6s: %d^n%6s: %d^n%6s: %d^n%6s: %0.2f%%^n%6s: %0.2f%%^n^n",
 					lKills, izStats[STATS_KILLS], izStats[STATS_HS], lDeaths, izStats[STATS_DEATHS], lHits, izStats[STATS_HITS], lShots, izStats[STATS_SHOTS],
@@ -757,7 +757,7 @@ format_rankstats(id, sBuffer[MAX_BUFFER_LENGTH + 1], iMyId = 0)
 
 	new L_BODY_PART[8][32]
 
-	for (new i = 1; i < 8; i++)
+	for (new i = 1; i < sizeof(L_BODY_PART); i++)
 	{
 		formatex(L_BODY_PART[i], charsmax(L_BODY_PART[]), "%L", id, BODY_PART[i])
 	}
@@ -789,7 +789,7 @@ format_stats(id, sBuffer[MAX_BUFFER_LENGTH + 1])
 
 	get_user_wstats(id, 0, izStats, izBody)
 
-	iLen = formatex(sBuffer, charsmax(sBuffer), "<body bgcolor=#000000><font color=#FFB000><pre>")
+	iLen = formatex(sBuffer, charsmax(sBuffer), "<meta charset=utf-8><body bgcolor=#000000><font color=#FFB000><pre>")
 	iLen += formatex(sBuffer[iLen], charsmax(sBuffer) - iLen, "%6s: %d  (%d with hs)^n%6s: %d^n%6s: %d^n%6s: %d^n%6s: %d^n%6s: %0.2f%%^n%6s: %0.2f%%^n^n",
 					lKills, izStats[STATS_KILLS], izStats[STATS_HS], lDeaths, izStats[STATS_DEATHS], lHits, izStats[STATS_HITS], lShots, izStats[STATS_SHOTS],
 					lDamage, izStats[STATS_DAMAGE], lEff, effec(izStats), lAcc, accuracy(izStats))
@@ -1292,14 +1292,14 @@ public eventStartRound()
 			{
 				g_izTeamEventScore[iTeam] = 0
 
-				for (i = 0; i < 8; i++)
+				for (i = 0; i < sizeof(g_izTeamGameStats[]); i++)
 					g_izTeamGameStats[iTeam][i] = 0
 			}
 
 			// Clear game stats, incl '0' that is sum of all users.
 			for (id = 0; id <= MaxClients; id++)
 			{
-				for (i = 0; i < 8; i++)
+				for (i = 0; i < sizeof(g_izUserGameStats[]); i++)
 					g_izUserGameStats[id][i] = 0
 			}
 		}
@@ -1310,7 +1310,7 @@ public eventStartRound()
 		{
 			g_izTeamScore[iTeam] = g_izTeamEventScore[iTeam]
 
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < sizeof(g_izTeamRndStats[]); i++)
 				g_izTeamRndStats[iTeam][i] = 0
 		}
 
@@ -1319,7 +1319,7 @@ public eventStartRound()
 		{
 			g_izUserRndName[id][0] = 0
 
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < sizeof(g_izUserRndStats[]); i++)
 				g_izUserRndStats[id][i] = 0
 
 			g_fzShowUserStatsTime[id] = 0.0
@@ -1347,7 +1347,7 @@ public eventSpawn(id)
 	args[0] = id
 
 	if (g_iPluginMode & MODE_HUD_DELAY)
-		set_task(0.1, "delay_spawn", 200 + id, args, 1)
+		set_task(0.1, "delay_spawn", 200 + id, args, sizeof(args))
 	else
 		delay_spawn(args)
 
@@ -1462,7 +1462,7 @@ kill_stats(id)
 		// Update user's team round stats
 		if (iTeam >= 0 && iTeam < MAX_TEAMS)
 		{
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < sizeof(izStats); i++)
 			{
 				g_izTeamRndStats[iTeam][i] += izStats[i]
 				g_izTeamGameStats[iTeam][i] += izStats[i]
@@ -1474,7 +1474,7 @@ kill_stats(id)
 		// Update user's round stats
 		if (g_izUserUserID[id] == get_user_userid(id))
 		{
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < sizeof(izStats); i++)
 			{
 				g_izUserRndStats[id][i] += izStats[i]
 				g_izUserGameStats[id][i] += izStats[i]
@@ -1482,7 +1482,7 @@ kill_stats(id)
 		} else {
 			g_izUserUserID[id] = get_user_userid(id)
 
-			for (i = 0; i < 8; i++)
+			for (i = 0; i < sizeof(izStats); i++)
 			{
 				g_izUserRndStats[id][i] = izStats[i]
 				g_izUserGameStats[id][i] = izStats[i]
@@ -1547,7 +1547,7 @@ endround_stats()
 	if (g_iRoundEndProcessed || !g_iRoundEndTriggered)
 		return
 
-	new iaPlayers[32], iPlayer, iPlayers, id
+	new iaPlayers[MAX_PLAYERS], iPlayer, iPlayers, id
 
 	get_players(iaPlayers, iPlayers)
 
@@ -1584,7 +1584,7 @@ endround_stats()
 public eventTeamScore()
 {
 	new sTeamID[1 + 1], iTeamScore
-	read_data(1, sTeamID, 1)
+	read_data(1, sTeamID, charsmax(sTeamID))
 	iTeamScore = read_data(2)
 	g_izTeamEventScore[(sTeamID[0] == 'C') ? 1 : 0] = iTeamScore
 
@@ -1599,7 +1599,7 @@ public eventIntermission()
 
 public end_game_stats()
 {
-	new iaPlayers[32], iPlayer, iPlayers, id
+	new iaPlayers[MAX_PLAYERS], iPlayer, iPlayers, id
 
 	if (EndPlayer)
 	{
@@ -1637,7 +1637,7 @@ public end_game_stats()
 public eventSpecMode(id)
 {
 	new sData[12]
-	read_data(2, sData, 11)
+	read_data(2, sData, charsmax(sData))
 	g_izSpecMode[id] = (sData[10] == '2')
 
 	return PLUGIN_CONTINUE

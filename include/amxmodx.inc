@@ -8,7 +8,7 @@
 //     https://alliedmods.net/amxmodx-license
 
 #if defined _amxmodx_included
-  #endinput
+	#endinput
 #endif
 #define _amxmodx_included
 
@@ -29,13 +29,15 @@
 #include <newmenus>
 #include <textparse_smc>
 #include <textparse_ini>
+#include <cvars>
+#include <gameconfig>
 
 /**
  * Called just after server activation.
  *
  * @note Good place to initialize most of the plugin, such as registering
- *       cvars, commands or forwards, creating data structures for later use or
- *       generating and loading other required configuration.
+ *       cvars, commands or forwards, creating data structures for later use, or
+ *       generating and loading other required configurations.
  *
  * @noreturn
  */
@@ -48,7 +50,6 @@ forward plugin_init();
  */
 forward plugin_pause();
 
-
 /**
  * Called just after the plugin is unpaused.
  *
@@ -60,11 +61,11 @@ forward plugin_unpause();
  * Called when the mod tries to change the map.
  *
  * @note This is *only* called if the mod itself handles the map change. The
- *       server command "changelevel" which is used by many plugins will not
- *       trigger this forward. Unfortunately this means that in practice this
- *       forward is very unreliable, and will not be called in many situations.
- * @note AMXX 1.8.3 has added the change_level() function which will utilize
- *       the correct engine function to change the map and therefore trigger
+ *       server command "changelevel", which is used by many plugins, will not
+ *       trigger this forward. Unfortunately, this means that in practice this
+ *       forward can be unreliable and will not be called in many situations.
+ * @note AMXX 1.8.3 has added the engine_changelevel() function, which will utilize
+ *       the correct engine function to change the map, and therefore trigger
  *       this forward.
  *
  * @param map   Map that the mod tries to change to
@@ -75,9 +76,9 @@ forward plugin_unpause();
 forward server_changelevel(map[]);
 
 /**
- * Called when all plugins went through plugin_init
+ * Called when all plugins went through plugin_init()
  *
- * @note When this forward is called most plugins should have registered their
+ * @note When this forward is called, most plugins should have registered their
  *       cvars and commands already.
  *
  * @noreturn
@@ -85,8 +86,8 @@ forward server_changelevel(map[]);
 forward plugin_cfg();
 
 /**
- * Called just before server deactivation and subsequent
- * unloading of the plugin.
+ * Called just before server deactivation and subsequent unloading of the
+ * plugin.
  *
  * @note The plugin is required to manually free Handles it has acquired, such
  *       as those from dynamic data structures. Failing to do that will result
@@ -122,7 +123,7 @@ forward plugin_log();
 forward plugin_precache();
 
 /**
- * Called when a clients info has changed
+ * Called when a clients info has changed.
  *
  * @param id    Client index
  *
@@ -143,28 +144,57 @@ forward client_infochanged(id);
 forward client_connect(id);
 
 /**
+ * Called when a client is connecting.
+ *
+ * @note This forward is called too early to do anything that directly affects
+ *       the client.
+ *
+ * @param id        Client index
+ * @param name      Client name
+ * @param ip        Client ip address with port
+ * @param reason    A reason that will be displayed when player gets rejected (can be overwritten)
+ *
+ * @return          PLUGIN_CONTINUE to let a client join to the server
+ *                  PLUGIN_HANDLED or higher to prevent a client to join
+ */
+forward client_connectex(id, const name[], const ip[], reason[128]);
+
+/**
  * Called when the client gets a valid SteamID.
  *
  * @note This may occur before or after client_putinserver has been called.
- * @note This is called for bots, and the SteamID will be "BOT"
+ * @note This is called for bots, and the SteamID will be "BOT".
  *
- * @param id    Client index
+ * @param id		Client index
+ * @param authid	Client auth
  *
  * @noreturn
  */
-forward client_authorized(id);
+forward client_authorized(id, const authid[]);
 
 /**
- * Called when a client is disconnecting from the server.
+ * @deprecated This function does not catch all cases.
+ */
+#pragma deprecated Use client_disconnected() instead.
+forward client_disconnect(id);
+
+/**
+ * Called when a client is disconnected from the server.
  *
+ * @note This will be called in some additional cases that client_disconnect doesn't cover, 
+ *       most notably when a client aborts the connection process. It is guaranteed to pair 
+ *       with the client_connect() forward.
  * @note By this point it is already too late to do anything that directly
  *       affects the client.
  *
- * @param id    Client index
+ * @param id         Client index
+ * @param drop       If true, client has been explicitly dropped by game
+ * @param message    If drop is true, a disconnected message or buffer to copy a new message to
+ * @param maxlen     Maximum size of buffer
  *
  * @noreturn
  */
-forward client_disconnect(id);
+forward client_disconnected(id, bool:drop, message[], maxlen);
 
 /**
  * Called when a client attempts to execute a command.
@@ -222,10 +252,9 @@ native precache_model(const name[]);
  * @note Can only be used inside of the plugin_precache() forward.
  * @note The filepath is always relative to the "sound" folder, and the file has
  *       to be a wav file. Precaching a file with this will add it to the engine
- *       sound table, making it available for usage in emit_sound for example.
+ *       sound table, making it available for usage in emit_sound() for example.
  * @note Precaching other filetypes (such as mp3 music), optionally in different
- *       locations, has to be done with precache_generic.
- *
+ *       locations, has to be done with precache_generic()
  *
  * @param name  Path to the sound file
  *
@@ -239,7 +268,7 @@ native precache_sound(const name[]);
  * Precaches a generic file.
  *
  * @note Can only be used inside of the plugin_precache() forward.
- * @note Precaching sounds with this will not add them to the engine sound table
+ * @note Precaching sounds with this will not add them to the engine sound table.
  *
  * @param szFile    Path to the file
  *
@@ -248,6 +277,25 @@ native precache_sound(const name[]);
  *                  is thrown.
  */
 native precache_generic(const szFile[]);
+
+/**
+ * Precaches an event file.
+ *
+ * @note The event type should always be 1.
+ * @note Contrary to the other precache_* natives, this can be used outside of
+ *       the plugin_precache() forward, e.g. in plugin_init() or plugin_cfg().
+ *       A bug in some clients makes this necessary, as plugin_precache() is
+ *       called before the mod has precached its own, default event files. This
+ *       can cause the event table to be misaligned on the client, leading to
+ *       visual and audio bugs that are hard to diagnose.
+ *
+ * @param type  Event type
+ * @param Name  Formatting rules, path to the event file
+ * @param ...   Variable number of formatting parameters
+ *
+ * @return      Unique cache id of the event
+ */
+native precache_event(type, const Name[], any:...);
 
 /**
  * Changes the map.
@@ -262,7 +310,7 @@ native precache_generic(const szFile[]);
  *
  * @noreturn
  */
-native change_level(const map[]);
+native engine_changelevel(const map[]);
 
 /**
  * Sets info on the client.
@@ -273,7 +321,7 @@ native change_level(const map[]);
  *
  * @noreturn
  * @error           If the index is not within the range of 1 to MaxClients or
- *                  the client is not connected an error will be thrown.
+ *                  the client is not connected, an error will be thrown.
  * @error           If called outside of the plugin_precache() forward, an error
  *                  is thrown.
  */
@@ -289,7 +337,7 @@ native set_user_info(index, const info[], const value[]);
  *
  * @return          Number of cells written to buffer
  * @error           If the index is not within the range of 1 to MaxClients or
- *                  the client is not connected an error will be thrown.
+ *                  the client is not connected, an error will be thrown.
  */
 native get_user_info(index, const info[], output[], len);
 
@@ -318,30 +366,34 @@ native get_localinfo(const info[], output[], len);
  * Shows text or a file in MOTD window.
  *
  * @param player    Client index, use 0 to display to all clients
- * @param message   Message to display inside the MOTD window. If this is a
- *                  filename the contents of this file will be displayed.
- * @param header    Text for the MOTD header. If this is empty the servers
- *                  hostname will be displayed instead.
+ * @param message   Message to display inside the MOTD window, if this is a
+ *                  filename the contents of this file will be displayed
+ * @param header    Text for the MOTD header, if empty the servers hostname will
+ *                  be displayed instead
  *
  * @noreturn
  */
-native show_motd(player, const message[], const header[]="");
+native show_motd(player, const message[], const header[] = "");
 
 /**
  * Sends a message to the client.
  *
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
+ *
  * @param index     Client index, use 0 to display to all clients
- * @param type      Message type, see print_* destination constants in amxconst
+ * @param type      Message type, see print_* destination constants in
+ *                  amxconst.inc
  * @param message   Formatting rules
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native client_print(index, type, const message[], any:...);
 
@@ -357,46 +409,51 @@ native client_print(index, type, const message[], any:...);
  *                                ; This only works at the start of the string,
  *                                ; and precludes using other control characters
  *          default         x01   ; use default color from this point forward
- * @note The team color is defined by the sender's index or a specific team
- *       color using the print_team_* constants in amxconst
+ * @note The team color is defined by the sender's index. Alternatively, a
+ *       specific team color can be enforced using the print_team_* constants in
+ *       amxconst.inc
  * @note Usage examples:
  *       client_print_color(id, print_team_red, "^4Green ^3Red ^1Default")
  *       client_print_color(id, id2, "^4Green ^3id2's team color, ^1Default")
  * @note Including colors in ML can be done using the same escaping method:
- *       EXAMPLE_ML_KEY = ^4Green ^3Team color ^1Default.
+ *       EXAMPLE_ML_KEY = ^4Green ^3Team color ^1Default
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified, or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
  *
  * @param index     Client index, use 0 to display to all clients
- * @param sender    Client index used as the sender, defining the team color
- *                  used in the message. Use print_team_* constants to force
- *                  a specific color.
+ * @param sender    Client index used as the message sender
  * @param fmt       Formatting rules
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native client_print_color(index, sender, const message[], any:...);
 
 /**
  * Sends a message to the client via the engine.
  *
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified, or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
+ *
  * @param player    Client index, use 0 to display to all clients
- * @param type      Message type, see print_* destination constants in amxconst
+ * @param type      Message type, see print_* destination constants in
+ *                  amxconst.inc
  * @param message   Formatting rules
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native engclient_print(player, type, const message[], any:...);
 
@@ -408,15 +465,15 @@ native engclient_print(player, type, const message[], any:...);
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native console_print(id, const message[], any:...);
 
 /**
  * Executes a command from the specified client or the server console.
  *
- * @param id    Client index, or 0 to print to the server console
+ * @param id    Client index, or 0 to execute from the server console
  * @param cmd   Formatting rules
  * @param ...   Variable number of formatting parameters
  *
@@ -436,6 +493,8 @@ native console_cmd(id, const cmd[], any:...);
  * @note Due to a long-standing bug that would break compatibility with older
  *       plugins, the client id should be checked for alive/dead state if using
  *       flags "d" or "e".
+ * @note If multiple conditions are specified for a single parameter, only one
+ *       of them has to hold true for the event function to be called.
  *
  * @param event     Name of event that should be hooked
  * @param function  Name of callback function
@@ -460,21 +519,41 @@ native console_cmd(id, const cmd[], any:...);
  *                  The argument is compared to the specified value accordingly
  * @param ...       Any number of additional conditions
  *
- * @return          1 on successfully registering event
- *                  0 on failure
- * @error           Invalid event name or invalid callback function
+ * @return          Event handle
+ * @error           If an invalid event name or callback function is provided,
+ *                  an error will be thrown.
  */
-native register_event(const event[], const function[], const flags[], const cond[]="", ...);
+native register_event(const event[], const function[], const flags[], const cond[] = "", ...);
+
+/**
+ * Enables a function hook of a game event which has been previously registered with register_event().
+ *
+ * @param handle    Value returned from register_event()
+ *
+ * @noreturn
+ * @error           If an invalid handle is provided, an error will be thrown.
+ */
+native enable_event(handle);
+
+/**
+ * Disables a function hook of a game event which has been previously registered with register_event().
+ *
+ * @param handle    Value returned from register_event()
+ *
+ * @noreturn
+ * @error           If an invalid handle is provided, an error will be thrown.
+ */
+native disable_event(handle);
 
 /**
  * Registers a function to be called on a given log event.
  *
  * @note Examples for log conditions:
- *       "0=World triggered" "1=Game_Commencing"
- *       "1=say"
- *       "3=Terrorists_Win"
- *       "1=entered the game"
- *       "0=Server cvar"
+ *       "0 = World triggered" "1 = Game_Commencing"
+ *       "1 = say"
+ *       "3 = Terrorists_Win"
+ *       "1 = entered the game"
+ *       "0 = Server cvar"
  *
  * @param function  Name of callback function
  * @param argsnum   Number of arguments of the log event
@@ -487,10 +566,31 @@ native register_event(const event[], const function[], const flags[], const cond
  *                    - "&" for substring comparison
  *                  The argument is compared to the specified string accordingly
  *
- * @return          1 on successfully registering event, 0 on failure
- * @error           Invalid callback function
+ * @return          Log event handle
+ * @error           If an invalid callback function is provided, an error will
+ *                  be thrown.
  */
-native register_logevent(const function[], argsnum,  ...);
+native register_logevent(const function[], argsnum, ...);
+
+/**
+ * Enables a function hook of a game log event which has been previously registered with register_logevent().
+ *
+ * @param handle    Value returned from register_logevent()
+ *
+ * @noreturn
+ * @error           If an invalid handle is provided, an error will be thrown.
+ */
+native enable_logevent(handle);
+
+/**
+ * Disables a function hook of a game log event which has been previously registered with register_logevent().
+ *
+ * @param handle    Value returned from register_logevent()
+ *
+ * @noreturn
+ * @error           If an invalid handle is provided, an error will be thrown.
+ */
+native disable_logevent(handle);
 
 /**
  * Sets display parameters for hudmessages.
@@ -500,8 +600,8 @@ native register_logevent(const function[], argsnum,  ...);
  * @note There are four different HUD channels available on the client (1-4).
  *       Sending a hudmessage to a channel will overwrite any existing messages
  *       already displaying on that channel.
- * @note If you plan to create a permanent message don't forget to specify a
- *       specific channel to avoid possible flickering due to auto-channeling
+ * @note If you plan to create a permanent message, don't forget to specify a
+ *       specific channel to avoid possible flickering due to auto-channeling.
  * @note For the hudmessage coordinates x and y, -1.0 will center the message
  *       on the respective axis.
  * @note These parameters stay until the next call to set_hudmessage overwrites
@@ -523,24 +623,26 @@ native register_logevent(const function[], argsnum,  ...);
  *
  * @noreturn
  */
-native set_hudmessage(red=200, green=100, blue=0, Float:x=-1.0, Float:y=0.35, effects=0, Float:fxtime=6.0, Float:holdtime=12.0, Float:fadeintime=0.1, Float:fadeouttime=0.2, channel=-1);
+native set_hudmessage(red = 200, green = 100, blue = 0, Float:x = -1.0, Float:y = 0.35, effects = 0, Float:fxtime = 6.0, Float:holdtime = 12.0, Float:fadeintime = 0.1, Float:fadeouttime = 0.2, channel = -1);
 
 /**
  * Displays a message on the client HUD.
  *
  * @note Use set_hudmessage to define how the message should look on screen.
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified, or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
  *
  * @param index     Client index, use 0 to display to all clients
  * @param message   Formatting rules
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native show_hudmessage(index, const message[], any:...);
 
@@ -567,30 +669,32 @@ native show_hudmessage(index, const message[], any:...);
  *
  * @noreturn
  */
-native set_dhudmessage(red=200, green=100, blue=0, Float:x=-1.0, Float:y=0.35, effects=0, Float:fxtime=6.0, Float:holdtime=12.0, Float:fadeintime=0.1, Float:fadeouttime=0.2);
+native set_dhudmessage(red = 200, green = 100, blue = 0, Float:x = -1.0, Float:y = 0.35, effects = 0, Float:fxtime = 6.0, Float:holdtime = 12.0, Float:fadeintime = 0.1, Float:fadeouttime = 0.2);
 
 /**
  * Displays a director message on the client HUD.
  *
  * @note Use set_dhudmessage to define how the message should look on screen.
- * @note Unlike the classic HUD message which is channel-based, director
+ * @note Unlike the classic HUD message, which is channel-based, director
  *       messages are stack-based. You can have up to 8 messages displaying at
- *       once, if more are added they will be overwritten in the order they were
+ *       once. If more are added, they will be overwritten in the order they were
  *       sent. There is no way to clear a specific message.
  * @note The message has a maximum length of 128 characters which this function
  *       will automatically enforce.
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified, or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
  *
  * @param index     Client index, use 0 to display to all clients
  * @param message   Formatting rules
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native show_dhudmessage(index, const message[], any:...);
 
@@ -598,57 +702,59 @@ native show_dhudmessage(index, const message[], any:...);
  * Displays a menu to the client.
  *
  * @note Keys is a bitflag value that represents which keys the user can press
- *       on the menu. If you want to display disabled menu options or skip
- *       certain number slots you should exclude that key from the bitflag.
+ *       on the menu. If you want to display disabled menu options, or skip
+ *       certain number slots, you should exclude that key from the bitflag.
  *       amxconst.inc provides MENU_KEY_* constants for convenience.
- * @note If a menu timeout is specified it does not automatically overwrite
- *       the menu on the client's screen. But if a client acts upon a timeouted
- *       displayed menu that action will not be sent to the plugin.
  * @note The title parameter is not displayed to the client and is only used for
  *       identifying menus internally and assigning them to their callbacks.
  *       The title corresponds to the menu name that you register with
- *       register_menuid().
+ *       register_menuid()
  *
  * @param index     Client to display menu to, use 0 to display to all clients
  * @param keys      Enabled keys
  * @param menu      Menu body
  * @param time      Menu timeout in seconds, -1 to disable
  * @param title     Name of the menu for internal tracking purposes
+ *
+ * @return          1 on success, 0 if menu could not be displayed (client not
+ *                  connected)
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
-native show_menu(index, keys, const menu[], time=-1, const title[]="");
+native show_menu(index, keys, const menu[], time = -1, const title[] = "");
 
 /**
  * Retrieves values from a client message.
  *
- * @note For use within callbacks registered with register_event().
+ * @note For use within callbacks registered with register_event()
  * @note Usage examples:
  *       value = read_data(1);
  *       read_data(2, floatvalue);
  *       written = read_data(3, buffer, buffersize);
  *
- *
  * @param value     Argument number to retrieve value from
- * @param ...       If 0 additional parameters are provided, the function
- *                  will return the argument value directly.
- *                  If 1 additional parameter is provided, the function will
- *                  store a float value in that second parameter.
- *                  If two additional parameters are provided, the function
- *                  will copy a string to the buffer provided in the second
- *                  parameter, using the third as the maximum buffer size.
+ * @param ...       Changes the native's behavior depending on how many
+ *                  additional parameters are provided:
+ *                     0 - Return the argument integer value directly
+ *                     1 - Store the argument float value in the variable passed
+ *                         as the second parameter
+ *                     2 - Copy the argument string value to the buffer provided
+ *                         in the second parameter, using the third as the
+ *                         maximum buffer size
  *
- * @return          If zero additional parameters are provided, the function
- *                  will return an integer value.
- *                  If one additional parameter is provided, the function will
- *                  return the float value, converted (truncated) to an integer.
- *                  If two additional parameters are provided, the function
- *                  will return the number of cells written to the buffer.
+ * @return          Changes depending on how many additional parameters are
+ *                  provided:
+ *                     0 - Returns the argument integer value
+ *                     1 - Returns the argument float value, converted
+ *                         (truncated) to an integer
+ *                     2 - Returns the number of cells written to the buffer
  */
 native read_data(value, any:...);
 
 /**
  * Returns the number of values in the client message.
  *
- * @note For use within callbacks registered with register_event().
+ * @note For use within callbacks registered with register_event()
  *
  * @return      Number of values in client message
  */
@@ -657,7 +763,7 @@ native read_datanum();
 /**
  * Returns the message id of the client message.
  *
- * @note For use within callbacks registered with register_event().
+ * @note For use within callbacks registered with register_event()
  *
  * @return      Message id of the client message
  */
@@ -666,47 +772,41 @@ native read_datatype();
 /**
  * Retrieves current log message.
  *
- * @note Can only be used inside of the plugin_log() forward.
+ * @note Should only be used inside of the plugin_log() forward.
  *
  * @param output    Buffer to copy log message to
  * @param len       Maximum buffer size
  *
  * @return          Number of cells written to buffer
- * @error           If called outside of the plugin_log() forward, an error is
- *                  thrown.
  */
 native read_logdata(output[], len);
 
 /**
  * Returns number of log message arguments.
  *
- * @note Can only be used inside of the plugin_log() forward.
+ * @note Should only be used inside of the plugin_log() forward.
  *
  * @return          Number of arguments in the log message
- * @error           If called outside of the plugin_log() forward, an error is
- *                  thrown.
  */
 native read_logargc();
 
 /**
  * Retrieves argument of log message.
  *
- * @note Can only be used inside of the plugin_log() forward.
+ * @note Should only be used inside of the plugin_log() forward.
  *
  * @param id        Argument index, starting from 0
  * @param output    Buffer to copy log argument to
  * @param len       Maximum buffer size
  *
  * @return          Number of cells written to buffer
- * @error           If called outside of the plugin_log() forward, an error is
- *                  thrown.
  */
 native read_logargv(id, output[], len);
 
 /**
  * Parse log data about client.
  *
- * @note When client actions are logged they appear in the the format
+ * @note When client actions are logged, they appear in the the format
  *       "Name<#userid><SteamID><teamname>", this native extracts the individual
  *       pieces of information.
  *
@@ -723,7 +823,7 @@ native read_logargv(id, output[], len);
  * @error           If the provided string is not valid client log data, an
  *                  error will be thrown.
  */
-native parse_loguser(const text[], name[], nlen, &userid=-2, authid[]="", alen=0, team[]="", tlen=0);
+native parse_loguser(const text[], name[], nlen, &userid =-2, authid[] = "", alen = 0, team[] = "", tlen = 0);
 
 /**
  * Sends a message to the console of the server.
@@ -767,7 +867,7 @@ native is_user_hltv(index);
  *
  * @note This does not throw an error if the provided index is out of the
  *       1 to MaxClients range. That means you can safely use this native
- *       without manually verifying an index to be a valid client index.
+ *       without manually verifying that the index is a valid client index.
  *
  * @param index     Client index
  *
@@ -841,23 +941,22 @@ native get_amxx_verstring(buffer[], length);
  *       was attacked by a non-client entity.
  *
  * @param index     Client index
- * @param ...       Optionally a second byref parameter will be filled with the
- *                  attacker weapon, and a third byref parameter will be filled
- *                  with the hit place on the body.
+ * @param ...       If provided, the attacker weapon will be stored in an
+ *                  optional second parameter, and the body hit place will be
+ *                  stored in an optional third parameter
  *
  * @return          Attacker client index, a non-client entity or 0 if no
  *                  attacker was found
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients an error will be thrown.
+ *                  MaxClients, an error will be thrown.
  */
-
 native get_user_attacker(index, ...);
 
 /**
  * Traces the client's current aim vector to see if it hits something.
  *
  * @note If the trace does not hit a client, id and body will be set to 0.
- * @note If the trace hits nothing within the specified distance 0.0 is returned
+ * @note If the trace hits nothing within the specified distance, 0 is returned.
  *
  * @param index     Client index to trace aim from
  * @param id        Variable to store hit client index (if applicable)
@@ -866,14 +965,14 @@ native get_user_attacker(index, ...);
  *
  * @return          Distance between the trace start and end point
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients an error will be thrown.
+ *                  MaxClients, an error will be thrown.
  */
-native Float:get_user_aiming(index, &id, &body, dist=9999);
+native Float:get_user_aiming(index, &id, &body, dist = 9999);
 
 /**
  * Returns the client's frags.
  *
- * @note While this is mod-independent the mod may track frag count differently
+ * @note While this is mod-independent, the mod may track frag count differently,
  *       so it can only be retrieved using another native or other methods.
  * @note This will actually return the client's overall score, which may or may
  *       not be equal to their scored frags depending on the mod.
@@ -889,7 +988,7 @@ native get_user_frags(index);
 /**
  * Returns the client's armor value.
  *
- * @note While this is mod-independent the mod may track armor data differently
+ * @note While this is mod-independent, the mod may track armor data differently,
  *       so it can only be retrieved using another native or other methods.
  *
  * @param index     Client index
@@ -903,7 +1002,7 @@ native get_user_armor(index);
 /**
  * Returns the client's death count.
  *
- * @note While this is mod-independent the mod may track death count differently
+ * @note While this is mod-independent, the mod may track death count differently,
  *       so it can only be retrieved using another native or other methods.
  *
  * @param index     Client index
@@ -917,8 +1016,8 @@ native get_user_deaths(index);
 /**
  * Returns the client's health points.
  *
- * @note While this is mod-independent the mod may track health points
- *       differently so it can only be retrieved using another native or other
+ * @note While this is mod-independent, the mod may track health points
+ *       differently, so it can only be retrieved using another native or other
  *       methods.
  *
  * @param index     Client index
@@ -948,7 +1047,7 @@ native get_user_index(const name[]);
  *
  * @return                  Number of cells written to the buffer
  */
-native get_user_ip(index, ip[], len, without_port=0);
+native get_user_ip(index, ip[], len, without_port = 0);
 
 /**
  * Returns if the client has the specified weapon in their inventory.
@@ -960,9 +1059,9 @@ native get_user_ip(index, ip[], len, without_port=0);
  *
  * @return              1 if the weapon is present, 0 if it is not
  * @error               If the client index is not within the range of 1 to
- *                      MaxClients an error will be thrown.
+ *                      MaxClients, an error will be thrown.
  */
-native user_has_weapon(index, weapon, setweapon=-1);
+native user_has_weapon(index, weapon, setweapon = -1);
 
 /**
  * Returns weapon index of the currently carried weapon. Also allows retrieval
@@ -972,11 +1071,11 @@ native user_has_weapon(index, weapon, setweapon=-1);
  * @param clip      Optional variable to store clip ammo to
  * @param ammo      Optional variable to store backpack ammo to
  *
- * @return          Weapon index on success, or 0 if the client is not connected
+ * @return          Weapon index on success or 0 if the client is not connected
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients an error will be thrown.
+ *                  MaxClients, an error will be thrown.
  */
-native get_user_weapon(index, &clip=0, &ammo=0);
+native get_user_weapon(index, &clip = 0, &ammo = 0);
 
 /**
  * Retrieves ammo in the clip and backpack of the specified weapon.
@@ -986,9 +1085,9 @@ native get_user_weapon(index, &clip=0, &ammo=0);
  * @param clip      Variable to store clip ammo to
  * @param ammo      Variable to store backpack ammo to
  *
- * @return          1 on success, or 0 if the client is not connected
+ * @return          1 on success or 0 if the client is not connected
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients, or the weapon index is invalid, an error will
+ *                  MaxClients or the weapon index is invalid, an error will
  *                  be thrown.
  */
 native get_user_ammo(index, weapon, &clip, &ammo);
@@ -998,8 +1097,8 @@ native get_user_ammo(index, weapon, &clip, &ammo);
  *
  * @note The conversion algorithm is limited to a certain range of numbers, but
  *       is guaranteed to work correctly for all numbers from 0 to 999. Outside
- *       of that range the conversion will result in an incorrect string, but
- *       not fail.
+ *       of that range, the conversion will result in an incorrect string, but
+ *       will not fail.
  * @note The conversion is to english text, there is no way to change this.
  *
  * @param num       Integer to convert
@@ -1019,31 +1118,31 @@ native num_to_word(num, output[], len);
  * @param len       Maximum size of buffer
  *
  * @return          Team index on success, -1 if client index is invalid or
- *                  the client is not connected.
+ *                  the client is not connected
  */
-native get_user_team(index, team[]="", len=0);
+native get_user_team(index, team[] = "", len = 0);
 
 /**
  * Returns client's playing time in seconds.
  *
  * @param index     Client index
- * @param flag      If nonzero the result will not include the time it took
+ * @param flag      If nonzero, the result will not include the time it took
  *                  the client to connect.
  *
  * @return          Connection time in seconds, 0 if client index is invalid or
  *                  client is not connected
  */
-native get_user_time(index, flag=0);
+native get_user_time(index, flag = 0);
 
 /**
  * Retrieves the ping and loss of a client.
  *
  * @param index     Client index
  * @param ping      Variable to store ping in
- * @param loss      Variable to sote loss in
+ * @param loss      Variable to store loss in
  *
  * @return          1 on success, 0 if client index is invalid or the client
- *                  is not connected.
+ *                  is not connected
  */
 native get_user_ping(index, &ping, &loss);
 
@@ -1059,17 +1158,17 @@ native get_user_ping(index, &ping, &loss);
  *                    3 - aim end position from eyes (hit point for weapon)
  *                    4 - position of last bullet hit (only for Counter-Strike)
  *
- * @return          1 on succes, 0 if client is not connected
+ * @return          1 on success, 0 if client is not connected
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients an error will be thrown.
+ *                  MaxClients, an error will be thrown.
  */
-native get_user_origin(index, origin[3], mode=0);
+native get_user_origin(index, origin[3], mode = 0);
 
 /**
- * Retrieves all weapons in the client inventory, stores them in an array and
+ * Retrieves all weapons in the client inventory, stores them in an array, and
  * returns the inventory as a bitflag sum.
  *
- * @note Make sure that num has an initial value of 0, or the native will not
+ * @note Make sure that num has an initial value of 0 or the native will not
  *       work correctly.
  *
  * @param index     Client index
@@ -1078,7 +1177,7 @@ native get_user_origin(index, origin[3], mode=0);
  *
  * @return          Bitflag sum of weapon indexes, 0 if client is not connected
  * @error           If the client index is not within the range of 1 to
- *                  MaxClients an error will be thrown.
+ *                  MaxClients, an error will be thrown.
  */
 native get_user_weapons(index, weapons[32], &num);
 
@@ -1088,6 +1187,8 @@ native get_user_weapons(index, weapons[32], &num);
  * @param id        Weapon index
  * @param weapon    Buffer to copy name to
  * @param len       Maximum buffer size
+ *
+ * @return          Number of cells written to buffer
  */
 native get_weaponname(id, weapon[], len);
 
@@ -1122,7 +1223,7 @@ native get_user_authid(index, authid[], len);
  * @param index     Client index
  *
  * @return          Client userid, 0 if the userid is not available or the
- *                  client index is invalid.
+ *                  client index is invalid
  */
 native get_user_userid(index);
 
@@ -1135,23 +1236,25 @@ native get_user_userid(index);
  *       of the slap power. The slap direction can be influenced by the third
  *       parameter.
  *
- * @param index     Client idex
+ * @param index     Client index
  * @param power     Power of the slap
  * @param rnddir    If set to zero the player will be slapped along it's aim
- *                  vector. If nonzero the direction will be randomized.
+ *                  vector, otherwise the direction will be randomized
+ *
+ * @return          1 if user is alive and slap succeeded, 0 otherwise
  */
-native user_slap(index, power, rnddir=1);
+native user_slap(index, power, rnddir = 1);
 
 /**
  * Kills a client.
  *
  * @param index     Client index
- * @param flag      If nonzero the death will not affect the client's score
+ * @param flag      If nonzero, the death will not affect the client's score
  *
  * @return          1 on success, 0 if client index is invalid or the client
- *                  is not connected.
+ *                  is not connected
  */
-native user_kill(index, flag=0);
+native user_kill(index, flag = 0);
 
 /**
  * Logs a message to the current AMXX log file.
@@ -1197,7 +1300,7 @@ native log_to_file(const file[], const message[], any:...);
  *
  * @return          Number of clients on the server
  */
-native get_playersnum(flag=0);
+native get_playersnum(flag = 0);
 
 /**
  * Stores a filtered list of client indexes to an array.
@@ -1220,7 +1323,7 @@ native get_playersnum(flag=0);
  *
  * @noreturn
  */
-native get_players(players[32], &num, const flags[]="", const team[]="");
+native get_players(players[MAX_PLAYERS], &num, const flags[] = "", const team[] = "");
 
 /**
  * Retrieves argument of client command.
@@ -1252,7 +1355,7 @@ native read_args(output[], len);
  *
  * @note Should only be used inside of the client_command() forward.
  * @note This count includes the command itself. I.e. in a command with 4
- *       arguments this will return 5.
+ *       arguments, this will return 5.
  *
  * @return          Number of arguments in the command
  */
@@ -1261,7 +1364,7 @@ native read_argc();
 /**
  * Converts a flag string to a bitflag value.
  *
- * @note Example: The string "abcd" represents the sum of 1, 2, 4 and 8 - or
+ * @note Example: The string "abcd" represents the sum of 1, 2, 4, and 8 - or
  *       (1<<0)|(1<<1)|(1<<2)|(1<<3). The function will return 15.
  *
  * @param flags     Flag string to convert
@@ -1312,8 +1415,8 @@ native find_player(const flags[], ...);
 /**
  * Removes double-quotes from the beginning and end of a string.
  *
- * @note If the string only has a double-quote at either the start *or* the end
- *       and not both the function will do nothing.
+ * @note If the string only has a double-quote at either the start *or* the end,
+ *       and not both, the function will do nothing.
  * @note The function does not perform any trimming per-se. But if a
  *       double-quote is found at the beginning of the string, it will remove
  *       one ^r (carriage return) character at the end of the string if present,
@@ -1337,9 +1440,9 @@ native remove_quotes(text[]);
  * @param command   Formatting rules
  * @param ...       Variable number of formatting parameters
  *
- * @return          Lenght of formatted command string
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @return          Length of formatted command string
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native client_cmd(index, const command[], any:...);
 
@@ -1350,20 +1453,20 @@ native client_cmd(index, const command[], any:...);
  * @note This emulates a client command on the server side, and is an excellent
  *       tool to force a client to do certain actions related to the game.
  * @note The command has to stand alone in the command parameter, only add
- *       arguments using the designated paramters.
+ *       arguments using the designated parameters.
  * @note Commands emulated using this function will not trigger plugin command
- *       hooks. For an alternative that does, see amxclient_cmd().
+ *       hooks. For an alternative that does, see amxclient_cmd()
  *
- * @param index         Client index, use 0 to execute from all clients.
+ * @param index         Client index, use 0 to execute from all clients
  * @param command       Client command to execute on
  * @param arg1          Optional command arguments
  * @param arg2          Optional command arguments
  *
  * @noreturn
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
-native engclient_cmd(index, const command[], const arg1[]="", const arg2[]="");
+native engclient_cmd(index, const command[], const arg1[] = "", const arg2[] = "");
 
 /**
  * Execute a command from the client without actually sending it to the client's
@@ -1372,20 +1475,20 @@ native engclient_cmd(index, const command[], const arg1[]="", const arg2[]="");
  * @note This emulates a client command on the server side, and is an excellent
  *       tool to force a client to do certain actions related to the game.
  * @note The command has to stand alone in the command parameter, only add
- *       arguments using the designated paramters.
+ *       arguments using the designated parameters.
  * @note Commands emulated using this function will trigger other plugin's
- *       command hooks. For an alternative that doesn't, see engclient_cmd().
+ *       command hooks. For an alternative that doesn't, see engclient_cmd()
  *
- * @param index         Client index, use 0 to execute from all clients.
+ * @param index         Client index, use 0 to execute from all clients
  * @param command       Client command to execute on
  * @param arg1          Optional command arguments
  * @param arg2          Optional command arguments
  *
  * @noreturn
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
-native amxclient_cmd(index, const command[], const arg1[]="", const arg2[]="");
+native amxclient_cmd(index, const command[], const arg1[] = "", const arg2[] = "");
 
 /**
  * Queues a command to be executed from the server console.
@@ -1394,7 +1497,7 @@ native amxclient_cmd(index, const command[], const arg1[]="", const arg2[]="");
  *       client-controlled input (including client names) to this function
  *       without sanitizing it first.
  * @note The queued commands will be executed by the engine on the next frame.
- *       If you require them to be executed immediately, see server_exec().
+ *       If you require them to be executed immediately, see server_exec()
  *
  * @param command   Formatting rules
  * @param ...       Variable number of formatting parameters
@@ -1402,159 +1505,6 @@ native amxclient_cmd(index, const command[], const arg1[]="", const arg2[]="");
  * @noreturn
  */
 native server_cmd(const command[], any:...);
-
-/**
- * Sets a cvar to a given string value. The cvar is accessed by name.
- *
- * @note Accessing a cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the set_pcvar_string function.
- *
- * @param cvar      Cvar name to set value of
- * @param value     Value to set cvar to
- *
- * @noreturn
- */
-native set_cvar_string(const cvar[], const value[]);
-
-/**
- * Returns if a cvar is registered on the server.
- *
- * @param cvar      Cvar name to check
- *
- * @return          1 if the cvar exists, 0 otherwise
- */
-native cvar_exists(const cvar[]);
-
-/**
- * Removes specified flags from a cvar. The cvar is accessed by name.
- *
- * @note Not permitted for the "amx_version", "amxmodx_version", "fun_version"
- *       and "sv_cheats" cvars.
- * @note For a list of possible flags see the FCVAR_* constants in amxconst.inc
- * @note This function removes the flags using a bitwise-and operation.
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the set_pcvar_flags function.
- *
- *
- * @param cvar      Cvar name to remove flags from
- * @param flags     Bitflag sum of flags to remove
- *
- * @return          1 on success, 0 if cvar does not exist or is not permitted
- */
-native remove_cvar_flags(const cvar[], flags=-1);
-
-/**
- * Sets specified flags to a cvar. The cvar is accessed by name.
- *
- * @note Not permitted for the "amx_version", "amxmodx_version", "fun_version"
- *       and "sv_cheats" cvars.
- * @note For a list of possible flags see the FCVAR_* constants in amxconst.inc
- * @note This function just adds the flags using a bitwise-or operation. After
- *       it has run the flags may not exactly equal the specified bitflag sum.
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the set_pcvar_flags function.
- *
- * @param cvar      Cvar name to remove flags from
- * @param flags     Bitflag sum of flags to set
- *
- * @return          1 on success, 0 if cvar does not exist or is not permitted
- */
-native set_cvar_flags(const cvar[], flags);
-
-/**
- * Returns flags of a cvar. The cvar is accessed by name.
- *
- * @note For a list of possible flags see the FCVAR_* constants in amxconst.inc
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the get_pcvar_flags function.
- *
- * @param cvar      Cvar name to retrieve flags from
- *
- * @return          1 on success, 0 if cvar does not exist or is not permitted
- */
-native get_cvar_flags(const cvar[]);
-
-/**
- * Sets a cvar to a given float value. The cvar is accessed by name.
- *
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the set_pcvar_float function.
- *
- * @param cvar      Cvar name to set value of
- * @param value     Value to set cvar to
- *
- * @noreturn
- */
-native set_cvar_float(const cvar[], Float:value);
-
-/**
- * Returns a floating value from a cvar. The cvar is accessed by name.
- *
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the get_pcvar_float function.
- *
- * @param cvarname  Cvar name to retrieve value from
- *
- * @return          Cvar value, converted to float
- */
-native Float:get_cvar_float(const cvarname[]);
-
-/**
- * Returns an integer value from a cvar. The cvar is accessed by name.
- *
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the get_pcvar_num function.
- *
- * @param cvarname  Cvar name to retrieve value from
- *
- * @return          Cvar value, converted to int
- */
-native get_cvar_num(const cvarname[]);
-
-/**
- * Sets a cvar to a given integer value. The cvar is accessed by name.
- *
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the set_pcvar_num function.
- *
- * @param cvar      Cvar name to set value of
- * @param value     Value to set cvar to
- *
- * @noreturn
- */
-native set_cvar_num(const cvarname[], value);
-
-/**
- * Gets a string value from a cvar. The cvar is accessed by name.
- *
- * @note Accessing a Cvar by name requires this function to walk through the
- *       engine's cvar list every time, which can result in a considerable waste
- *       of processing time, especially if many cvars have been registered. For
- *       a vastly superior alternative look at the get_pcvar_string function.
- *
- * @param cvar      Cvar name to retrieve value from
- * @param output    Buffer to copy cvar value to
- * @param iLen      Maximum size of the buffer
- *
- * @return          Number of cells written to buffer.
- */
-native get_cvar_string(const cvarname[], output[], iLen);
 
 /**
  * Retrieves the name of the currently played map.
@@ -1588,7 +1538,7 @@ native Float:get_gametime();
  * Returns the maxplayers setting of the current server, that is how many
  * clients it supports.
  *
- * @note As of AMXX 1.8.3 this value is also exposed through a dynamic constant
+ * @note As of AMXX 1.8.3, this value is also exposed through a dynamic constant
  *       via the MaxClients variable, declared in amxconst.inc
  *
  * @return      Maxplayers setting
@@ -1598,7 +1548,7 @@ native get_maxplayers();
 /**
  * Retrieves the name of the currently played mod.
  *
- * @note This retrieves the short name of the mod. Example: for Counter-Strike
+ * @note This retrieves the short name of the mod. Example: for Counter-Strike,
  *       it will copy "cstrike" to the buffer.
  *
  * @param name      Buffer to copy mod name to
@@ -1624,7 +1574,7 @@ native get_modname(name[], len);
 native get_time(const format[], output[], len);
 
 /**
- * Retrieves the provided time using using the specified format string.
+ * Retrieves the provided time using the specified format string.
  *
  * @note Uses the strftime C function. For a list of valid format parameters,
  *       see: http://cplusplus.com/reference/clibrary/ctime/strftime.html
@@ -1636,23 +1586,22 @@ native get_time(const format[], output[], len);
  * @param time      Unix timestamp, use -1 to use the current time
  *
  * @return          Number of cells written to buffer
- * @error           If the conversion process fails, an error will be thrown
+ * @error           If the conversion process fails, an error will be thrown.
  */
-native format_time(output[], len, const format[], time=-1);
+native format_time(output[], len, const format[], time = -1);
 
 /**
  * Returns the system time as a unix timestamp (number of seconds since unix
- * epoch)
+ * epoch).
  *
  * @param offset    Optional offset value in seconds
  *
  * @return          Unix time stamp
- * @error
  */
-native get_systime(offset=0);
+native get_systime(offset = 0);
 
 /**
- * Converts time string to unix time stamp.
+ * Converts time strings to unix time stamp.
  *
  * @note Uses the strptime C function. For a list of valid format parameters,
  *       see: http://www.cplusplus.com/reference/ctime/strftime/
@@ -1663,13 +1612,13 @@ native get_systime(offset=0);
  *
  * @param input     Time string to convert
  * @param format    Formatting information for conversion
- * @param time      If different from -1 the converted time will be added to
- *                  this time stamp.
+ * @param time      If different from -1, the converted time will be added to
+ *                  this time stamp
  *
  * @return          Unix time stamp
- * @error           If the conversion process fails, an error will be thrown
+ * @error           If the conversion process fails, an error will be thrown.
  */
-native parse_time(const input[], const format[], time=-1);
+native parse_time(const input[], const format[], time = -1);
 
 /**
  * Calls a function after a specified time has elapsed.
@@ -1686,10 +1635,14 @@ native parse_time(const input[], const format[], time=-1);
  *                              map start
  *                        "d" - time interval is treated as absolute time before
  *                              map change
- * @param repeat        If the "a" flag is set the task will be repeated this
+ * @param repeat        If the "a" flag is set, the task will be repeated this
  *                      many times
+ *
+ * @noreturn
+ * @error               If an invalid callback function is provided, an error is
+ *                      thrown.
  */
-native set_task(Float:time, const function[], id=0, const parameter[]="", len=0, const flags[]="", repeat=0);
+native set_task(Float:time, const function[], id = 0, const any:parameter[] = "", len = 0, const flags[] = "", repeat = 0);
 
 /**
  * Removes all tasks with the specified id.
@@ -1699,7 +1652,7 @@ native set_task(Float:time, const function[], id=0, const parameter[]="", len=0,
  *
  * @return          Number of removed tasks
  */
-native remove_task(id=0, outside=0);
+native remove_task(id = 0, outside = 0);
 
 /**
  * Modifies the time interval of all tasks with the specified id.
@@ -1710,7 +1663,7 @@ native remove_task(id=0, outside=0);
  *
  * @return          Number of affected tasks
  */
-native change_task(id=0, Float:newTime=1.0, outside=0);
+native change_task(id = 0, Float:newTime = 1.0, outside = 0);
 
 /**
  * Returns if a task with the specified id exists.
@@ -1720,14 +1673,14 @@ native change_task(id=0, Float:newTime=1.0, outside=0);
  *
  * @return          1 if a task was found, 0 otherwise
  */
-native task_exists(id=0, outside=0);
+native task_exists(id = 0, outside = 0);
 
 /**
  * Sets the specified admin flags to a client.
  *
- * @note For a list of possible flags see the ADMIN_* constants in amxconst.inc
+ * @note For a list of possible flags, see the ADMIN_* constants in amxconst.inc
  * @note This function just adds the flags using a bitwise-or operation. After it
- *       has run the flags may not exactly equal the specified bitflag sum.
+ *       has run, the flags may not exactly equal the specified bitflag sum.
  * @note AMXX stores multiple sets of flags internally, but only flag set
  *       0 is actively used. You should not change the value of the third
  *       parameter from the default.
@@ -1740,12 +1693,12 @@ native task_exists(id=0, outside=0);
  * @error           If the index is not within the range of 0 to MaxClients, an
  *                  error will be thrown.
  */
-native set_user_flags(index, flags=-1, id=0);
+native set_user_flags(index, flags = -1, id = 0);
 
 /**
  * Returns the client's admin flags as a bitflag sum.
  *
- * @note For a list of possible flags see the ADMIN_* constants in amxconst.inc
+ * @note For a list of possible flags, see the ADMIN_* constants in amxconst.inc
  * @note AMXX stores multiple sets of flags internally, but only flag set
  *       0 is actively used. You should not change the value of the second
  *       parameter from the default.
@@ -1757,12 +1710,12 @@ native set_user_flags(index, flags=-1, id=0);
  * @error           If the index is not within the range of 0 to MaxClients, an
  *                  error will be thrown.
  */
-native get_user_flags(index, id=0);
+native get_user_flags(index, id = 0);
 
 /**
  * Removes the specified admin flags from a client.
  *
- * @note For a list of possible flags see the ADMIN_* constants in amxconst.inc
+ * @note For a list of possible flags, see the ADMIN_* constants in amxconst.inc
  * @note This function just removes the flags using a bitwise-and operation.
  * @note AMXX stores multiple sets of flags internally, but only flag set
  *       0 is actively used. You should not change the value of the third
@@ -1776,13 +1729,13 @@ native get_user_flags(index, id=0);
  * @error           If the index is not within the range of 0 to MaxClients, an
  *                  error will be thrown.
  */
-native remove_user_flags(index, flags=-1, id=0);
+native remove_user_flags(index, flags = -1, id = 0);
 
 /**
  * Registers a callback to be called when the client executes a command from the
  * console.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  * @note Opting in to FlagManager enables the admin privileges to be overwritten
  *       by the end user via the cmdaccess.ini config file.
@@ -1801,13 +1754,13 @@ native remove_user_flags(index, flags=-1, id=0);
  * @error               If an invalid callback function is specified, an error
  *                      will be thrown.
  */
-native register_clcmd(const client_cmd[], const function[], flags=-1, const info[]="", FlagManager=-1);
+native register_clcmd(const client_cmd[], const function[], flags = -1, const info[] = "", FlagManager = -1);
 
 /**
  * Registers a callback to be called when the client or server executes a
  * command from the console.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  * @note Opting in to FlagManager enables the admin privileges to be overwritten
  *       by the end user via the cmdaccess.ini config file.
@@ -1826,13 +1779,13 @@ native register_clcmd(const client_cmd[], const function[], flags=-1, const info
  * @error               If an invalid callback function is specified, an error
  *                      will be thrown.
  */
-native register_concmd(const cmd[], const function[], flags=-1, const info[]="", FlagManager=-1);
+native register_concmd(const cmd[], const function[], flags = -1, const info[] = "", FlagManager = -1);
 
 /**
  * Registers a callback to be called when the server executes a command from the
  * console.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param client_cmd    Command to register
@@ -1844,12 +1797,12 @@ native register_concmd(const cmd[], const function[], flags=-1, const info[]="",
  * @error               If an invalid callback function is specified, an error
  *                      will be thrown.
  */
-native register_srvcmd(const server_cmd[], const function[], flags=-1, const info[]="");
+native register_srvcmd(const server_cmd[], const function[], flags = -1, const info[] = "");
 
 /**
  * Retrieves information about a client command.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param index     Command index
@@ -1859,29 +1812,29 @@ native register_srvcmd(const server_cmd[], const function[], flags=-1, const inf
  * @param info      Buffer to copy command description to
  * @param len2      Maximum description buffer size
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  *
- * @return          1 on succes, 0 if command was not found
+ * @return          1 on success, 0 if command was not found
  */
 native get_clcmd(index, command[], len1, &flags, info[], len2, flag);
 
 /**
  * Returns number of registered client commands.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  *
- * @return          Number of registered client commants
+ * @return          Number of registered client commands
  */
 native get_clcmdsnum(flag);
 
 /**
  * Retrieves information about a server command.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param index     Command index
@@ -1891,29 +1844,29 @@ native get_clcmdsnum(flag);
  * @param info      Buffer to copy command description to
  * @param len2      Maximum description buffer size
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  *
- * @return          1 on succes, 0 if command was not found
+ * @return          1 on success, 0 if command was not found
  */
 native get_srvcmd(index, server_cmd[], len1, &flags, info[], len2, flag);
 
 /**
  * Returns number of registered server commands.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  *
- * @return          Number of registered server commants
+ * @return          Number of registered server commands
  */
 native get_srvcmdsnum(flag);
 
 /**
  * Retrieves information about a console command.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param index     Command index
@@ -1923,19 +1876,19 @@ native get_srvcmdsnum(flag);
  * @param info      Buffer to copy command description to
  * @param len2      Maximum description buffer size
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  * @param id        If set to 0 only server commands will be considered,
  *                  positive will only consider client commands, otherwise
- *                  all console commands will be considered.
+ *                  all console commands will be considered
  *
- * @return          1 on succes, 0 if command was not found
+ * @return          1 on success, 0 if command was not found
  */
-native get_concmd(index, cmd[], len1, &flags, info[], len2, flag, id=-1);
+native get_concmd(index, cmd[], len1, &flags, info[], len2, flag, id = -1);
 
 /**
- * Returns the parent plugin id of a console command
+ * Returns the parent plugin id of a console command.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param cid           Command index
@@ -1944,49 +1897,26 @@ native get_concmd(index, cmd[], len1, &flags, info[], len2, flag, id=-1);
  * @param id_type       If set to 0 only server commands will be considered,
  *                      positive will only consider client commands, otherwise
  *                      all console commands will be considered.
+ *
+ * @return              Plugin id
  */
 native get_concmd_plid(cid, flag_mask, id_type);
 
 /**
  * Returns number of registered console commands.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
  *
  * @param flag      Only considers commands that can be accessed with
- *                  the specified privilege flags.
+ *                  the specified privilege flags
  * @param id        If set to 0 only server commands will be considered,
  *                  positive will only consider client commands, otherwise
- *                  all console commands will be considered.
+ *                  all console commands will be considered
  *
- * @return          Number of registered console commants
+ * @return          Number of registered console commands
  */
-native get_concmdsnum(flag, id=-1);
-
-/**
- * Returns the number of plugin-registered cvars.
- *
- * @return  Number of registered cvars
- */
-native get_plugins_cvarsnum();
-
-/**
- * Retrieves information about a plugin-registered cvar.
- *
- * @note The returned cvar pointer should be used with the get_pcvar_* and
- *       set_pcvar_* set of functions.
- *
- * @param num           Cvar index, this does not equal the cvar pointer, it is
- *                      the internal index, incremented for each registered cvar
- * @param name          Buffer to copy cvar name to
- * @param namelen       Maximum buffer size
- * @param flags         Variable to store cvar flags to
- * @param plugin_id     Variable to store id of the registering plugin to
- * @param pcvar_handle  Variable to store cvar pointer to
- *
- * @return              1 on success, 0 if index is invalid
- */
-native get_plugins_cvar(num, name[], namelen, &flags=0, &plugin_id=0, &pcvar_handle=0);
+native get_concmdsnum(flag, id = -1);
 
 /**
  * Returns unique menu id of a menu.
@@ -1996,7 +1926,7 @@ native get_plugins_cvar(num, name[], namelen, &flags=0, &plugin_id=0, &pcvar_han
  *
  * @return          Menu id
  */
-native register_menuid(const menu[], outside=0);
+native register_menuid(const menu[], outside = 0);
 
 /**
  * Registers a callback function to a menu id and keys.
@@ -2014,8 +1944,8 @@ native register_menucmd(menuid, keys, const function[]);
 /**
  * Returns if the client is watching a menu.
  *
- * @note If there is no menu the id is 0. If the id is negative then the client
- *       views a VGUI menu. Otherwise the id is an id acquired from the
+ * @note If there is no menu, the id is 0. If the id is negative, then the client
+ *       views a VGUI menu. Otherwise, the id is an id acquired from the
  *       register_menuid() function.
  *
  * @param index     Client index
@@ -2031,7 +1961,7 @@ native get_user_menu(index, &id, &keys);
 /**
  * Forces the server to execute the command queue immediately.
  *
- * @note Commands can be added to the queue using server_cmd().
+ * @note Commands can be added to the queue using server_cmd()
  *
  * @noreturn
  */
@@ -2042,7 +1972,7 @@ native server_exec();
  *
  * @note The sample must be precached using precache_sound() so it is available
  *       in the engine's sound table.
- * @note For a list of available channels see CHAN_* constants in amxconst.inc,
+ * @note For a list of available channels, see CHAN_* constants in amxconst.inc,
  *       sounds emitted from the same channel will override each other.
  * @note There are helpful reference constants in amxconst.inc for sound volume
  *       (VOL_*), attenuation (ATTN_*), flags (SND_*), and pitch (PITCH_*).
@@ -2054,25 +1984,10 @@ native server_exec();
  * @param att       Sound attenuation
  * @param flags     Emit flags
  * @param pitch     Sound pitch
+ *
+ * @noreturn
  */
 native emit_sound(index, channel, const sample[], Float:vol, Float:att, flags, pitch);
-
-/**
- * Registers a new cvar for the engine.
- *
- * @note For a list of possible cvar flags see FCVAR_* constants in amxconst.inc
- * @note If an already existing cvar is registered it will not be duplicated.
- * @note The returned cvar pointer should be used with the get_pcvar_* and
- *       set_pcvar_* set of functions.
- *
- * @param name      Cvar name
- * @param string    Default cvar value
- * @param flags     Cvar flags
- * @param fvalue    Unused
- *
- * @return          Unique cvar pointer
- */
-native register_cvar(const name[], const string[], flags=0, Float:fvalue=0.0);
 
 /**
  * Returns a random floating point value generated by the engine.
@@ -2095,7 +2010,7 @@ native Float:random_float(Float:a, Float:b);
 native random_num(a, b);
 
 /**
- * Returns unique id of a client message
+ * Returns unique id of a client message.
  *
  * @note Example usage: get_user_msgid("TextMsg")
  * @note The message id is unique as long as the server is running, but might
@@ -2123,7 +2038,7 @@ native get_user_msgname(msgid, name[], len);
  *
  * @note Variables declared with the "public" specifier are accessible by-name
  *       from outside of the declaring plugin.
- * @note If multiple plugins declare the same public variable this native will
+ * @note If multiple plugins declare the same public variable, this native will
  *       still return a unique id.
  *
  * @param name      Variable name
@@ -2144,7 +2059,7 @@ native xvar_exists(const name[]);
 /**
  * Returns the integer value of a public variable.
  *
- * @note If multiple plugins declare the same public variable they are not
+ * @note If multiple plugins declare the same public variable, they are not
  *       automatically synchronized. The xvar system accesses only one of all
  *       public variables directly. Xvars have to be read through the natives or
  *       the value will be incorrect.
@@ -2158,7 +2073,7 @@ native get_xvar_num(id);
 /**
  * Returns the float value of a public variable.
  *
- * @note If multiple plugins declare the same public variable they are not
+ * @note If multiple plugins declare the same public variable, they are not
  *       automatically synchronized. The xvar system accesses only one of all
  *       public variables directly. Xvars have to be read through the natives or
  *       the value will be incorrect.
@@ -2172,7 +2087,7 @@ native Float:get_xvar_float(id);
 /**
  * Sets the integer value of a public variable.
  *
- * @note If multiple plugins declare the same public variable they are not
+ * @note If multiple plugins declare the same public variable, they are not
  *       automatically synchronized. The xvar system accesses only one of all
  *       public variables directly. Xvars have to be set through the natives or
  *       the xvar will not be updated.
@@ -2181,14 +2096,14 @@ native Float:get_xvar_float(id);
  * @param value     Value to set
  *
  * @noreturn
- * @error           If an invalid xvar id is specified an error will be thrown.
+ * @error           If an invalid xvar id is specified, an error will be thrown.
  */
-native set_xvar_num(id, value=0);
+native set_xvar_num(id, value = 0);
 
 /**
  * Sets the float value of a public variable.
  *
- * @note If multiple plugins declare the same public variable they are not
+ * @note If multiple plugins declare the same public variable, they are not
  *       automatically synchronized. The xvar system accesses only one of all
  *       public variables directly. Xvars have to be set through the natives or
  *       the xvar will not be updated.
@@ -2197,9 +2112,9 @@ native set_xvar_num(id, value=0);
  * @param value     Value to set
  *
  * @noreturn
- * @error           If an invalid xvar id is specified an error will be thrown.
+ * @error           If an invalid xvar id is specified, an error will be thrown.
  */
-native set_xvar_float(id, Float:value=0.0);
+native set_xvar_float(id, Float:value = 0.0);
 
 /**
  * Returns if a module is loaded.
@@ -2213,7 +2128,7 @@ native is_module_loaded(const name[]);
 /**
  * Retrieves info about a module by module index.
  *
- * @note For a list of possible status flags see module_* constants in
+ * @note For a list of possible status flags, see module_* constants in
  *       amxconst.inc
  *
  * @param id            Module id
@@ -2225,7 +2140,7 @@ native is_module_loaded(const name[]);
  * @param versionLen    Maximum version buffer size
  * @param status        Variable to store module status to
  *
- * @return              Module id on succes, -1 on invalid module
+ * @return              Module id on success, -1 on invalid module
  */
 native get_module(id, name[], nameLen, author[], authorLen, version[], versionLen, &status);
 
@@ -2239,11 +2154,11 @@ native get_modulesnum();
 /**
  * Returns if a plugin is loaded by registered name or filename.
  *
- * @note An example for a registered name would be "Admin Base" while a possible
- *       filename would be "admin.amxx"
- * @note Prior to AMXX 1.80 this function would only search for plugins
+ * @note An example for a registered name would be "Admin Base", while a possible
+ *       filename would be "admin.amxx".
+ * @note Prior to AMXX 1.80, this function would only search for plugins
  *       registered names, not the filename.
- * @note The plugin name matching is case insensitive while the filename
+ * @note The plugin name matching is case insensitive, while the filename
  *       matching is case sensitive.
  *
  * @param name          Plugin name or filename
@@ -2252,7 +2167,7 @@ native get_modulesnum();
  *
  * @return              Plugin id of the matching plugin, -1 otherwise
  */
-native is_plugin_loaded(const name[], bool:usefilename=false);
+native is_plugin_loaded(const name[], bool:usefilename = false);
 
 /**
  * Retrieves info about a plugin by plugin index.
@@ -2273,7 +2188,7 @@ native is_plugin_loaded(const name[], bool:usefilename=false);
  * @return          Plugin index on success, -1 if there is no plugin with given
  *                  index
  */
-native get_plugin(index, filename[]="", len1=0, name[]="", len2=0, version[]="", len3=0, author[]="", len4=0, status[]="", len5=0, ...);
+native get_plugin(index, filename[] = "", len1 = 0, name[] = "", len2 = 0, version[] = "", len3 = 0, author[] = "", len4 = 0, status[] = "", len5 = 0, ...);
 
 /**
  * Returns the number of loaded AMXX plugins.
@@ -2285,7 +2200,7 @@ native get_pluginsnum();
 /**
  * Pauses a plugin so it will not be executed until it is unpaused.
  *
- * @note This used to be able to pause specific functions but this functionality
+ * @note This used to be able to pause specific functions, but this functionality
  *       (along with the flags "b" and "e") has been deprecated.
  * @note If used without flag "c" this will pause the calling plugin.
  *
@@ -2300,12 +2215,12 @@ native get_pluginsnum();
  * @error           If it is attempted to use the deprecated functionality,
  *                  an error is thrown.
  */
-native pause(const flag[], const param1[]="", const param2[]="");
+native pause(const flag[], const param1[] = "", const param2[] = "");
 
 /**
  * Unpauses a plugin so it will resume execution if it was previously paused.
  *
- * @note This used to be able to unpause specific functions but this
+ * @note This used to be able to unpause specific functions, but this
  *       functionality (along with the flags "b" and "e") has been deprecated.
  * @note Without specifying flag "c" this function will do nothing, as a plugin
  *       is incapable of unpausing itself. This is a relict of the deprecated
@@ -2321,7 +2236,7 @@ native pause(const flag[], const param1[]="", const param2[]="");
  * @error           If it is attempted to use the deprecated functionality,
  *                  an error is thrown.
  */
-native unpause(const flag[], const param1[]="", const param2[]="");
+native unpause(const flag[], const param1[] = "", const param2[] = "");
 
 /**
  * Initiates a function call to this or another plugin by function name.
@@ -2331,7 +2246,7 @@ native unpause(const flag[], const param1[]="", const param2[]="");
  *       will be executed only upon using callfunc_end()
  *
  * @param func      Function name
- * @param plugin    Plugin filename. If empty the calling plugin is targeted.
+ * @param plugin    Plugin filename, if empty the calling plugin is targeted
  *                  The filename has to be the full exact name (e.g. stats.amxx)
  *
  * @return           1 on success
@@ -2341,7 +2256,7 @@ native unpause(const flag[], const param1[]="", const param2[]="");
  * @error           If called while another callfunc has not yet been finished,
  *                  an error is thrown.
  */
-native callfunc_begin(const func[], const plugin[]="");
+native callfunc_begin(const func[], const plugin[] = "");
 
 /**
  * Initiates a function call to this or another plugin by function id.
@@ -2352,7 +2267,7 @@ native callfunc_begin(const func[], const plugin[]="");
  * @note The function id can be retrieved by get_func_id()
  *
  * @param func      Function id
- * @param plugin    Plugin filename. If empty the calling plugin is targeted.
+ * @param plugin    Plugin filename, if empty the calling plugin is targeted
  *                  The filename has to be the full exact name (e.g. stats.amxx)
  *
  * @return           1 on success
@@ -2361,19 +2276,19 @@ native callfunc_begin(const func[], const plugin[]="");
  * @error           If called while another callfunc has not yet been finished,
  *                  or the specified function is invalid, an error is thrown.
  */
-native callfunc_begin_i(func, plugin=-1);
+native callfunc_begin_i(func, plugin = -1);
 
 /**
  * Retrieves a functions id for use with callfunc_begin_i()
  *
  * @param funcName  Function name
- * @param pluginId  Plugin id. If -1 the calling plugin is targeted. The plugin
- *                  id can be retrieved using find_plugin_byfile()
+ * @param pluginId  Plugin id, if -1 the calling plugin is targeted
+ *                  The plugin id can be retrieved using find_plugin_byfile()
  *
  * @return          >0 Function id on success
  *                  -1 if plugin or function was not found
  */
-native get_func_id(const funcName[], pluginId=-1);
+native get_func_id(const funcName[], pluginId = -1);
 
 /**
  * Pushes an int value onto the current call.
@@ -2432,14 +2347,14 @@ native callfunc_push_floatrf(&Float:value);
  *       only kept for special backwards compatibility.
  *
  * @param VALUE     String to push
- * @param copyback  If true any changes made in the called function will be
- *                  copied back to the calling plugin.
+ * @param copyback  If true, any changes made in the called function will be
+ *                  copied back to the calling plugin
  *
  * @noreturn
  * @error           If called without initiating a callfunc, or the maximum
  *                  amount of parameters is reached, an error is thrown.
  */
-native callfunc_push_str(const VALUE[], bool:copyback=true);
+native callfunc_push_str(const VALUE[], bool:copyback = true);
 
 /**
  * Pushes an array onto the current call.
@@ -2449,14 +2364,14 @@ native callfunc_push_str(const VALUE[], bool:copyback=true);
  *
  * @param VALUE         Array to push
  * @param array_size    Size of the array
- * @param copyback      If true any changes made in the called function will be
- *                      copied back to the calling plugin.
+ * @param copyback      If true, any changes made in the called function will be
+ *                      copied back to the calling plugin
  *
  * @noreturn
  * @error           If called without initiating a callfunc, or the maximum
  *                  amount of parameters is reached, an error is thrown.
  */
-native callfunc_push_array(const VALUE[], array_size, bool:copyback=true);
+native callfunc_push_array(const VALUE[], array_size, bool:copyback = true);
 
 /**
  * Completes the call to a function.
@@ -2464,7 +2379,7 @@ native callfunc_push_array(const VALUE[], array_size, bool:copyback=true);
  * @return       1 on success
  *              -1 if the plugin was not found
  *              -2 if the function was not found
- * @error       If called without initiating a callfunc an error is thrown.
+ * @error       If called without initiating a callfunc, an error is thrown.
  */
 native callfunc_end();
 
@@ -2484,7 +2399,7 @@ forward inconsistent_file(id, const filename[], reason[64]);
  * Forces the clients and server to be running with the same version of a
  * specified file.
  *
- * @note For a list of possible enforcement types see the force_* constants
+ * @note For a list of possible enforcement types, see the force_* constants
  *       in amxconst.inc
  *
  * @param force_type    Enforcement type
@@ -2504,6 +2419,7 @@ native force_unmodified(force_type, const mins[3], const maxs[3], const filename
  *
  * @return              Number of cells written to the buffer (always 32)
  */
+#pragma deprecated Use hash_string() function. Also, see Hash_* constants.
 native md5(const szString[], md5buffer[34]);
 
 /**
@@ -2515,16 +2431,44 @@ native md5(const szString[], md5buffer[34]);
  * @return              Number of cells written to the buffer (always 32)
  * @error               If the file can not be opened, and error is thrown.
  */
+#pragma deprecated Use hash_file() function. Also, see Hash_* constants.
 native md5_file(const file[], md5buffer[34]);
+
+/**
+ * Generate a hash value (message digest)
+ *
+ * @param string        String to be hashed.
+ * @param type          Type of selected hashing algorithm. See Hash_* constants in amxconst.inc file.
+ * @param output        Output string to store hash in.
+ * @param outputSize    The maximum size of the output string to store hash in.
+ *
+ * @return              Number of written bytes.
+ */
+native hash_string(const string[], const HashType:type, output[], const outputSize);
+
+/**
+ * Generate a hash value using the contents of a given file
+ *
+ * @param fileName      Path of file to be hashed.
+ * @param type          Type of selected hashing algorithm. See Hash_* constants in amxconst.inc file.
+ * @param output        Output string to store hash in.
+ * @param outputSize    The maximum size of the output string to store hash in.
+ *
+ * @return              Number of written bytes.
+ * @error               If the file couldn't be opened, an error is thrown.
+ */
+native hash_file(const fileName[], const HashType:type, output[], const outputSize);
 
 /**
  * Returns the internal flags set on the plugin's state.
  *
- * @param hdr       If nonzero the function will return the pcode rather than
+ * @param hdr       If nonzero, the function will return the pcode rather than
  *                  state flags
  * @param plid      Plugin id, -1 to target calling plugin
+ *
+ * @return          Plugin flags
  */
-native plugin_flags(hdr=0, plid=-1);
+native plugin_flags(hdr = 0, plid = -1);
 
 /**
  * Allows plugins to declare module dependencies using require_module()
@@ -2539,7 +2483,7 @@ native plugin_flags(hdr=0, plid=-1);
 forward plugin_modules();
 
 /**
- * Adds a module dependency
+ * Adds a module dependency.
  *
  * @deprecated Module dependency has been automatically handled by the compiler
  *             since AMXX 1.50, released in 2005. This native has no effect.
@@ -2552,7 +2496,7 @@ native require_module(const module[]);
 /**
  * Returns if the server is 64 bit.
  *
- * @deprecated As a result of valve dropping support for 64bit binaries AMXX is
+ * @deprecated As a result of Valve dropping support for 64bit binaries, AMXX is
  *             also not shipping 64bit builds anymore. This native is basically
  *             guaranteed to return 0.
  *
@@ -2570,7 +2514,7 @@ native is_amd64_server();
  *
  * @return              Plugin id, -1 (INVALID_PLUGIN_ID) on failure
  */
-native find_plugin_byfile(const filename[], ignoreCase=1);
+native find_plugin_byfile(const filename[], ignoreCase = 1);
 
 /**
  * Called before plugin_init(), allows the plugin to register natives.
@@ -2586,14 +2530,14 @@ forward plugin_natives();
  *
  * public native_handler(plugin_id, argc)
  *
- * plugin_id    - plugin calling the native
- * argc         - number of parameters
+ *   plugin_id    - plugin calling the native
+ *   argc         - number of parameters
  *
  * @note Style 1 natives are deprecated. Plugins should not use them, they might
  *       break.
  * @note Style 1 natives work a little different. Instead of passing plugin id
- *       and number of parameters the handler should be prototyped just like the
- *       native would be called. For each by-reference parameter the plugin
+ *       and number of parameters, the handler should be prototyped just like the
+ *       native would be called. For each by-reference parameter, the plugin
  *       then has to use param_convert() to properly use them.
  * @note A native should *never* recurse. Bad things will happen.
  *
@@ -2604,7 +2548,7 @@ forward plugin_natives();
  * @noreturn
  * @error           If an invalid callback is specified, an error is thrown.
  */
-native register_native(const name[], const handler[], style=0);
+native register_native(const name[], const handler[], style = 0);
 
 /**
  * Registers the plugin as a library.
@@ -2643,14 +2587,14 @@ native log_error(error, const fmt[], any:...);
  * @deprecated Style 1 natives are deprecated and should be converted to
  *             style 0. This should not be used.
  *
- * @note Only needs to be called this if the native was registered with style 1.
+ * @note This only needs to be called if the native was registered with style 1.
  * @note Remember that arrays (and strings) are always by-reference and need to
  *       be converted.
  *
  * @param num       Argument to convert, starting from 1
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 0, an error will be thrown.
  */
 native param_convert(num);
@@ -2663,7 +2607,7 @@ native param_convert(num);
  * @param maxlen    Maximum size of buffer
  *
  * @return          Number of cells copied to buffer
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native get_string(param, dest[], maxlen);
@@ -2676,7 +2620,7 @@ native get_string(param, dest[], maxlen);
  * @param maxlen    Maximum size of buffer
  *
  * @return          Number of cells copied from buffer
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native set_string(param, dest[], maxlen);
@@ -2687,7 +2631,7 @@ native set_string(param, dest[], maxlen);
  * @param param     Argument to retrieve, starting from 1
  *
  * @return          Integer value
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native get_param(param);
@@ -2698,7 +2642,7 @@ native get_param(param);
  * @param param     Argument to retrieve, starting from 1
  *
  * @return          Float value
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native Float:get_param_f(param);
@@ -2710,7 +2654,7 @@ native Float:get_param_f(param);
  * @param param     Argument to retrieve, starting from 1
  *
  * @return          Integer value
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native get_param_byref(param);
@@ -2722,7 +2666,7 @@ native get_param_byref(param);
  * @param param     Argument to retrieve, starting from 1
  *
  * @return          Float value
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native Float:get_float_byref(param);
@@ -2735,7 +2679,7 @@ native Float:get_float_byref(param);
  * @param value     Value to set parameter to
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native set_param_byref(param, value);
@@ -2748,7 +2692,7 @@ native set_param_byref(param, value);
  * @param value     Value to set parameter to
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native set_float_byref(param, Float:value);
@@ -2761,7 +2705,7 @@ native set_float_byref(param, Float:value);
  * @param maxlen    Size of buffer
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native get_array(param, dest[], size);
@@ -2774,7 +2718,7 @@ native get_array(param, dest[], size);
  * @param maxlen    Size of buffer
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native get_array_f(param, Float:dest[], size);
@@ -2787,7 +2731,7 @@ native get_array_f(param, Float:dest[], size);
  * @param maxlen    Size of buffer
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native set_array(param, const source[], size);
@@ -2800,39 +2744,10 @@ native set_array(param, const source[], size);
  * @param maxlen    Size of buffer
  *
  * @noreturn
- * @error           If used outside of a native callback or the native was
+ * @error           If used outside of a native callback, or the native was
  *                  created with style 1, an error will be thrown.
  */
 native set_array_f(param, const Float:source[], size);
-
-/**
- * Dispatches a client cvar query, allowing the plugin to query for its value on
- * the client.
- *
- * @note The callback will be called in the following manner:
- *
- * public cvar_query_callback(id, const cvar[], const value[], const param[])
- *
- *  id      - Client index
- *  cvar    - Cvar queried
- *  value   - Cvar value on the client
- *  param   - Extra data [optional]
- *
- * @param id            Client index
- * @param cvar          Cvar to query
- * @param resultFunc    Callback function
- * @param paramlen      Size of extra data
- * @param params        Extra data to pass through to callback
- *
- * @noreturn
- * @error               If the client index is not within the range of 1 to
- *                      MaxClients or the client is not connected, an error
- *                      will be thrown.
- *                      If the callback function is invalid, cvar querying is
- *                      unavailable or the querying process runs out of memory,
- *                      an error will be thrown.
- */
-native query_client_cvar(id, const cvar[], const resultFunc[], paramlen=0, const params[]="");
 
 /**
  * Allows to trap error messages that occur in a plugin.
@@ -2843,23 +2758,25 @@ native query_client_cvar(id, const cvar[], const resultFunc[], paramlen=0, const
  *
  * public error_filter(error_code, bool:debugging, message[])
  *
- *  error_code      - AMX_ERR_* code.
- *  debugging       - True if the plugin is in debug mode, false otherwise
- *  message[]       - Message sent along with the error
+ *   error_code      - AMX_ERR_* code.
+ *   debugging       - True if the plugin is in debug mode, false otherwise
+ *   message[]       - Message sent along with the error
  *
  * @note The handler should return PLUGIN_CONTINUE to let the error through the
  *       filter, or PLUGIN_HANDLED to block the error from displaying.
  *
- * @param handler       Callback function
+ * @param handler       Function name to call
  *
- * @error               If an invalid callback is specified, an error is thrown.
+ * @noreturn
+ * @error               If an invalid callback function is provided, an error
+ *                      is thrown.
  */
 native set_error_filter(const handler[]);
 
 /**
  * Returns a trace handle for the item at the top of the traced call stack.
  *
- * @note Intended for use inside an error handler set with set_error_filter().
+ * @note Intended for use inside an error handler set with set_error_filter()
  *
  * @return      Trace handle, 0 if no debugging information is available
  */
@@ -2914,15 +2831,22 @@ native dbg_fmt_error(buffer[], maxLength);
  *
  * public native_filter(const native[], index, trap)
  *
- *  native      - Native name
- *  index       - Native index
- *  trap        - 0 if native couldn't be found, 1 if native use was attempted
+ *   native      - Native name
+ *   index       - Native index
+ *   trap        - 0 if native couldn't be found, 1 if native use was attempted
  *
  * @note The handler should return PLUGIN_CONTINUE to let the error through the
  *       filter (which will throw a run-time error), or return PLUGIN_HANDLED
  *       to continue operation.
  * @note Returning PLUGIN_CONTINUE if trap is 0 will result in the plugin
  *       failing to load!
+ *
+ * @param handler   Function name to call
+ *
+ * @return          1 if handler is set successfully, 0 otherwise (called
+ *                  outside of plugin_native() forward)
+ * @error           If an invalid callback function is provided, an error is
+ *                  thrown.
  */
 native set_native_filter(const handler[]);
 
@@ -2941,8 +2865,8 @@ native set_native_filter(const handler[]);
  *
  * public module_filter(const library[], LibType:type)
  *
- *  library     - Shortname of library or class that is required
- *  libtrype    - Type of requirement being checked (library/module or class)
+ *   library     - Shortname of library or class that is required
+ *   libtrype    - Type of requirement being checked (library/module or class)
  *
  * @note The handler should return PLUGIN_CONTINUE to let the error through the
  *       filter (which will result in the plugin failing to load), or
@@ -2963,7 +2887,7 @@ native set_module_filter(const handler[]);
  *       plugin_natives() forward.
  * @note The message will automatically be tagged with the plugin's name and the
  *       log will include a timestamp with the message.
- * @note For a list of possible error codes see AMX_* constants in amxconst.inc
+ * @note For a list of possible error codes, see AMX_* constants in amxconst.inc
  *
  * @param error     Error code
  * @param fmt       Formatting rules
@@ -2973,7 +2897,7 @@ native set_module_filter(const handler[]);
  * @error           The function is guaranteed to throw an error, using the
  *                  specified custom log message.
  */
-native abort(error, const fmt[]="", any:...);
+native abort(error, const fmt[] = "", any:...);
 
 /**
  * Returns if a specific module is loaded.
@@ -2992,9 +2916,9 @@ native module_exists(const logtag[]);
  * Returns if a specific library or class is loaded.
  *
  * @note This is the newer version of module_exists(), enabling users to
- *       distinguish between libraries and classes while module_exists() always
+ *       distinguish between libraries and classes, while module_exists() always
  *       checks for both types.
- * @note For a list of possible types see the LibType enum in amxconst.inc
+ * @note For a list of possible types, see the LibType enum in amxconst.inc
  *
  * @param library   Library/Class shortname
  * @param type      Type to search for
@@ -3013,7 +2937,7 @@ native LibraryExists(const library[], LibType:type);
  *
  * @return          Valid hudchannel (1-4)
  * @error           If the index is not within the range of 1 to MaxClients or
- *                  the client is not connected an error will be thrown.
+ *                  the client is not connected, an error will be thrown.
  */
 native next_hudchannel(player);
 
@@ -3035,7 +2959,7 @@ native next_hudchannel(player);
  *
  * @return      HUD sync object handle
  */
-native CreateHudSyncObj(num=0, ...);
+native CreateHudSyncObj(num = 0, ...);
 
 /**
  * Displays a synchronized HUD message.
@@ -3046,6 +2970,12 @@ native CreateHudSyncObj(num=0, ...);
  *       already.
  * @note This uses the display parameters set with set_hudmessage(), ignoring
  *       the selected channel in favor of its own synchronization.
+ * @note This functions return value behaves differently depending on what is
+ *       used as the client index: If 0 is specified, then the function will
+ *       return 0 if nothing has been sent (no client connected). If either a
+ *       single client is specified, or there is at least one client connected,
+ *       the number of printed characters will refer to the message that is sent
+ *       last, to the client with the highest index.
  *
  * @param target    Client index, use 0 to display to all clients
  * @param syncObj   HUD sync object handle
@@ -3053,12 +2983,8 @@ native CreateHudSyncObj(num=0, ...);
  * @param ...       Variable number of formatting parameters
  *
  * @return          Number of printed characters
- *                  If 0 is specified as the index then 0 will be returned if
- *                  nothing has been sent. The number of printed characters will
- *                  otherwise refer to the message that is sent last, to the
- *                  client with the highest index.
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native ShowSyncHudMsg(target, syncObj, const fmt[], any:...);
 
@@ -3075,8 +3001,8 @@ native ShowSyncHudMsg(target, syncObj, const fmt[], any:...);
  * @param syncObj   HUD sync object handle
  *
  * @noreturn
- * @error           If a single client is specified and the index is not
- *                  within the range of 1 to MaxClients an error will be thrown
+ * @error           If a single client is specified and the index is not within
+ *                  the range of 1 to MaxClients, an error will be thrown.
  */
 native ClearSyncHud(target, syncObj);
 
@@ -3125,10 +3051,11 @@ native get_var_addr(any:...);
 /**
  * Returns the value of an address.
  *
- * @note Addresses can be acquired using get_var_addr().
+ * @note Addresses can be acquired using get_var_addr()
  *
  * @param addr      Variable address
  *
+ * @return          Value at address
  * @error           If the plugin attempts to access an address outside of the
  *                  stack or heap limits of the plugin, an error will be thrown.
  */
@@ -3137,11 +3064,12 @@ native get_addr_val(addr);
 /**
  * Sets the value of an address.
  *
- * @note Addresses can be acquired using get_var_addr().
+ * @note Addresses can be acquired using get_var_addr()
  *
  * @param addr      Variable address
  * @param val       Value to set
  *
+ * @noreturn
  * @error           If the plugin attempts to access an address outside of the
  *                  stack or heap limits of the plugin, an error will be thrown.
  */
@@ -3150,8 +3078,8 @@ native set_addr_val(addr, val);
 /**
  * Creates a global forward that will be called in all plugins.
  *
- * @note For a list of valid stop types see the ET_* constants in amxconst.inc
- * @note For a list of valid parameter types see the FP_* constants in
+ * @note For a list of valid stop types, see the ET_* constants in amxconst.inc
+ * @note For a list of valid parameter types, see the FP_* constants in
  *       amxconst.inc
  *
  * @param name          Function name to call
@@ -3166,7 +3094,7 @@ native CreateMultiForward(const name[], stop_type, ...);
  * Creates a private forward that will be called in a single plugin.
  *
  * @note Unlike other natives expecting a plugin id, specifying -1 will not
- *       select the calling plugin and instead throw an error.
+ *       select the calling plugin, and instead throw an error.
  *
  * @param plugin_id     Plugin to call forward in. The plugin id can be
  *                      retrieved using find_plugin_byfile()
@@ -3174,7 +3102,7 @@ native CreateMultiForward(const name[], stop_type, ...);
  * @param ...           List of parameter types
  *
  * @return              Forward handle, -1 on failure
- * @error               If an invalid plugin id is specified an error will be
+ * @error               If an invalid plugin id is specified, an error will be
  *                      thrown.
  */
 native CreateOneForward(plugin_id, const name[], ...);
@@ -3185,17 +3113,17 @@ native CreateOneForward(plugin_id, const name[], ...);
  *
  * @param array         Array to prepare
  * @param size          Size of array
- * @param copyback      If nonzero modifications made by the called plugin(s)
+ * @param copyback      If nonzero, modifications made by the called plugin(s)
  *                      will be copied back to the caller
  *
  * @return              Special handle for use in ExecuteForward()
  */
-native PrepareArray(const array[], size, copyback=0);
+native PrepareArray(const array[], size, copyback = 0);
 
 /**
  * Executes a forward.
  *
- * @note Passing arrays requires them to be prepared using PrepareArray().
+ * @note Passing arrays requires them to be prepared using PrepareArray()
  *
  * @param forward_handle    Forward handle
  * @param ret               Variable to store return value in
@@ -3220,110 +3148,6 @@ native ExecuteForward(forward_handle, &ret, any:...);
 native DestroyForward(forward_handle);
 
 /**
- * Returns the cvar pointer of the specified cvar.
- *
- * @note A pointer is also returned by register_cvar(). Plugins can (and should)
- *       retrieve and use pointers for already existing mod cvars.
- *
- * @param cvar      Cvar name to find
- *
- * @return          Cvar pointer on success, 0 if cvar was not found
- */
-native get_cvar_pointer(const cvar[]);
-
-/**
- * Returns flags of a cvar via direct pointer access.
- *
- * @note For a list of possible flags see the FCVAR_* constants in amxconst.inc
- *
- * @param pcvar     Pointer to cvar to retrieve flags from
- *
- * @return          1 on success, 0 if cvar pointer is invalid
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native get_pcvar_flags(pcvar);
-
-/**
- * Sets specified flags to a cvar via direct pointer access.
- *
- * @note For a list of possible flags see the FCVAR_* constants in amxconst.inc
- * @note This function directly sets the provided bitflag, unlike set_cvar_flags
- *       which adds them using a bitwise OR.
- *
- * @param pcvar     Pointer to cvar to set flags of
- * @param flags     Bitflag sum of flags to set
- *
- * @return          1 on success, 0 if cvar does not exist or is not permitted
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native set_pcvar_flags(pcvar, flags);
-
-/**
- * Returns an integer value from a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to retrieve value from
- *
- * @return          Cvar value, converted to int
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native get_pcvar_num(pcvar);
-
-/**
- * Sets an integer value to a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to set value of
- * @param num       Value to set cvar to
- *
- * @noreturn
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native set_pcvar_num(pcvar, num);
-
-/**
- * Returns a float value from a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to retrieve value from
- *
- * @return          Cvar value, converted to float
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native Float:get_pcvar_float(pcvar);
-
-/**
- * Sets a float value to a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to set value of
- * @param num       Value to set cvar to
- *
- * @noreturn
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native set_pcvar_float(pcvar, Float:num);
-
-/**
- * Returns a string value from a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to retrieve value from
- * @param string    Buffer to copy cvar value to
- * @param maxlen    Maximum size of the buffer
- *
- * @return          Number of cells written to buffer.
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native get_pcvar_string(pcvar, string[], maxlen);
-
-/**
- * Sets a string value to a cvar via direct pointer access.
- *
- * @param pcvar     Pointer to cvar to retrieve value from
- * @param string    Value to set cvar to
- *
- * @noreturn
- * @error           If an invalid cvar pointer is specified, an error is thrown.
- */
-native set_pcvar_string(pcvar, const string[]);
-
-/**
  * Sets all elements of array to a specified value.
  *
  * @param array     Array to modify
@@ -3346,11 +3170,11 @@ native arrayset(array[], value, size);
 native get_weaponid(const name[]);
 
 /**
- * Adds an admin to the dynamic admin storage for lookup at a later time
+ * Adds an admin to the dynamic admin storage for lookup at a later time.
  *
- * @note For a list of possible access flags see the ADMIN_* constans in
+ * @note For a list of possible access flags, see the ADMIN_* constants in
  *       amxconst.inc
- * @note For a list of possible auth flags see the FLAG_* constants in
+ * @note For a list of possible auth flags, see the FLAG_* constants in
  *       amxconst.inc
  *
  * @param AuthData      Auth information to set (can be name, IP or SteamID)
@@ -3363,7 +3187,7 @@ native get_weaponid(const name[]);
 native admins_push(const AuthData[], const Password[], Access, Flags);
 
 /**
- * Returns the number of admins in the dynamic admin storage
+ * Returns the number of admins in the dynamic admin storage.
  *
  * @return  Number of admins
  */
@@ -3372,23 +3196,23 @@ native admins_num();
 /**
  * Retrieves information about a dynamically stored admin.
  *
- * @note For a list of possible props see the AdminProp enum in amxconst.inc
+ * @note For a list of possible props, see the AdminProp enum in amxconst.inc
  *
  * @param num           Admin storage index
  * @param Property      Admin property to retrieve
- * @param Buffer        Buffer to copy property information to if AdminProp_Auth
+ * @param Buffer        Buffer to copy property information to, if AdminProp_Auth
  *                      or AdminProp_Password is specified
  * @param BufferSize    Maximum buffer size
  *
  * @return              Property value if AdminProp_Access or AdminProp_Flags
- *                      is requested. 0 otherwise.
+ *                      is requested, 0 otherwise
  * @error               If an invalid storage index is specified, an error will
  *                      be thrown.
  */
-native admins_lookup(num, AdminProp:Property, Buffer[]="", BufferSize=0);
+native admins_lookup(num, AdminProp:Property, Buffer[] = "", BufferSize = 0);
 
 /**
- * Clears the list of dynamically stored admins
+ * Clears the list of dynamically stored admins.
  *
  * @noreturn
  */
@@ -3403,6 +3227,48 @@ native admins_flush();
  */
 native bool:has_map_ent_class(const classname[]);
 
+
+/**
+ * Called when the map has loaded, and all configs are done executing.
+ * This includes servercfgfile (server.cfg), amxx.cfg, plugin's config, and
+ * per-map config.
+ *
+ * @note This is best place to initialize plugin functions which are based on cvar data.  
+ * @note This will always be called once and only once per map.  It will be 
+ *       called few seconds after plugin_cfg().
+ *
+ * @noreturn
+ */
+forward OnConfigsExecuted();
+
+/**
+ * Called when the map has loaded, right after plugin_cfg() but any time 
+ * before OnConfigsExecuted.  It's called after amxx.cfg and  all 
+ * AutoExecConfig() exec commands have been added to the server command buffer.
+ *
+ * @note This will always be called once and only once per map.
+ *
+ * @noreturn
+ */
+forward OnAutoConfigsBuffered();
+
+/**
+ * Specifies that the given config file should be executed after plugin load.
+ *
+ * @note OnConfigsExecuted() will not be called until the config file has executed,
+ *       but it will be called if the execution fails.
+ * @note The name parameter should not contain dots, otherwise file will not be executed.
+ *
+ * @param autoCreate    If true, and the config file does not exist, such a config
+ *                      file will be automatically created and populated with
+ *                      information from the plugin's registered cvars.
+ * @param name          Name of the config file, excluding the .cfg extension.
+ *                      If empty, <plugin.filename.cfg> is assumed.
+ * @param folder        Folder under plugins/ to use.
+ *
+ * @noreturn
+ */
+native AutoExecConfig(bool:autoCreate = true, const name[] = "", const folder[] = "");
 
 // Always keep this at the bottom of this file
 #include <message_stocks>

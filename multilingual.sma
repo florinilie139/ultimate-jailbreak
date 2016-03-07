@@ -14,7 +14,7 @@
 #include <amxmodx>
 #include <amxmisc>
 
-new g_menuLang[MAX_PLAYERS]
+new g_menuLang[MAX_PLAYERS + 1]
 new g_langNum
 new g_coloredMenus
 
@@ -28,9 +28,9 @@ public plugin_init()
 	register_dictionary("multilingual.txt")
 	register_dictionary("common.txt")
 	register_dictionary("languages.txt")
-	
-	g_cvarClientLanguages = register_cvar("amx_client_languages", "1")
+    
 	g_cvarDisplayClientMessage = register_cvar("amx_language_display_msg", "1")
+	g_cvarClientLanguages = get_cvar_pointer("amx_client_languages")
 	g_cvarServerLanguage = get_cvar_pointer("amx_language");
 	
 	register_clcmd("amx_langmenu", "cmdLangMenu", ADMIN_ALL)
@@ -48,7 +48,7 @@ public client_putinserver(id)
 	}
 }
 
-public client_disconnect(id)
+public client_disconnected(id)
 {
 	remove_task(id)
 }

@@ -38,7 +38,7 @@ stock show_dhudmessage( index, const message[], any:... )
 {
     new buffer[ 128 ];
     new numArguments = numargs();
-    
+
     if( numArguments == 2 )
     {
         send_dhudMessage( index, message );
@@ -59,13 +59,13 @@ stock show_dhudmessage( index, const message[], any:... )
         }
 
         new Array:handleArrayML = ArrayCreate();
-        
+
         for( new i = 2, j; i < numArguments; i++ )
         {
             if( getarg( i ) == LANG_PLAYER )
             {
                 while( ( buffer[ j ] = getarg( i + 1, j++ ) ) ) {}
-                buffer[ j ] = EOS; j = 0;
+                j = 0;
 
                 if( GetLangTransKey( buffer ) != TransKey_Bad )
                 {
