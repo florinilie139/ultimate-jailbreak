@@ -33,9 +33,7 @@ public admin_chteam(id, level, cid) {
 	}
 	if(cmd[4]=='s')
 	{
-		cs_set_user_team(player,3);
-		 :))
-		 
+		cs_set_user_team(player,3);		 
 	}
 	return PLUGIN_HANDLED
 } 

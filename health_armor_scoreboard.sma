@@ -72,10 +72,12 @@ Send_ScoreInfo(id, iFrags, iDeaths, iTeamID)
 }
 
 public EventBattery(id)
-	Send_ScoreInfo(id, get_user_health(id), read_data(1), get_user_team(id) )
+    if(is_user_connected(id))
+        Send_ScoreInfo(id, get_user_health(id), read_data(1), get_user_team(id) )
 
 public EventHealth(id)
-	Send_ScoreInfo(id, read_data(1), get_user_armor(id), get_user_team(id) )
+    if(is_user_connected(id))
+        Send_ScoreInfo(id, read_data(1), get_user_armor(id), get_user_team(id) )
 
 public MsgToPlayers()
 {

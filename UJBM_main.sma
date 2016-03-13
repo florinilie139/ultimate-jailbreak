@@ -192,17 +192,17 @@ new const g_Reasons[][] =  {
 // HudSync: 0=ttinfo / 1=info / 2=simon / 3=ctinfo / 4=player / 5=day / 6=center / 7=help / 8=timer
 new const g_HudSync[][_hud] =
 {
-    {0,  0.81,  0.08,  2.0},
+    {0,  0.81,  0.08,  1.0},
     {0, -1.0,  0.7,  5.0},
-    {0,  0.1,  0.2,  2.0},
-    {0,  0.1,  0.3,  2.0},
-    {0, -1.0,  0.9,  3.0},
-    {0,  0.6,  0.1,  3.0},
-    {0, -1.0,  0.6,  3.0},
+    {0,  0.05,  0.08,  1.0},
+    {0,  0.05,  0.3,  1.0},
+    {0, -1.0,  0.9,  1.0},
+    {0,  0.6,  0.1,  1.0},
+    {0, -1.0,  0.6,  1.0},
     {0,  0.8,  0.3, 20.0},
-    {0, -1.0,  0.4,  3.0},
-    {0,  0.1,  0.5,  2.0},
-    {0, -1.0,  0.45, 2.0}
+    {0, -1.0,  0.4,  1.0},
+    {0,  0.05,  0.5,  1.0},
+    {0, -1.0,  0.45, 1.0}
 }
 // Colors: 0:Simon / 1:Freeday / 2:CT Duel / 3:TT Duel
 new const g_Colors[][3] = { {0, 255, 0}, {255, 140, 0}, {0, 0, 255}, {255, 0, 0} }
@@ -398,14 +398,14 @@ public plugin_init()
     gp_Help = register_cvar("jb_autohelp","2")
     gp_FDLength = register_cvar("jb_fdlen","300.0")
     gp_GameHP = register_cvar("jb_hpmultiplier","200")
-    gp_ShowColor = register_cvar("jb_hud_showcolor","1")
+    gp_ShowColor = register_cvar("jb_hud_showcolor","0")
     gp_ShowFD = register_cvar("jb_hud_showfd","1")
     gp_ShowWanted = register_cvar("jb_hud_show_wanted","1")
     gp_Effects= register_cvar("jb_game_effects","2")
     g_MaxClients = get_global_int(GL_maxClients)
     get_mapname( g_Map, 39 )
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        g_HudSync[i][_hudsync] = CreateHudSyncObj()
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
@@ -556,7 +556,7 @@ public client_disconnect(id)
     if(g_Simon == id)
     {
         g_Simon = 0
-        ClearSyncHud(0, g_HudSync[2][_hudsync])
+        //ClearSyncHud(0, g_HudSync[2][_hudsync])
         player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_HASGONE")
         if(g_GameMode == AlienDay || g_GameMode == AlienHiddenDay || g_GameMode == FireDay)
             cmd_expire_time();
@@ -750,7 +750,7 @@ public player_status(id)
     {
         case(1):
         {
-            ClearSyncHud(id, g_HudSync[1][_hudsync])
+            //ClearSyncHud(id, g_HudSync[1][_hudsync])
         }
         case(2):
         {
@@ -764,12 +764,12 @@ public player_status(id)
             if(team == CS_TEAM_T)
             {
                 if(get_bit(g_PlayerFreeday,player))
-                    player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
+                    player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
                 else
-                    player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
+                    player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
             }
             else
-                player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
+                player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
         }
     }
     return PLUGIN_HANDLED
@@ -843,8 +843,8 @@ public player_spawn(id)
         {
             g_PlayerLast = 0
             BoxPartener[id] = 0
-            g_PlayerReason[id] = random_num(1, 10)
-            player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
+            //g_PlayerReason[id] = random_num(1, 10)
+            //player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
             client_infochanged(id)
             set_user_info(id, "model", JBMODELSHORT)
             entity_set_int(id, EV_INT_body, 1+random_num(1,2))
@@ -867,25 +867,25 @@ public player_spawn(id)
             set_user_info(id, "model", JBMODELSHORT)
             entity_set_int(id, EV_INT_body, 3+random_num(1,2))
             cs_set_user_armor(id, 100, CS_ARMOR_VESTHELM)
-            new r = random_num(1,3)
+            /*new r = random_num(1,3)
             switch (r)
             {
                 case 1:
                 {
-                    set_hudmessage(255, 0, 0, -1.0, -1.0, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_FK")
+                    set_dhudmessage(255, 0, 0, -1.0, -1.0, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_FK")
                 }
                 case 2:
                 {
-                    set_hudmessage(0, 255, 0, -1.0, 0.60, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_RULES")
+                    set_dhudmessage(0, 255, 0, -1.0, 0.60, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_RULES")
                 }
                 default:
                 {
-                    set_hudmessage(0, 212, 255, -1.0, 0.80, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_MICR")
+                    set_dhudmessage(0, 212, 255, -1.0, 0.80, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_MICR")
                 }
-            }
+            }*/
         }
     }
     /*if(g_RoundStarted >= (get_pcvar_num(gp_RetryTime) / 2))
@@ -1205,8 +1205,8 @@ public player_killed(victim, attacker, shouldgib)
             {
                 g_Simon = 0
                 resetsimon()
-                ClearSyncHud(0, g_HudSync[2][_hudsync])
-                player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
+                //ClearSyncHud(0, g_HudSync[2][_hudsync])
+                //player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
             }    
             switch(g_Duel)
             {
@@ -1446,8 +1446,8 @@ public round_end()
     g_RoundEnd = 1
     g_Duel = 0
     g_Fonarik = 0
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        ClearSyncHud(0, g_HudSync[i][_hudsync])
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    ClearSyncHud(0, g_HudSync[i][_hudsync])
     set_lights("#OFF");
     fog(false)    
     
@@ -1499,8 +1499,8 @@ public round_end()
                 cs_set_user_money(Players[i],cs_get_user_money(Players[i])+3250);
         }
     }
-    set_hudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_hudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
+    set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
+    show_dhudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
     g_Countdown = 0
     remove_task(TASK_RADAR)
     g_BackToCT = 0
@@ -1583,8 +1583,8 @@ public round_start()
         }
     }
     
-    set_hudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_hudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
+    set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
+    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
     
     if(g_RoundEnd)
         return
@@ -1720,7 +1720,7 @@ public cmd_box(id)
         }
         else
         {
-            player_hudmessage(id, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_CANTBOX")
+            client_print(id, print_center, "%L", LANG_SERVER, "UJBM_GUARD_CANTBOX")
         }
     }
     return PLUGIN_HANDLED
@@ -2323,11 +2323,11 @@ public hud_status(task)
                         set_user_rendering(i, kRenderFxGlowShell, 700, 0, 0, kRenderNormal, 25)
                 }
             }
-            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_FREEDAY")
+            player_hudmessage(0, 2, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_FREEDAY")
             if(g_PlayerWanted)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%s", wanted)
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
             else if(g_PlayerRevolt)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
         }
         case NormalDay:
         {
@@ -2349,7 +2349,7 @@ public hud_status(task)
                     }
                 }
                 if(g_PlayerFreeday)        
-                    player_hudmessage(0, 9, HUD_DELAY + 1.0, {0, 255, 0}, "%s", fdlist)        
+                    player_hudmessage(0, 9, HUD_DELAY, {0, 255, 0}, "%s", fdlist)        
             }
             if (get_pcvar_num (gp_ShowWanted) == 1) 
             {    
@@ -2368,10 +2368,10 @@ public hud_status(task)
                     }
                 }
                 if(g_PlayerWanted)
-                    player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%s", wanted)
+                    player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, 5.0, {0, 255, 0}, "[ Ziua %d, %s ]", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
@@ -2380,10 +2380,10 @@ public hud_status(task)
             else  if (g_Simon  != 0)
             {
                 get_user_name(g_Simon, name, charsmax(name))
-                player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_FOLLOW", name)
+                player_hudmessage(0, 2, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_FOLLOW", name)
             }
             if(g_PlayerRevolt)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
         }
         case ZombieDay:    
         {
@@ -2725,12 +2725,12 @@ stock player_hudmessage(id, hudid, Float:time = 0.0, color[3] = {0, 255, 0}, msg
     y = g_HudSync[hudid][_y]
 
     if(time > 0)
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
     else
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
         
     vformat(text, charsmax(text), msg, 6)
-    ShowSyncHudMsg(id, g_HudSync[hudid][_hudsync], text)
+    show_dhudmessage(id, text)
 }
 
 stock menu_players(id, CsTeams:team, skip, alive, callback[], title[], any:...)
@@ -4977,8 +4977,8 @@ public task_freeday_end()
 {
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     g_GameMode = NormalDay
-    set_hudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
-    show_hudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
+    set_dhudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
+    show_dhudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
     resetsimon()
     new playerCount, i 
     new Players[32] 

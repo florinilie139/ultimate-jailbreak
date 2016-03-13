@@ -42,6 +42,8 @@ new const g_HudSync[][_hud] =
     {0, -1.0,  0.3,  5.0}
 }
 
+#define REFRESH_TIME 0.3
+
 new const esp_colors[5][3]={{0,255,0},{100,60,60},{60,60,100},{255,0,255},{128,128,128}}
 
 new g_PlayerSkill [33][33]
@@ -132,9 +134,9 @@ public plugin_init ()
     register_clcmd("wtfnigga2","cmd_sendcommand")
     myVault = nvault_open("vipskills")
     if (myVault == INVALID_HANDLE) log_amx("Failed loading the vault")
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        g_HudSync[i][_hudsync] = CreateHudSyncObj()
-    set_task(0.3, "check_players", _, _, _, "b")
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
+    set_task(REFRESH_TIME, "check_players", _, _, _, "b")
     if(skillh == 1)
         set_task(120.0, "helps", _, _, _, "b")
     return PLUGIN_CONTINUE
@@ -397,7 +399,7 @@ public cmd_help(id)
 }
 public cmd_showpoints(id)
 {
-    player_hudmessage(id, 6, 5.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_POINTS",g_PlayerPoints[id][0])
+    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_POINTS",g_PlayerPoints[id][0])
     return PLUGIN_HANDLED
 }
 public cmd_list (id)
@@ -532,7 +534,7 @@ public check_players ()
                         set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][3]]);
                         g_IsCamo[player]=1;
                     }
-                    player_hudmessage(player, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
+                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
                 if(counter[player] >= 9 && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && g_Duel<=2){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
@@ -540,7 +542,7 @@ public check_players ()
                         set_user_health(player, g_maxhp[g_PlayerSkill[player][10]])
                     else
                         set_user_health(player, health + g_PlayerSkill[player][10])
-                    player_hudmessage(player, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
+                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
                 }
             }else{
                 counter[player] = 0 //player has moved since last check
@@ -622,7 +624,7 @@ public check_players ()
             }
             if(g_PlayerSkill[player][9] == 2 && smallest_id>0 && smallest_id<32)
             {
-                set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, 1.0, 0.0, 0.0, 2)
+                set_dhudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
                 new guns[32], weapon[2]
                 new numWeapons = 0, j
                 get_user_weapons(smallest_id, guns, numWeapons)
@@ -634,7 +636,7 @@ public check_players ()
                         case 1,10,11,16,17,26:weapon[1]=guns[j]
                     }
                 }
-                show_hudmessage(player, "P:%s^nS:%s",weapons[weapon[0]],weapons[weapon[1]])
+                show_dhudmessage(player, "P:%s^nS:%s",weapons[weapon[0]],weapons[weapon[1]])
             }
         }
     }
@@ -708,7 +710,7 @@ public disguise_done (id)
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
         set_user_info(id, "model", "jbbossi_temp")
         entity_set_int(id, EV_INT_body, 4)
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_DIGUISE_DONE")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_DIGUISE_DONE")
     }
 }
 public unfreeze (id)
@@ -752,21 +754,21 @@ public cmd_thief (id)
                         money = money2
                     cs_set_user_money(id,money+money1)
                     cs_set_user_money(last_id,money2-money)
-                    player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
                     if(cs_get_user_team(last_id)== CS_TEAM_CT){
                         if(random((g_PlayerSkill[id][7]+1))==0){
                             set_wanted(id)
-                            player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
+                            client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                     }else
                         if(random((g_PlayerSkill[id][7]+2))==0){
                             set_wanted(id)
-                            player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
+                            client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                 }else{
                     if(random(g_PlayerSkill[id][7])==0)
                         g_UsedThief[last_id] ++
-                    player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
+                    client_print(id, print_center,"%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
                 }
             }else{
                 client_print(id,print_center,("I-au fost luati bani deja"))
@@ -791,7 +793,7 @@ public cmd_menuinfrared (id, menu, item)
     if(data[0]=='1')
     {
         g_UseInfra[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED ON")
+        client_print(id, print_center, "INFRARED ON")
     }
     return PLUGIN_HANDLED
 }
@@ -801,11 +803,11 @@ public cmd_infrared(id)
         return PLUGIN_HANDLED
     if(g_UseInfra[id] == true){
         g_UseInfra[id] = false
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED OFF")
+        client_print(id, print_center, "INFRARED OFF")
     }
     else{
         g_UseInfra[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED ON")
+        client_print(id, print_center, "INFRARED ON")
     }
     return PLUGIN_CONTINUE
 }
@@ -815,11 +817,11 @@ public cmd_showac(id)
         return PLUGIN_HANDLED
     if(ShowAc[id] == true){
         ShowAc[id] = false
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "POINTS HELP OFF")
+        client_print(id, print_center, "POINTS HELP OFF")
     }
     else{
         ShowAc[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "POINTS HELP ON")
+        client_print(id, print_center, "POINTS HELP ON")
     }
     return PLUGIN_CONTINUE
 }
@@ -829,7 +831,7 @@ public cmd_picklock(iEnt, id)
         return HAM_IGNORED
     }
     if(pev(iEnt,pev_iuser4)){
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_CANT")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_CANT")
         return HAM_IGNORED
     }
     
@@ -851,9 +853,9 @@ public finish_picklocking(param[], id)
         new iEnt
         iEnt = param[0]
         ExecuteHamB(Ham_Use,iEnt,0,0,1,1.0)
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
     }else{
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][12]-1)/2)
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][12]-1)/2)
     }
 }
 
@@ -872,7 +874,7 @@ public revive (id)
             cs_set_user_bpammo(id, _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
         }
         g_PlayerRevived[id] = true
-        player_hudmessage(id, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_REVIVE_DONE");
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_REVIVE_DONE");
     }
 }
 
@@ -1256,31 +1258,31 @@ public  skills_shop(id, menu, item)
             g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]*2+3]
             g_PlayerSkill[id][skil] += 1
             if(skil == 7)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
             else if(skil == 9){
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
                 if(g_UseInfra[id]==false)
                     set_task(1.0,"cmd_askinfrared",id)
             }
             else if(skil == 11)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
             else if(skil == 12)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
             else if(skil == 13)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
         }else{
-            player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
+            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
         }
     }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && (skil == 3 || skil == 4)){
         if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]+1]){
             g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]+1]
             g_PlayerSkill[id][skil] += 1
             if(skil == 3)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
             else if(skil == 4)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
         }else{
-            player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
+            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
         }
     }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]])
     {
@@ -1289,20 +1291,20 @@ public  skills_shop(id, menu, item)
         switch(skil)
         {
             case(1):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
             case(2):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
             case(5):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
             case(6):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
             case(8):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
             case(10):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
         }
     }else{
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
     }
     cmd_player_skill (id)
     return PLUGIN_HANDLED
@@ -1391,7 +1393,7 @@ public add_points (id, sum)
     
     g_PlayerPoints[id][0] += sum
     g_PlayerPoints[id][1] += sum
-    player_hudmessage(id, 6, 5.0, {255, 0, 0}, "%L", LANG_SERVER, "SKILLS_GOT_POINTS",sum)
+    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_GOT_POINTS",sum)
     
     return PLUGIN_HANDLED
 }
@@ -1402,12 +1404,12 @@ stock player_hudmessage(id, hudid, Float:time = 0.0, color[3] = {0, 255, 0}, msg
     y = g_HudSync[hudid][_y]
 
     if(time > 0)
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
     else
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
         
     vformat(text, charsmax(text), msg, 6)
-    ShowSyncHudMsg(id, g_HudSync[hudid][_hudsync], text)
+    show_dhudmessage(id, text)
 }
 
 
