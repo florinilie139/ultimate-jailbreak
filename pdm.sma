@@ -14,7 +14,7 @@
 
 #define OFFSET_LINUX      5
 
-#define MAXENTS 1500
+#define MAXENTS 1000
 #define MAXMONEYS 200
 
 new moneybox[MAXENTS]
