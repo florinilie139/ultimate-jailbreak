@@ -624,7 +624,7 @@ public check_players ()
             }
             if(g_PlayerSkill[player][9] == 2 && smallest_id>0 && smallest_id<32)
             {
-                set_dhudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
+                set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
                 new guns[32], weapon[2]
                 new numWeapons = 0, j
                 get_user_weapons(smallest_id, guns, numWeapons)
@@ -636,7 +636,7 @@ public check_players ()
                         case 1,10,11,16,17,26:weapon[1]=guns[j]
                     }
                 }
-                show_dhudmessage(player, "P:%s^nS:%s",weapons[weapon[0]],weapons[weapon[1]])
+                show_hudmessage(player, "P:%s^nS:%s",weapons[weapon[0]],weapons[weapon[1]])
             }
         }
     }
