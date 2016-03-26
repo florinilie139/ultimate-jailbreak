@@ -155,9 +155,9 @@ public ShowQuestion()
         if(ShowedTrivia == TotalTrivia)
             for(new parg = 0; parg < TotalTrivia; parg++)
                 TriviaList[parg][_ap] = 0
-        new RndNum = random(TotalTrivia);
+        new RndNum = random_num(0,TotalTrivia);
         while(TriviaList[RndNum][_ap] == 1)
-            RndNum = random(TotalTrivia);
+            RndNum = random_num(0,TotalTrivia);
         ShowedTrivia ++;
         CurrentTrivia = RndNum
         TimeTrivia = 30
@@ -206,11 +206,11 @@ public GameShowQuestion()
     if(GameTrivia==0 /*|| g_Duel!=11*/)
         return
     if(GameTimeTrivia == 0){
-        new RndNum = random(TotalTrivia);
+        new RndNum = random_num(0,TotalTrivia);
         GameTimeTrivia = 30
         if(GameCurrentType != 0){
             while(TriviaList[RndNum][_type] != GameCurrentType)
-                RndNum = random(TotalTrivia);
+                RndNum = random_num(0,TotalTrivia);
         }
         GameCurrentTrivia = RndNum
         static Players[32], Num, Player;

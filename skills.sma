@@ -367,7 +367,7 @@ stock getData(player) {
 public helps ()
 {
     new Msg[512];
-    new number = random(4)
+    new number = random_num(0,4)
     if(number==0)
         format(Msg, 511, "^x01Scrie ^x03/skillhelp^x01 pentru nelamuriri fata de skilluri");
     else if(number == 1)
@@ -745,7 +745,7 @@ public cmd_thief (id)
         }
         if (last_dist<80) {
             if(g_UsedThief[last_id] < 2){
-                if(random((3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2) == 0){
+                if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2) == 0){
                     g_UsedThief[last_id] ++
                     new money = 1500 * g_PlayerSkill[id][7]
                     new money1 =  cs_get_user_money(id)
@@ -756,17 +756,17 @@ public cmd_thief (id)
                     cs_set_user_money(last_id,money2-money)
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
                     if(cs_get_user_team(last_id)== CS_TEAM_CT){
-                        if(random((g_PlayerSkill[id][7]+1))==0){
+                        if(random_num(0,(g_PlayerSkill[id][7]+1))==0){
                             set_wanted(id)
                             client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                     }else
-                        if(random((g_PlayerSkill[id][7]+2))==0){
+                        if(random_num(0,(g_PlayerSkill[id][7]+2))==0){
                             set_wanted(id)
                             client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                 }else{
-                    if(random(g_PlayerSkill[id][7])==0)
+                    if(random_num(0,g_PlayerSkill[id][7])==0)
                         g_UsedThief[last_id] ++
                     client_print(id, print_center,"%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
                 }
@@ -848,7 +848,7 @@ public finish_picklocking(param[], id)
     if(id>32)
         id-=5100;
     set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
-    if(random(3-g_PlayerSkill[id][12])==0)
+    if(random_num(0,3-g_PlayerSkill[id][12])==0)
     {
         new iEnt
         iEnt = param[0]
@@ -1036,6 +1036,8 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
 
 public player_killed(victim, attacker,Float:damage)
 {
+    if(!is_user_connected(victim) || !is_user_alive(victim))
+        return HAM_IGNORED
     if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
     if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && (g_Gamemode==0 || g_Gamemode==1))

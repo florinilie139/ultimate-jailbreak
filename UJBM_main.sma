@@ -323,7 +323,6 @@ public plugin_init()
 
     //register_event("CurWeapon", "current_weapon_fl", "be", "1=1", "2=25")
     register_event("StatusValue", "player_status", "be", "1=2", "2!0")
-    register_event("StatusValue", "player_status", "be", "1=1", "2=0")
     register_impulse(100, "impulse_100")
     
     //RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_flashbang", "rpg_pre")
@@ -754,6 +753,7 @@ public player_status(id)
         }
         case(2):
         {
+            if (!is_user_connected(player)) return PLUGIN_HANDLED
             if (player == g_Simon) return PLUGIN_HANDLED
             team = cs_get_user_team(player)
             if((team != CS_TEAM_T) && (team != CS_TEAM_CT))
@@ -808,6 +808,7 @@ public  player_maxspeed(id)
 public player_spawn(id)
 {
     static CsTeams:team
+    new rez = random_num(1,2)
     if(!is_user_connected(id))
         return HAM_IGNORED
     set_pdata_float(id, m_fNextHudTextArgsGameTime, get_gametime() + 999999.0)
@@ -837,24 +838,44 @@ public player_spawn(id)
     if (!get_bit(g_NoShowShop,id)) cmd_shop(id)
     if(IsVip[id] > 0)
         set_user_health(id,150)
+    
     switch(team)
     {
         case(CS_TEAM_T):
         {
+            
             g_PlayerLast = 0
             BoxPartener[id] = 0
             //g_PlayerReason[id] = random_num(1, 10)
             //player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
             client_infochanged(id)
             set_user_info(id, "model", JBMODELSHORT)
-            entity_set_int(id, EV_INT_body, 1+random_num(1,2))
+            if( rez == 1 || rez == 2)
+            {
+                entity_set_int(id, EV_INT_body, 1+rez)
+            }
+            else
+            {
+                log_amx("Caugth rez to bee %d",rez)
+                entity_set_int(id, EV_INT_body, 2)
+            }
             if (g_GameMode == Freeday || get_bit(g_PlayerFreeday,id))
             { 
                 entity_set_int(id, EV_INT_skin, 4)
             }
             else
             {
-                entity_set_int(id, EV_INT_skin, random_num(0, 3))
+                rez = random_num(0, 3)
+                if( rez >= 0 && rez <= 3)
+                {
+                    entity_set_int(id, EV_INT_skin, rez)
+                }
+                else
+                {
+                    log_amx("Caugth rez to bee %d",rez)
+                    entity_set_int(id, EV_INT_body, 0)
+                }
+                
             }
             cs_set_user_armor(id, 0, CS_ARMOR_NONE)
             set_pev(id, pev_flags, pev(id, pev_flags)| FL_FROZEN)
@@ -865,7 +886,16 @@ public player_spawn(id)
             G_Info[0][id]=0
             g_PlayerSimon[id]++
             set_user_info(id, "model", JBMODELSHORT)
-            entity_set_int(id, EV_INT_body, 3+random_num(1,2))
+            if( rez == 1 || rez == 2)
+            {
+                entity_set_int(id, EV_INT_body, 3+rez)
+            }
+            else
+            {
+                log_amx("Caugth rez to bee %d",rez)
+                entity_set_int(id, EV_INT_body, 4)
+            }
+            
             cs_set_user_armor(id, 100, CS_ARMOR_VESTHELM)
             /*new r = random_num(1,3)
             switch (r)
@@ -927,7 +957,7 @@ public task_inviz(id)
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
-    if (!is_user_connected(attacker))
+    if (!is_user_connected(victim) || !is_user_connected(attacker))
         return HAM_IGNORED;
     if(g_GameMode == FunDay && fun_god == 1)
         return HAM_SUPERCEDE
@@ -1544,7 +1574,7 @@ public round_start()
     new g_Time[ 9 ];
     get_time( "%H:%M:%S", g_Time, 8 )
     
-    g_IsFG = random(6)
+    g_IsFG = random_num(0,6)
     
     switch( g_JailDay%7 )
     {
@@ -2980,7 +3010,7 @@ public EndVote()
     {
         remove_task(TASK_DAYTIMER);
         new bigger = 0;
-        bigger = random_num(ZombieDay,FunDay);
+        bigger = random_num(ZombieDay,SpartaDay);
         
         //for( new i=1; i<12; i++ )
         //{
@@ -3004,7 +3034,16 @@ public EndVote()
         {
             new Players[32],playerCount;
             get_players(Players, playerCount, "ae", "CT") 
-            new select = random(playerCount)
+            if(playerCount==0)
+            {
+                EndVote()
+                return
+            }
+            new select = random_num(0,playerCount-1)
+            if(select >= playerCount)
+            {
+                select = Players[0]
+            }
             log_amx("day %d select %d",bigger,select)
             log_amx("simon %d",Players[select])
             g_Simon = Players[select];
@@ -3093,6 +3132,7 @@ public EndVote()
             }
             default:
             {
+                log_amx("day %d",bigger)
                 EndVote()
             }
         }
@@ -3312,7 +3352,11 @@ public cmd_game_hns()
 }
 public  cmd_game_alien()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    { 
+        log_amx("no simon on alien")
+        return PLUGIN_HANDLED
+    }
     g_BoxStarted = 0
     g_nogamerounds = 0
     jail_open()
@@ -3369,7 +3413,11 @@ public  cmd_game_alien()
 }
 public  cmd_game_alien2()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    {
+        log_amx("no simon on alienday2")
+        return PLUGIN_HANDLED    
+    } 
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3545,7 +3593,11 @@ public cmd_game_gravity()
 }
 public  cmd_game_fire()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    {
+        log_amx("no simon on fireday")
+        return PLUGIN_HANDLED
+    }
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3718,7 +3770,8 @@ public cmd_game_sparta()
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac")
-    for (i=0; i<playerCount; i++){
+    for (i=0; i<playerCount; i++)
+    {
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
         if (cs_get_user_team(Players[i]) == CS_TEAM_CT)    
@@ -3840,7 +3893,7 @@ public cmd_prinselea_start()
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac") 
-    Mata=random(playerCount)
+    Mata=random_num(0,playerCount)
     for (i=0; i<playerCount; i++) 
     {
 
@@ -4990,12 +5043,21 @@ public task_freeday_end()
     resetsimon()
     new playerCount, i 
     new Players[32] 
+    new rez
     get_players(Players, playerCount, "ac") 
     for (i=0; i<playerCount; i++) 
     {
         if ( cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]) && !get_bit(g_PlayerFreeday, Players[i]) && !get_bit(g_PlayerWanted, Players[i]))
         {
-            entity_set_int(Players[i], EV_INT_skin, random_num(0,3))
+            rez = random_num(0,3)
+            if( rez >= 0 && rez <= 3)
+            {
+                entity_set_int(Players[i], EV_INT_skin, rez)
+            }
+            else{
+                log_amx("Caugth rez to be %d",rez)
+                entity_set_int(Players[i], EV_INT_body, 0)
+            }
             if (get_pcvar_num (gp_ShowColor) == 1 ) show_color(Players[i])    
         }
     }
