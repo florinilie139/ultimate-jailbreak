@@ -217,8 +217,19 @@ public actionCmdMenu(id, key)
 			else if (flags & 2)
 				client_cmd(id, "%s", g_cmdCmd[option])
 			else if (flags & 4)
+            {
+                new name[64]
 				client_cmd(0, "%s", g_cmdCmd[option])
-			
+                if(id == 0)
+                {
+                    formatex(name,64,"server")
+                }
+                else
+                {
+                    get_user_name(id,name,64)
+                }
+                client_print(0, print_console, "%s a dat %s",name,g_cmdName[option])
+			}
 			if (flags & 8)
 			{
 				displayCmdMenu(id, g_menuPosition[id]);
