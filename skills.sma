@@ -1036,7 +1036,7 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
 
 public player_killed(victim, attacker,Float:damage)
 {
-    if(!is_user_connected(victim) || !is_user_alive(victim))
+    if(!is_user_connected(victim))
         return HAM_IGNORED
     if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
@@ -1054,7 +1054,7 @@ public player_killed(victim, attacker,Float:damage)
             set_task(0.1,"revive",5300+victim)
         }
     }
-    if(!is_user_connected(attacker) || !is_user_alive(attacker))
+    if(!is_user_connected(attacker))
         return HAM_IGNORED
     if(cs_get_user_team(attacker) == CS_TEAM_T && cs_get_user_team(victim) == CS_TEAM_CT)
     {
