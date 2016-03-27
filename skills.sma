@@ -10,6 +10,7 @@
 #include <nvault>
 #include <xs>
 
+//
 #define PLUGIN_NAME    "Skills Mod"
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
