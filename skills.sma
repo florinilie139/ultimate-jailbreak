@@ -73,7 +73,7 @@ new g_Gamemode;
 new bool:ShowAc [33]
 
 new Float:cl_pushangle[33][3]
-
+//sss
 new myVault
 enum _:_vip { _name[100], _pass[100], _sk[20]}
 new Vip[100][_vip]
