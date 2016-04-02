@@ -3202,7 +3202,6 @@ public cmd_pregame(
     g_nogamerounds = 0
     g_BoxStarted = 0
     g_SimonAllowed = 0
-    g_Simon = 0
     g_GamePrepare = 1
     server_cmd("sleep_enabled 0")
     server_cmd("jb_block_weapons")
@@ -3305,6 +3304,7 @@ public cmd_game_hns()
     g_GamesAp[HnsDay]=true
     g_GamePrepare = 0
     g_DoNotAttack = 1;
+    g_Simon = 0;
     g_GameWeapon[1] = CSW_KNIFE
     set_lights("b");
     server_cmd("bh_enabled 0")
@@ -3481,6 +3481,7 @@ public cmd_game_gunday()
     g_GameMode = GunDay
     g_GamesAp[GunDay]=true
     g_GamePrepare = 0
+    g_Simon = 0
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac") 
