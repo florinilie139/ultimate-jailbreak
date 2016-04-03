@@ -29,6 +29,7 @@ Jocuri: Slender man
 #define TASK_RADAR      666
 #define TASK_LAST       677365
 #define TASK_SAYTIME    9143
+#define TASK_INFO       222200
 #define TEAM_MENU        "#Team_Select_Spect"
 #define TEAM_MENU2        "#Team_Select"
 #define HUD_DELAY        Float:5.0
@@ -120,6 +121,7 @@ new gc_ButtonShoot
 new gp_Help
 new g_Countdown
 new Day[26]
+new g_Info
 //new g_CountKilled[33]
 
 enum _:days{
@@ -753,20 +755,35 @@ public player_status(id)
             if((team != CS_TEAM_T) && (team != CS_TEAM_CT))
                 return PLUGIN_HANDLED
             
-            health = get_user_health(player)
-            get_user_name(player, name, charsmax(name))
-            if(team == CS_TEAM_T)
+            if(!get_bit(g_Info,id))
             {
-                if(get_bit(g_PlayerFreeday,player))
-                    player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
+                health = get_user_health(player)
+                get_user_name(player, name, charsmax(name))
+                if(team == CS_TEAM_T)
+                {
+                    if(get_bit(g_PlayerFreeday,player))
+                        player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
+                    else
+                        player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
+                }
                 else
-                    player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
+                    player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
+                set_bit(g_Info,id)
+                remove_task(TASK_INFO+id)
+                set_task(0.5,"no_info",TASK_INFO+id)
             }
-            else
-                player_hudmessage(id, 6, 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
         }
     }
     return PLUGIN_HANDLED
+}
+
+public no_info(id)
+{
+    if(id>TASK_INFO)
+    {
+        id-=TASK_INFO;
+    }
+    clear_bit(g_Info,id)
 }
 public impulse_100(id)
 {
@@ -1330,7 +1347,7 @@ public voice_listening(receiver, sender, bool:listen)
     {
         case(2):
         {
-            if((sender != g_Simon) && (!get_bit(g_SimonVoice, sender) && gc_VoiceBlock))
+            if((sender != g_Simon) && !get_bit(g_SimonVoice, sender))
             {
                 engfunc(EngFunc_SetClientListening, receiver, sender, false)
                 return FMRES_SUPERCEDE
@@ -1338,7 +1355,7 @@ public voice_listening(receiver, sender, bool:listen)
         }
         case(1):
         {
-            if(!get_bit(g_SimonVoice, sender) && gc_VoiceBlock)
+            if(!get_bit(g_SimonVoice, sender))
             {
                 engfunc(EngFunc_SetClientListening, receiver, sender, false)
                 return FMRES_SUPERCEDE
@@ -1535,7 +1552,6 @@ public round_end()
     g_FriendlyFire = 0
     g_GameWeapon[0]=g_GameWeapon[1]= 0
 
-    remove_task(222200)
     remove_task(TASK_STATUS)
     remove_task(TASK_FREEDAY)
     remove_task(TASK_FREEEND)
@@ -3030,7 +3046,6 @@ public EndVote()
             get_players(Players, playerCount, "ae", "CT") 
             if(playerCount==0)
             {
-                EndVote()
                 return
             }
             new select = random_num(0,playerCount-1)
@@ -3061,13 +3076,13 @@ public EndVote()
             {
                 client_print(0, print_console, "server gives zombie day")
                 log_amx("server gives zombie day")
-                cmd_pregame("cmd_game_zombie",1,30.0)
+                cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
             case(HnsDay): 
             {
                 client_print(0, print_console, "server gives hns day")
                 log_amx("server gives hns day")
-                cmd_pregame("cmd_game_hns", 2, 60.0)
+                cmd_pregame("cmd_game_hns", 2, 0, 60.0)
             }
             case(AlienDay):
             {
@@ -3079,7 +3094,7 @@ public EndVote()
             {
                 client_print(0, print_console, "server gives gunday")
                 log_amx("server gives gunday")
-                cmd_pregame("cmd_game_gunday", 1, 30.0)
+                cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
             }
             case(SpartaDay):
             {
@@ -3092,13 +3107,13 @@ public EndVote()
                 client_print(0, print_console, "server gives gravity day")
                 log_amx("server gives gravity day")
                 set_cvar_num("sv_gravity",250)
-                cmd_pregame("cmd_game_gravity", 2, 30.0)
+                cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
             }
             case(FireDay):
             {
                 client_print(0, print_console, "server gives fire day")
                 log_amx("server gives fire day")
-                cmd_pregame("cmd_game_fire", 2, 30.0)
+                cmd_pregame("cmd_game_fire", 2, 1, 30.0)
             }
             case(BugsDay):
             {
@@ -3116,13 +3131,13 @@ public EndVote()
             {
                 client_print(0, print_console, "server gives coladay")
                 log_amx("server gives coladay")
-                cmd_pregame("cmd_game_coladay", 1, 30.0)
+                cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
             }
             case(OneBullet):
             {
                 client_print(0, print_console, "server gives onebullet")
                 log_amx("server gives onebullet")
-                cmd_pregame("cmd_game_onebullet", 0, 30.0)
+                cmd_pregame("cmd_game_onebullet", 0, 0, 30.0)
             }
             default:
             {
@@ -3195,6 +3210,7 @@ public cmd_expire_time()
 public cmd_pregame(
     gameName[], //string with game name
     freeze, //0 none 1 - Tero 2- Ct
+    change, //0 none 1 Ct2tero
     Float:countdown // time to start
     )
 {
@@ -3220,6 +3236,11 @@ public cmd_pregame(
         strip_user_weapons(player)
         set_user_gravity(player, 1.0)
         set_user_maxspeed(player, 250.0)
+        if(change==1 && cs_get_user_team(player) == CS_TEAM_CT)
+        {
+            set_bit(g_BackToCT, player)
+            cs_set_user_team2(player, CS_TEAM_T)
+        }
         if ((freeze == 1 && cs_get_user_team(player)==CS_TEAM_T)
         || (freeze == 2 && cs_get_user_team(player) == CS_TEAM_CT))
         {
@@ -3612,16 +3633,10 @@ public  cmd_game_fire()
         give_item(Players[i], "weapon_knife")
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
-        if ( g_Simon != Players[i])
-        {
-            if (cs_get_user_team(Players[i]) == CS_TEAM_CT)
-            {
-                set_bit(g_BackToCT, Players[i])
-                cs_set_user_team2(Players[i], CS_TEAM_T)
-                fade_screen(Players[i],false)
-                set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
-            }
-        }
+       
+        fade_screen(Players[i],false)
+        set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
+
     }
     set_user_health(g_Simon,999999);
     static dst[32]
@@ -4881,13 +4896,13 @@ public  simon_gameschoice(id, menu, item)
         {
             client_print(0, print_console, "%s gives zombie day", dst)
             log_amx("%s gives zombie day", dst)
-            cmd_pregame("cmd_game_zombie",1,30.0)
+            cmd_pregame("cmd_game_zombie",1, 0,30.0)
         }
         case(3): 
         {
             client_print(0, print_console, "%s gives hns day", dst)
             log_amx("%s gives hns day", dst)
-            cmd_pregame("cmd_game_hns", 2, 60.0)
+            cmd_pregame("cmd_game_hns", 2, 0, 60.0)
         }
         case(4):
         {
@@ -4909,26 +4924,26 @@ public  simon_gameschoice(id, menu, item)
         {
             client_print(0, print_console, "%s gives gunday", dst)
             log_amx("%s gives gunday", dst)
-            cmd_pregame("cmd_game_gunday", 1, 30.0)
+            cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
         }
         case(8):
         {
             client_print(0, print_console, "%s gives coladay", dst)
             log_amx("%s gives coladay", dst)
-            cmd_pregame("cmd_game_coladay", 1, 30.0)
+            cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
         }
         case(9):
         {
             client_print(0, print_console, "%s gives gravity day", dst)
             log_amx("%s gives gravity day", dst)
             set_cvar_num("sv_gravity",250)
-            cmd_pregame("cmd_game_gravity", 1, 30.0)
+            cmd_pregame("cmd_game_gravity", 1, 0, 30.0)
         }
         case(10):
         {
             client_print(0, print_console, "%s gives fire day", dst)
             log_amx("%s gives fire day", dst)
-            cmd_pregame("cmd_game_fire", 2, 30.0)
+            cmd_pregame("cmd_game_fire", 2, 1, 30.0)
         }
         case(11):
         {
@@ -4959,7 +4974,7 @@ public  simon_gameschoice(id, menu, item)
         {
             client_print(0, print_console, "%s gives onebullet", dst)
             log_amx("%s gives onebullet", dst)
-            cmd_pregame("cmd_game_onebullet", 0, 30.0)
+            cmd_pregame("cmd_game_onebullet", 0, 0, 30.0)
         }
         /*case(15):
         {
