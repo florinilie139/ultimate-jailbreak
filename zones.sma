@@ -519,7 +519,7 @@ public FoodMenuSelect (id, menu, item)
 {
     if(item == MENU_EXIT )
     {
-        g_MenuType[id]=g_MenuType[id]&2;
+        g_MenuType[id]=g_MenuType[id]&3;
         menu_destroy(menu)
         return PLUGIN_HANDLED
     }
@@ -716,6 +716,10 @@ public FwdTouch(ent, id)
         {
             //set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
             //show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
+            if(cs_get_user_team(id) == CS_TEAM_T && !get_wanted(id))
+            {
+                client_print(id,print_center, "Esti in zona ct")
+            }
             
             g_fLastTouch[id] = fGameTime
             g_LastTouch[id] = getZonesType(szNameEnt)
@@ -725,6 +729,10 @@ public FwdTouch(ent, id)
             if(g_LastTouch[id] == CANTEEN && g_MenuType[id]==0)
             {
                 ShowFoodMenu(id);
+            }
+            else if(g_LastTouch[id] != CANTEEN)
+            {
+                g_MenuType[id]=g_MenuType[id]&2;
             }
         }
     }
