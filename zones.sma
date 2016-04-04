@@ -716,7 +716,7 @@ public FwdTouch(ent, id)
         {
             //set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
             //show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
-            if(cs_get_user_team(id) == CS_TEAM_T && !get_wanted(id))
+            if(g_LastTouch[id] == CTZONE && cs_get_user_team(id) == CS_TEAM_T && !get_wanted(id))
             {
                 client_print(id,print_center, "Esti in zona ct")
             }
