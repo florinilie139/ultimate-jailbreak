@@ -3236,7 +3236,7 @@ public cmd_pregame(
         strip_user_weapons(player)
         set_user_gravity(player, 1.0)
         set_user_maxspeed(player, 250.0)
-        if(change==1 && cs_get_user_team(player) == CS_TEAM_CT)
+        if(change==1 && cs_get_user_team(player) == CS_TEAM_CT && player!=g_Simon)
         {
             set_bit(g_BackToCT, player)
             cs_set_user_team2(player, CS_TEAM_T)
