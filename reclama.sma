@@ -7,7 +7,7 @@ public plugin_init()
 {
 	register_plugin("Reclama", "1.0", "Mister X")
 	register_concmd("amx_reclama", "cmd_reclama", ADMIN_LEVEL_E,"<nume> : ii pune playerului binduri cu numele serverului")
-	hostname = register_cvar("dns_server", "jb.ecila.ro");
+	hostname = register_cvar("dns_server", "jb.Dobs.ro");
 }
 
 public cmd_reclama(id,level,cid)

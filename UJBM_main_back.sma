@@ -1204,7 +1204,7 @@ public player_killed(victim, attacker, shouldgib)
 								new name[32],message[200]
 								
 								get_user_name(attacker,name,31)
-								format(message, 511,"[JB.ECILA.RO]^x01Prizonierul ^x03%s ^x01devenit rebel",name)
+								format(message, 511,"[JB.DOBS.RO]^x01Prizonierul ^x03%s ^x01devenit rebel",name)
 								message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
 								write_string(message);
 								message_end();
@@ -1217,7 +1217,7 @@ public player_killed(victim, attacker, shouldgib)
 								new nameCT[32],nameT[32],message[200]
 								get_user_name(attacker,nameCT,31)
 								get_user_name(victim,nameT,31)
-								format(message, 511," [JB.ECILA.RO] ^x01Gardianul ^x03%s ^x01a omorat rebelul ^x03%s",nameCT,nameT)
+								format(message, 511," [JB.DOBS.RO] ^x01Gardianul ^x03%s ^x01a omorat rebelul ^x03%s",nameCT,nameT)
 								message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
 								write_string(message);
 								message_end();

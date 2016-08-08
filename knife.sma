@@ -133,8 +133,8 @@ public plugin_precache ()
     precache_sound("weapons/cbar_hit1.wav")
     precache_sound("weapons/cbar_miss1.wav")
     precache_sound("debris/metal2.wav")
-    //precache_sound("jbecila/halloween/EvilLaugh.wav")
-    precache_sound("jbecila/SurpriseMotherfucker.wav")
+    //precache_sound("jbDobs/halloween/EvilLaugh.wav")
+    precache_sound("jbDobs/SurpriseMotherfucker.wav")
     precache_sound(palo_deploy)
     precache_sound(palo_slash1)
     precache_sound(palo_slash2)
@@ -251,7 +251,7 @@ public player_killed(victim, attacker, shouldgib)
             g_HasCrowbar[victim] = 0
         }
         if(is_user_alive(attacker) && cs_get_user_team(attacker) == CS_TEAM_T && g_HasCrowbar[attacker]>0 && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)==CS_TEAM_CT)
-            client_cmd(0, "spk jbecila/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbecila/halloween/EvilLaugh.wav")//
+            client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbDobs/halloween/EvilLaugh.wav")//
     }
     return HAM_IGNORED
 }

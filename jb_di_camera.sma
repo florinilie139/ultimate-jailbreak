@@ -10,7 +10,7 @@
 #pragma semicolon 1
 //Prefix//
 new 
-const szPrefix[] = "[Prefix]: JB.Ecila.RO";
+const szPrefix[] = "[Prefix]: JB.DOBS.RO";
 /////////
 //Cvar//
 new
