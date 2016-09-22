@@ -15,7 +15,7 @@
 #define OFFSET_LINUX      5
 
 #define MAXENTS 1000
-#define MAXMONEYS 200
+#define MAXMONEYS 50
 
 new moneybox[MAXENTS]
 new model[] = "models/w_money_david.mdl"
