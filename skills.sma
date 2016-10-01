@@ -482,7 +482,7 @@ public cmd_reset (id, menu, item)
         if(is_user_alive(id))
         {    
             set_user_rendering(id)
-            if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
+            if(g_IsDisguise[id] == 1 && is_skills_ok())
             {
                 set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
                 set_user_info(id, "model", "jbbossi_temp")
@@ -523,7 +523,7 @@ public check_players ()
         new player = Players[i]
         if((g_PlayerSkill[player][3] != 0 && cs_get_user_team(player) == CS_TEAM_T) || (g_PlayerSkill[player][10]!=0 && cs_get_user_team(player)== CS_TEAM_CT)){
             get_user_origin(player, tmp_origin)
-            if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && g_Gamemode <= 1 && get_user_weapon(player) == CSW_KNIFE){
+            if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && is_skills_ok() && get_user_weapon(player) == CSW_KNIFE){
                 counter[player]++ //player has not moved since last check
                 if(counter[player] >= 30 - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
                     if(counter[player] == 30 - g_PlayerSkill[player][3]*6){
@@ -532,7 +532,7 @@ public check_players ()
                     }
                     client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
-                if(counter[player] >= 9 && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && g_Duel<=2){  //player was not moving during last HEAL_INTERVAL seconds
+                if(counter[player] >= 9 && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
                     if(health + g_PlayerSkill[player][10]> g_maxhp[g_PlayerSkill[player][10]])
                         set_user_health(player, g_maxhp[g_PlayerSkill[player][10]])
@@ -551,7 +551,7 @@ public check_players ()
                 origins[player][2] = tmp_origin[2]
             }
         }
-        if((g_PlayerSkill[player][9] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][9] == 2) && 0 <= g_Gamemode  &&  g_Gamemode <= 1 && cs_get_user_team(player) == CS_TEAM_CT){
+        if((g_PlayerSkill[player][9] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][9] == 2) && is_skills_ok() && cs_get_user_team(player) == CS_TEAM_CT){
             new spec_id=player, Float:my_origin[3], Float:smallest_angle=180.0, smallest_id=0, Float:xp=2.0,Float:yp=2.0
             entity_get_vector(player,EV_VEC_origin,my_origin)
             
@@ -640,7 +640,7 @@ public check_players ()
 }
 public client_PreThink(id)
 {
-    if(is_user_alive(id) && (g_Gamemode==0 || g_Gamemode==1)){
+    if(is_user_alive(id) && is_skills_ok()){
         if(g_PlayerSkill[id][2]!=0){
             //if(get_user_button(id) & IN_FORWARD)
                 set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][2] * 30 )
@@ -658,7 +658,7 @@ public client_PreThink(id)
 }
 public cmd_disguise (id)
 {
-    if (!is_user_alive(id) || g_PlayerSkill[id][4]== 0 || g_Gamemode>1 || g_Gamemode<0 || cs_get_user_team(id) != CS_TEAM_T)
+    if (!is_user_alive(id) || g_PlayerSkill[id][4]== 0 || !is_skills_ok() || cs_get_user_team(id) != CS_TEAM_T)
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -694,6 +694,13 @@ public cmd_disguise (id)
     return PLUGIN_HANDLED
 }
 
+bool:is_skills_ok()
+{
+	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<=2)
+		return true
+	return false
+}
+
 public disguise_done (id)
 {
     if(id > 32)
@@ -701,7 +708,7 @@ public disguise_done (id)
     
     remove_task(3900 + id)
     
-    if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
+    if(g_IsDisguise[id] == 1 && is_skills_ok())
     {
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
         set_user_info(id, "model", "jbbossi_temp")

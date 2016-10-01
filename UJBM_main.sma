@@ -2568,11 +2568,15 @@ public duel_guns(id, menu, item)
     strip_user_weapons(id)
     player_glow(id, g_Colors[3])
     cs_set_user_armor(id, 0, CS_ARMOR_NONE)
+    set_user_gravity(id, 1.0)
+    set_user_maxspeed(id, 250.0)
     
     g_DuelB = player
     strip_user_weapons(player)
     player_glow(player, g_Colors[2])
     cs_set_user_armor(player, 0, CS_ARMOR_NONE)
+    set_user_gravity(player, 1.0)
+    set_user_maxspeed(player, 250.0)
     
     switch (_Duel[g_Duel - 4][_csw])
     {
