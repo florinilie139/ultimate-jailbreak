@@ -225,6 +225,7 @@ new g_PlayerRevolt
 new g_PlayerHelp
 new g_PlayerFreeday
 new g_PlayerLastFreeday
+new g_PlayerNextFreeday
 new g_PlayerLast
 
 new g_NoShowShop = 0
@@ -1473,7 +1474,8 @@ public round_end()
     g_PlayerRevolt = 0
     if(g_JailDay%7 > 0 && g_JailDay%7 < 6 && is_not_game()){
         g_PlayerLastFreeday = g_PlayerFreeday
-        g_PlayerFreeday = 0
+        g_PlayerFreeday = g_PlayerNextFreeday
+        g_PlayerNextFreeday = 0
     }
     
     g_PlayerLast = 0
@@ -1805,8 +1807,11 @@ public cmd_freeday(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_PLAYER")
             menu_additem(menu, option, "1", 0)
             
-            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_ALL")
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_PLAYER_NEXT")
             menu_additem(menu, option, "2", 0)
+            
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_ALL")
+            menu_additem(menu, option, "3", 0)
             
             menu_display(id, menu)
         }
@@ -1828,9 +1833,13 @@ public freeday_choice(id, menu, item)
     {
         case('1'):
         {
-            cmd_freeday_player(id)
+            cmd_freeday_player(id,false)
         }
         case('2'):
+        {
+            cmd_freeday_player(id,true)
+        }
+        case('3'):
         {
             if((id == g_Simon) || (get_user_flags(id) & ADMIN_SLAY))
             {
@@ -1857,10 +1866,15 @@ public freeday_choice(id, menu, item)
     }
     return PLUGIN_HANDLED
 }
-public cmd_freeday_player(id)
+public cmd_freeday_player(id,bool:next)
 {
     if((is_user_alive(id) && cs_get_user_team(id) == CS_TEAM_CT) || (get_user_flags(id) & ADMIN_SLAY))
-        menu_players(id, CS_TEAM_T, id, 1, "freeday_select", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+    {
+        if(next == true)
+            menu_players(id, CS_TEAM_T, id, 2, "freeday_select_next", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+        else
+            menu_players(id, CS_TEAM_T, id, 1, "freeday_select", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+    }
     return PLUGIN_CONTINUE
 }
 public cmd_punish(id)
@@ -2193,7 +2207,7 @@ public adm_freeday(id)
     player = cmd_target(id, user, 2)
     if(is_user_connected(player) && cs_get_user_team(player) == CS_TEAM_T)
     {
-        freeday_set(id, player)
+        freeday_set(id, player, false)
     }
     return PLUGIN_HANDLED
 }
@@ -2501,10 +2515,26 @@ public freeday_select(id, menu, item)
     
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
-    freeday_set(id, player)
+    freeday_set(id, player, false)
 
     return PLUGIN_HANDLED
 }
+public freeday_select_next(id, menu, item)
+    {
+        if(item == MENU_EXIT)
+        {
+            menu_destroy(menu)
+            return PLUGIN_HANDLED
+        }
+        
+        static dst[32], data[5], player, access, callback
+        
+        menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+        player = str_to_num(data)
+        freeday_set(id, player, true)
+        
+        return PLUGIN_HANDLED
+    }
 public duel_knives(id, menu, item)
 {
     static dst[32], data[5], access, callback, option[128], player, src[32]
@@ -2706,7 +2736,7 @@ stock in_array(needle, data[], size)
     }
     return -1
 }
-stock freeday_set(id, player)
+stock freeday_set(id, player,bool:next)
 {
     static src[32], dst[32]
     get_user_name(player, dst, charsmax(dst))
@@ -2730,6 +2760,18 @@ stock freeday_set(id, player)
         {
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_HASFREEDAY", dst)
             client_print(0,print_chat,"%s si-a cumparat FD",dst)
+        }
+    }
+    if(next == true)
+    {
+        if(0 < id <= g_MaxClients && is_user_connected(id))
+        {
+            set_bit(g_PlayerNextFreeday, player)
+            get_user_name(id, src, charsmax(src))
+            player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_FREEDAYGIVE_NEXT", src, dst)
+            new sz_msg[256];
+            formatex(sz_msg, charsmax(sz_msg), "%L", LANG_SERVER, "UJBM_GUARD_FREEDAYGIVE_NEXT", src, dst)
+            client_print(0,print_console,sz_msg)
         }
     }
 }
@@ -2776,7 +2818,7 @@ stock menu_players(id, CsTeams:team, skip, alive, callback[], title[], any:...)
     menu = menu_create(menuname, callback)
     for(i = 1; i <= g_MaxClients; i++)
     {
-        if(!is_user_connected(i) || (alive && !is_user_alive(i)) || (skip == i))
+        if(!is_user_connected(i) || (alive == 1 && !is_user_alive(i) || alive == 2 && is_user_alive(i)) || (skip == i))
             continue
         
         if(!(team == CS_TEAM_T || team == CS_TEAM_CT) || ((team == CS_TEAM_T || team == CS_TEAM_CT) && (cs_get_user_team(i) == team)))
@@ -4316,7 +4358,7 @@ public shop_choice_T(id, menu, item)
             if (money >= FDCOST && !get_bit(g_PlayerWanted, id)) 
             {
                 cs_set_user_money (id, money - FDCOST, 0)
-                freeday_set(0, id)
+                freeday_set(0, id, false)
                 BuyTimes[id]++
             }
             else
