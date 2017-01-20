@@ -19,7 +19,7 @@ new const g_sCommands[ ][ ] =
 	"sv_aim 0",
 	"cl_dlmax 1",
 
-	"name WwW.Dobs.Ro",
+	"name JBRomania.Ro",
 
 	"wait;snapshot;wait;snapshot",
 
