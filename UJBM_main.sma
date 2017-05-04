@@ -1217,7 +1217,7 @@ public player_killed(victim, attacker, shouldgib)
                                 set_bit(g_PlayerWanted, attacker)
                                 entity_set_int(attacker, EV_INT_skin, 5)
                                 
-                                format(message, 200,"^x04[JBRomania.Ro]^x01Prizonierul ^x03%s a ^x01 devenit rebel",nameCT)
+                                format(message, 200,"^x04[JB]^x01Prizonierul ^x03%sa ^x01 devenit rebel",nameCT)
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
                                 message_end();
@@ -1238,11 +1238,11 @@ public player_killed(victim, attacker, shouldgib)
                                 }*/
                                 if(get_bit(g_PlayerWanted,victim))
                                 {
-                                    format(message, 200,"^x04[JBRomania.RO]^x01Gardianul ^x03 %s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
+                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03 %s^x01a omorat rebelul ^x03%s",nameCT,nameT)
                                 }
                                 else if(get_bit(g_PlayerFreeday,victim))
                                 {
-                                    format(message, 200,"^x04[JBRomania.Ro]^x01Gardianul ^x03 %s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
+                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
                                 }
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
@@ -3058,69 +3058,69 @@ public EndVote()
         {
             case(AlienHiddenDay):
             {
-                client_print(0, print_console, "server gives alien day")
-                log_amx("server gives alien day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
                 cmd_game_alien2()
             }
             case(ZombieDay):
             {
-                client_print(0, print_console, "server gives zombie day")
-                log_amx("server gives zombie day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
                 cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
             case(HnsDay): 
             {
-                client_print(0, print_console, "server gives hns day")
-                log_amx("server gives hns day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE HNS DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE HNS DAY")
                 cmd_pregame("cmd_game_hns", 2, 0, 60.0)
             }
             case(AlienDay):
             {
-                client_print(0, print_console, "server gives alien day")
-                log_amx("server gives alien day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
                 cmd_game_alien()
             }
             case(GunDay):
             {
-                client_print(0, print_console, "server gives gunday")
-                log_amx("server gives gunday")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GUN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE GUNDAY")
                 cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
             }
             case(SpartaDay):
             {
-                client_print(0, print_console, "server gives sparta")
-                log_amx("server gives sparta day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE SPARTA DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY")
                 cmd_game_sparta()
             }
             case(GravityDay):
             {
-                client_print(0, print_console, "server gives gravity day")
-                log_amx("server gives gravity day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GRAVITY DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY")
                 set_cvar_num("sv_gravity",250)
                 cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
             }
             case(FireDay):
             {
-                client_print(0, print_console, "server gives fire day")
-                log_amx("server gives fire day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE FIRE DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY")
                 cmd_pregame("cmd_game_fire", 2, 1, 30.0)
             }
             case(BugsDay):
             {
-                client_print(0, print_console, "server gives bugs day")
-                log_amx("server gives bugs day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE BUGs DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE BUGs DAY")
                 cmd_game_bugs()
             }
             case(NightDay):
             {
-                client_print(0, print_console, "server gives nightcrawler")
-                log_amx("server gives nightcrawler day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
+                log_amx("IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
                 cmd_game_nightcrawler()
             }
             case(ColaDay):
             {
-                client_print(0, print_console, "server gives coladay")
-                log_amx("server gives coladay")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE COLADAY")
+                log_amx("IN ACEASTA SAMBATA ESTE COLADAY")
                 cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
             }
             case(OneBullet):
@@ -4880,32 +4880,32 @@ public  simon_gameschoice(id, menu, item)
     {
         case(1):
         {
-            client_print(0, print_console, "%s gives alien day", dst)
-            log_amx("%s gives alien day", dst)
+            client_print(0, print_console, "%s A DAT ALIEN DAY", dst)
+            log_amx("%s A DAT ALIEN DAY", dst)
             cmd_game_alien2()
         }
         case(2):
         {
-            client_print(0, print_console, "%s gives zombie day", dst)
-            log_amx("%s gives zombie day", dst)
+            client_print(0, print_console, "%s A DAT ZOMBIE DAY", dst)
+            log_amx("%s A DAT ZOMBIE DAY", dst)
             cmd_pregame("cmd_game_zombie",1, 0,30.0)
         }
         case(3): 
         {
-            client_print(0, print_console, "%s gives hns day", dst)
-            log_amx("%s gives hns day", dst)
+            client_print(0, print_console, "%s A DAT HNS DAY", dst)
+            log_amx("%s A DAT HNS DAY", dst)
             cmd_pregame("cmd_game_hns", 2, 0, 60.0)
         }
         case(4):
         {
-            client_print(0, print_console, "%s gives alien day", dst)
-            log_amx("%s gives alien day", dst)
+            client_print(0, print_console, "%s A DAT ALIEN DAY", dst)
+            log_amx("%s A DAT ALIEN DAY", dst)
             cmd_game_alien()
         }
         case(5):
         {
-            client_print(0, print_console, "%s gives box", dst)
-            log_amx("%s gives box", dst)
+            client_print(0, print_console, "%s A DAT BOX", dst)
+            log_amx("%s A DAT BOX", dst)
             cmd_box(id)
         }
         case(6):
@@ -4914,51 +4914,51 @@ public  simon_gameschoice(id, menu, item)
         }
         case(7):
         {
-            client_print(0, print_console, "%s gives gunday", dst)
-            log_amx("%s gives gunday", dst)
+            client_print(0, print_console, "%s A DAT GUNDAY", dst)
+            log_amx("%s A DAT GUNDAY", dst)
             cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
         }
         case(8):
         {
-            client_print(0, print_console, "%s gives coladay", dst)
-            log_amx("%s gives coladay", dst)
+            client_print(0, print_console, "%s A DAT COLADAY", dst)
+            log_amx("%s A DAT COLADAY", dst)
             cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
         }
         case(9):
         {
-            client_print(0, print_console, "%s gives gravity day", dst)
-            log_amx("%s gives gravity day", dst)
+            client_print(0, print_console, "%s A DAT GRAVITY DAY", dst)
+            log_amx("%s A DAT GRAVITY DAY", dst)
             set_cvar_num("sv_gravity",250)
             cmd_pregame("cmd_game_gravity", 1, 0, 30.0)
         }
         case(10):
         {
-            client_print(0, print_console, "%s gives fire day", dst)
-            log_amx("%s gives fire day", dst)
+            client_print(0, print_console, "%s A DAT FIRE DAY", dst)
+            log_amx("%s A DAT FIRE DAY", dst)
             cmd_pregame("cmd_game_fire", 2, 1, 30.0)
         }
         case(11):
         {
-            client_print(0, print_console, "%s gives bugs day", dst)
-            log_amx("%s gives bugs day", dst)
+            client_print(0, print_console, "%s A DAT BUGS DAY", dst)
+            log_amx("%s A DAT BUGS DAY", dst)
             cmd_game_bugs()
         }
         case(12):
         {
-            client_print(0, print_console, "%s gives nightcrawler", dst)
-            log_amx("%s gives nightcrawler day", dst)
+            client_print(0, print_console, "%s A DAT NIGHTCRAWLER", dst)
+            log_amx("%s A DAT NIGHTCRAWLER day", dst)
             cmd_game_nightcrawler()
         }
         case(13):
         {
-            client_print(0, print_console, "%s gives sparta", dst)
-            log_amx("%s gives sparta day", dst)
+            client_print(0, print_console, "%s A DAT SPARTA", dst)
+            log_amx("%s A DAT SPARTA day", dst)
             cmd_game_sparta()
         }
         case(14):
         {
-            client_print(0, print_console, "%s gives funday", dst)
-            log_amx("%s gives funday", dst)
+            client_print(0, print_console, "%s A DAT FUNDAY", dst)
+            log_amx("%s A DAT FUNDAY", dst)
             cmd_game_funday()
             cmd_simonmenu(id)
         }
@@ -4982,8 +4982,8 @@ public  simon_gameschoice(id, menu, item)
         }*/
         case(100):
         {
-            client_print(0, print_console, "%s gives trivia", dst)
-            log_amx("%s gives trivia", dst)
+            client_print(0, print_console, "%s A DAT TRIVIA", dst)
+            log_amx("%s A DAT TRIVIA", dst)
             server_cmd("simon_trivia %d",id)
         }
         default:
