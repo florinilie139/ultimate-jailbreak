@@ -4,7 +4,8 @@
 #include <fakemeta>
 #include <hamsandwich>
 #include <cstrike>
-#include <ujbm.inc>
+#include <ujbm>
+#include <vip_base>
 
 #define PLUGIN_NAME    "Knife"
 #define PLUGIN_AUTHOR    "Mister X"
@@ -76,7 +77,7 @@ public plugin_init()
     RegisterHam(Ham_Killed, "player", "player_killed")
     RegisterHam(Ham_Weapon_SendWeaponAnim, "weapon_knife","Handl_Animation")
     RegisterHam(Ham_Item_Deploy, "weapon_knife", "Handl_Deploy")
-    gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "25.0")
+    gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "40.0")
     //set_task(0.5, "check", _, _, _, "b")
 }
 
@@ -224,7 +225,7 @@ public CrowbarChoice (player, menu, item){
     nr = str_to_num(data)
     if(cs_get_user_money(player)<CROWBARCOST)
         client_print(player,print_chat,"N-ai destui bani")
-    else if(nr!=1 && _KnifesType[nr-2] == Admin && !(get_user_flags(player)&ADMIN_KICK) && !get_vip(player))
+    else if(nr!=1 && _KnifesType[nr-2] == Admin && !(get_user_flags(player)&ADMIN_KICK) && !get_vip_type(player))
         client_print(player,print_chat,"Trebuie sa ai admin ca sa il iei")
     else if((nr == 1 && cs_get_user_team(player)==CS_TEAM_CT) || nr!=1 && (_KnifesType[nr-2] == Tero || _KnifesType[nr-2] == Counter)  && CsTeams:_KnifesType[nr-2] != cs_get_user_team(player))
         client_print(player,print_chat,"Nu e pentru echipa ta")

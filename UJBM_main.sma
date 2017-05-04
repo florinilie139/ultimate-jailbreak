@@ -11,6 +11,7 @@ Jocuri: Slender man
 #include <hamsandwich>
 #include <fun>
 #include <cstrike>
+#include <vip_base>
 
 #define PLUGIN_NAME    "[UJBM] Main"
 #define PLUGIN_AUTHOR    "Mister X"
@@ -33,7 +34,7 @@ Jocuri: Slender man
 #define TASK_INFO       222200
 #define TEAM_MENU        "#Team_Select_Spect"
 #define TEAM_MENU2        "#Team_Select"
-#define HUD_DELAY        Float:5.0
+#define HUD_DELAY        Float:1.0
 #define CELL_RADIUS        Float:200.0
 
 #define get_bit(%1,%2)         ( %1 &   1 << ( %2 & 31 ) )
@@ -301,11 +302,6 @@ new g_IsFG
 new g_ResultVote[33]
 new g_DayTimer = 0
 
-enum _:_vip { _name[100], _pass[100]}
-new Vip[100][_vip]
-new MaxVip = 0
-new IsVip[33]
-
 public plugin_init()
 {
     new ip[36];
@@ -316,7 +312,6 @@ public plugin_init()
         return PLUGIN_CONTINUE;
     }
     Load();
-    LoadVips();
     unregister_forward(FM_Spawn, gp_PrecacheSpawn)
     unregister_forward(FM_KeyValue, gp_PrecacheKeyValue)
     //register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)
@@ -449,7 +444,6 @@ public plugin_natives()
     register_native ("get_wanted", "_get_wanted",0)
     register_native ("set_wanted", "_set_wanted",0)
     register_native ("get_last", "_get_last",0)
-    register_native ("get_vip","_get_vip",0)
     register_native ("get_model","_get_model",0)
 } 
 public _get_simon(iPlugin, iParams)
@@ -490,12 +484,7 @@ public _set_wanted(iPlugin, iParams)
     entity_set_int(id, EV_INT_skin, 5)
     
 }
-public bool:_get_vip(iPlugin, iParams) 
-{ 
-    new id = get_param(1);
-    if (IsVip[id]>0)return true;
-    return false;
-}  
+
 public _get_model(iPlugin, iParams) 
 { 
     set_string(1, JBMODELSHORT, get_param(2));  
@@ -550,9 +539,7 @@ public client_putinserver(id)
     BoxPartener[id]=0
     BuyTimes[id]=0
     first_join(id)
-    IsVip[id]=0
     //g_CountKilled[id] = 0
-    load_vip(id)
 }
 public client_disconnect(id)
 {
@@ -649,44 +636,6 @@ public Load()
         }
     }
     return PLUGIN_CONTINUE
-}
-
-public LoadVips ()
-{
-    new file[250]
-    new data[250], len, line = 0,id
-    
-    get_configsdir(file, 249)
-    format(file, 249, "%s/vip.ini", file)
-    if(file_exists(file))
-    {
-        while((line = read_file(file , line , data , 249 , len) ) != 0 )
-        {
-            if ((data[0] == ';') || equal(data, "")) continue
-            parse(data,Vip[id][_name],99,Vip[id][_pass],99)
-            id++
-        }
-        log_amx("%d Vip cu skills au fost incarcati",id)
-        MaxVip = id
-    }
-    else
-        log_amx("fisierul %s nu exista",file)
-}
-public load_vip (id)
-{
-    new name[100],pass[100]
-    get_user_name(id,name,99)
-    for(new i = 0;i<MaxVip;i++)
-    {
-        if(equal(name,Vip[i][_name])){
-            get_user_info(id,"_vip",pass,99)
-            if(strlen(Vip[i][_pass]) == 0 || equal(pass,Vip[i][_pass])){
-                IsVip[id] = i+1
-                log_amx("%s a fost logat ca Vip JB",name)
-                //client_print(id,print_chat,"Skillurile tale salvate au fost incarcate, distractie placuta")
-            }
-        }
-    }
 }
 public radar_alien()
 {
@@ -855,8 +804,6 @@ public player_spawn(id)
     clear_bit(g_PlayerWanted, id)
     team = cs_get_user_team(id)
     if (!get_bit(g_NoShowShop,id)) cmd_shop(id)
-    if(IsVip[id] > 0)
-        set_user_health(id,150)
     
     switch(team)
     {
@@ -1346,7 +1293,7 @@ public voice_listening(receiver, sender, bool:listen)
 {
     if(!is_user_connected(receiver) || !is_user_connected(sender) || receiver == sender)
         return FMRES_IGNORED
-    if(get_user_flags(sender)&ADMIN_SLAY || IsVip[sender] > 0)
+    if(get_user_flags(sender)&ADMIN_SLAY || get_vip_type(sender) > 0)
     {
         engfunc(EngFunc_SetClientListening, receiver, sender, true)
         return FMRES_SUPERCEDE
@@ -1507,7 +1454,6 @@ public round_end()
         set_cvar_num("sv_gravity",800)
     new Players[32]     
     new playerCount, i 
-    new alT=0,alC=0;
     get_players(Players, playerCount, "c") 
     for (i=0; i<playerCount; i++) 
     {
@@ -1531,10 +1477,6 @@ public round_end()
             }
         }
         if(is_user_alive(Players[i])){
-            if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
-                alC = 1;
-            else
-                alT = 1;
             
             message_begin( MSG_ONE_UNRELIABLE, get_user_msgid("ScreenFade"), _, Players[i] )
             write_short(12288)    // Duration
@@ -1545,10 +1487,6 @@ public round_end()
             write_byte (0)        // Blue
             write_byte (255)    // Alpha
             message_end()
-        }
-        if(IsVip[Players[i]] > 0){
-            if(cs_get_user_team(Players[i]) == CS_TEAM_CT && alC==1 || cs_get_user_team(Players[i]) == CS_TEAM_T && alT==1)
-                cs_set_user_money(Players[i],cs_get_user_money(Players[i])+3250);
         }
     }
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
@@ -2024,9 +1962,9 @@ public lastrequestgames_select(id, menu, item)
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac", "CT")        
-    if(playerCount>=2 && (cs_get_user_money(id)>=16000 || IsVip[id]> 0)){
+    if(playerCount>=2 && (cs_get_user_money(id)>=16000 ||get_vip_type(id)> 0)){
         server_cmd("bh_enabled 1")
-        if(IsVip[id] == 0)
+        if(get_vip_type(id) == 0)
             cs_set_user_money(id,cs_get_user_money(id)-16000);
         switch(data[0])
         {
@@ -2899,9 +2837,8 @@ public client_infochanged(id)
 { 
     if (is_user_connected(id))
     {
-        if (IsVip[id] == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
+        if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
             set_user_info(id, "model", JBMODELSHORT)
-        load_vip(id)
     }     
 } 
 
@@ -4396,6 +4333,8 @@ public shop_choice_T(id, menu, item)
             client_print(id, print_center , sz_msg)
         }    
     }
+    if(get_vip_type(id) == 3)
+       BuyTimes[id] = 0;
     return PLUGIN_HANDLED
 }
 public shop_choice_CT(id, menu, item)
@@ -4579,9 +4518,9 @@ public Menu_Handler(id, menu, item)
     new key = str_to_num(data)
     
     new Cash = get_pdata_int(id,OFFSET_CSMONEY,5)
-    if(Cash >= Weapons_Price[key] || IsVip[id]>0)
+    if(Cash >= Weapons_Price[key] || get_vip_type(id) == 1)
     {
-        if(IsVip[id] == 0)
+        if(get_vip_type(id) == 0)
             fm_set_user_money(id,Cash-Weapons_Price[key],1)
         
         G_Info[1][id] -= Weapons_Price[G_Last[id][G_Info[0][id]-2]]

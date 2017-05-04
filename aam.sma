@@ -7,6 +7,7 @@
 #include <hamsandwich>
 #include <nvault>
 #include <ujbm>
+#include <vip_base>
 
 
 
@@ -60,7 +61,7 @@ public Event_JoinTeam() {
 public player_spawn (id)
 {
     new flags = get_user_flags(id)
-    if (((flags & ADMIN_MENU) || get_vip(id) == true) && g_reset[id] == true)
+    if (((flags & ADMIN_MENU) || get_vip_type(id) != 0) && g_reset[id] == true)
         set_task(1.0, "reset",id)
 }
 public reset (player)
@@ -226,7 +227,7 @@ public SetPlayerModel(player, cmd[]) {
         return 0
     }
     new flags = get_user_flags(player)
-    if ((!(flags & ADMIN_MENU) && get_vip(player) == false))
+    if ((!(flags & ADMIN_MENU) && get_vip_type(player) == 0))
     {
         new name[33]
         get_user_name(player, name, 32)

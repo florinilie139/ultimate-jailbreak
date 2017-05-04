@@ -31,6 +31,7 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <fun>
+#include <vip_base>
 
 static const sound1[32] = "sleep.wav"
 static const sound2[32] = "bagyawn.wav"
@@ -41,6 +42,8 @@ new bool:playsound1
 new bool:playsound2
 
 new bool:asleep[33]
+
+new origins[33][3];
 
 new max_health
 
@@ -89,12 +92,14 @@ public cmd_sleep(id)
         set_task(0.2,"fadeout",id,"",0,"b")
         client_print(id,print_center,"[AMXX] %L",id,"MSG_SLEEP")
         client_print(id,print_chat,"[AMXX] %L",id,"MSG_WAKEUP")
+        get_user_origin(id, origins[id]);
         if(playsound1) emit_sound(id,CHAN_VOICE,sound1,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
     }
 }
 
 public fadeout(id)
 {
+    new tmp_origin[3]
     if(!is_user_alive(id))
     {
         asleep[id]=false
@@ -123,8 +128,10 @@ public fadeout(id)
     }
     else
     {
+        get_user_origin(id, tmp_origin);
+        
         new health = get_user_health(id)
-        if(health>=get_pcvar_num(max_health))
+        if(health>=get_pcvar_num(max_health) || tmp_origin[0] != origins[id][0] ||  tmp_origin[1] != origins[id][1])
         {
             asleep[id]=false
         }
@@ -132,9 +139,15 @@ public fadeout(id)
         {
             //set_user_maxspeed(id,1.0)
             client_cmd(id,"+duck")
-
-            set_user_health(id,health + 1)
-
+            
+            if(get_vip_type(id) == 3)
+            {
+                set_user_health(id,health + 2)
+            }
+            else
+            {
+                set_user_health(id,health + 1)
+            }
             set_user_rendering(id,kRenderFxGlowShell,0,255,0,kRenderTransAlpha,25)
 
             message_begin(MSG_ONE,get_user_msgid("ScreenFade"),{0,0,0},id)
@@ -146,6 +159,11 @@ public fadeout(id)
             write_byte(0)
             write_byte(255)
             message_end()
+            
+            
+            origins[id][0] = tmp_origin[0]
+            origins[id][1] = tmp_origin[1]
+            origins[id][2] = tmp_origin[2]
         }
     }
 }

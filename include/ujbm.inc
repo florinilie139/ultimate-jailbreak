@@ -18,6 +18,4 @@ native set_wanted(id);// set wanted on a prisoner
 
 native get_last();// returns ID of the last prisoner.
 
-native bool:get_vip(id) 
-
 native get_model(buffer[], lenght)

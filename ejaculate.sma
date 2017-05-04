@@ -41,7 +41,7 @@ Setup:
 /***************************************************************************************************/
 
 #include <amxmodx> 
-#include <ujbm>
+#include <vip_base>
 
 new count_ejaculate[33]
 new bool:EjaculateFlag[33]
@@ -58,7 +58,7 @@ if (get_cvar_num("amx_maxejaculations")==0)
 	return PLUGIN_HANDLED 
 if (!is_user_alive(id)) 
 	return PLUGIN_HANDLED 
-if ( (get_cvar_num("amx_ejaculate_admin")==1) && !(get_user_flags(id) & ADMIN_LEVEL_A) && get_vip(id) == false)
+if ( (get_cvar_num("amx_ejaculate_admin")==1) && !(get_user_flags(id) & ADMIN_LEVEL_A) && get_vip_type(id) == 0)
 {
 	console_print(id,"[AMXX] N-ai frate access la comanda. PA")
 	return PLUGIN_HANDLED

@@ -6,7 +6,8 @@
 #include <fakemeta>
 #include <fun>
 #include <hamsandwich>
-#include <ujbm.inc>
+#include <ujbm>
+#include <vip_base>
 #include <nvault>
 #include <xs>
 
@@ -17,6 +18,8 @@
 #define SERVER_IP "93.119.25.96"
 
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
+#define BASE_COUNTER_CAMO 30
+#define BASE_COUNTER_HEAL 9
 
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
 new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
@@ -71,6 +74,7 @@ new g_Simon;
 new g_Duel;
 new g_Gamemode;
 new bool:ShowAc [33]
+new bool:firstRound = false
 
 new Float:cl_pushangle[33][3]
 
@@ -117,6 +121,8 @@ public plugin_init ()
     }
     
     register_dictionary("skills.txt")
+    register_logevent("round_first", 2, "0=World triggered", "1&Restart_Round_")
+    register_logevent("round_first", 2, "0=World triggered", "1=Game_Commencing")
     register_logevent("round_end", 2, "1=Round_End")
     register_clcmd("disguise","cmd_disguise")
     register_clcmd("thief","cmd_thief")
@@ -130,7 +136,7 @@ public plugin_init ()
     register_clcmd("say /top","cmd_top")
     register_clcmd("say /list","cmd_list")
     register_clcmd("say /rskill","cmd_askreset")
-    register_concmd("amx_reload_skills", "reload_skills_all", ADMIN_RCON, "Reloads all skills" );
+    register_concmd("amx_reload_skills", "cmd_reload_skills_all", ADMIN_RCON, "Reloads all skills" );
     register_srvcmd("give_points","_give_points")
     new skillh = register_cvar("skill_help", "1")
     gp_SpecialVip = register_cvar("special_vip","0")
@@ -188,15 +194,21 @@ public client_putinserver(id)
     reload_skills(id)
 }
 
-public reload_skills_all(id, level, cid )
+public cmd_reload_skills_all(id, level, cid )
 {
     if( !cmd_access( id, level, cid, 1 ) )
     return PLUGIN_HANDLED;
     
+    reload_skills_all();
+    
+    return PLUGIN_HANDLED;
+}
+
+public reload_skills_all()
+{
     for(new i =1;i<33;i++)
         if(is_user_connected(i))
             reload_skills(i);
-    return PLUGIN_HANDLED;
 }
 
 public reload_skills(id)
@@ -215,22 +227,26 @@ public reload_skills(id)
     ShowAc[id] = false
     IsVip[id] = 0
     Resetused[id] = false
-    if(get_pcvar_num(gp_SpecialVip)!=0)
-        load_vip_special(id)
-    else
+    set_user_rendering(id)
+    if(firstRound == false)
     {
-        load_vip(id)
-        new name[100]
-        get_user_name(id,name,99)
-        for(new id2 = 0; id2<TotalSaved;id2++)
-            if(equal(name,Leaved[id2][_name])){
-                for(new i = 1; i<=15; i++){
-                    g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
+        if(get_pcvar_num(gp_SpecialVip)!=0)
+            load_vip_special(id)
+        else
+        {
+            load_vip(id)
+            new name[100]
+            get_user_name(id,name,99)
+            for(new id2 = 0; id2<TotalSaved;id2++)
+                if(equal(name,Leaved[id2][_name])){
+                    for(new i = 1; i<=15; i++){
+                        g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
+                    }
+                    g_PlayerPoints[id][0] = Leaved[id2][_points];
+                    g_PlayerPoints[id][1] = Leaved[id2][_points+1];
+                    break;
                 }
-                g_PlayerPoints[id][0] = Leaved[id2][_points];
-                g_PlayerPoints[id][1] = Leaved[id2][_points+1];
-                break;
-            }
+        }
     }
 }
 public client_infochanged( id )
@@ -424,9 +440,9 @@ public cmd_list (id)
             else
                 Len += format(Msg[Len], 2048 - Len,"Full skills</td></tr>")
         }
-        if(get_vip(player)){
+        if(get_vip_type(player)){
             get_user_name(player,name,255)
-            Len += format(Msg[Len], 2048 - Len,"<tr align=^"center^"><td>%s</td><td>Vip JB</td></tr>",name)
+            Len += format(Msg[Len], 2048 - Len,"<tr align=^"center^"><td>%s</td><td>Vip JB %d</td></tr>",name,get_vip_type(player))
         }
     }
     Len += format(Msg[Len], 2048 - Len,"</table></body></html>")
@@ -533,14 +549,14 @@ public check_players ()
             get_user_origin(player, tmp_origin)
             if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && is_skills_ok() && get_user_weapon(player) == CSW_KNIFE){
                 counter[player]++ //player has not moved since last check
-                if(counter[player] >= 30 - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
-                    if(counter[player] == 30 - g_PlayerSkill[player][3]*6){
+                if(counter[player] >= BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
+                    if(counter[player] == BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6){
                         set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][3]]);
                         g_IsCamo[player]=1;
                     }
                     client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
-                if(counter[player] >= 9 && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
+                if(counter[player] >= BASE_COUNTER_HEAL && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
                     if(health + g_PlayerSkill[player][10]> g_maxhp[g_PlayerSkill[player][10]])
                         set_user_health(player, g_maxhp[g_PlayerSkill[player][10]])
@@ -704,7 +720,7 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<=2)
+	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2)
 		return true
 	return false
 }
@@ -909,6 +925,12 @@ public player_spawn(id)
     return HAM_IGNORED
 }
 
+public round_first()
+{
+    firstRound = true;
+    reload_skills_all();
+}
+
 public round_end()
 {
     static reload = 0;
@@ -917,6 +939,11 @@ public round_end()
         reload = 1;
     }
     else{
+        if(firstRound == true)
+        {
+            firstRound = false;
+            reload_skills_all();
+        }
         reload = 0;
         new Players[32],playerCount, i, Talive=0, CTalive = 0, Ttotal = 0, CTtotal = 0;
         get_players(Players, playerCount)
@@ -1019,10 +1046,10 @@ public fw_primary_attack_post(ent)
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
-    if(g_Gamemode!=1 && g_Gamemode!=0 )
+    if(!is_skills_ok())
         return HAM_IGNORED
     if(is_user_connected(attacker) && is_user_connected(victim)){
-        if(damage / 100 >= 1 && g_Duel== 0 && ((get_user_weapon(attacker)==CSW_KNIFE && damage/100<3) || get_user_weapon(attacker) != CSW_KNIFE && get_user_weapon(attacker) != CSW_FLASHBANG)){
+        if(damage / 100 >= 1 && get_user_weapon(attacker)==CSW_KNIFE && damage/100<3){
             new sum = floatround(damage)
             sum /= 100
             add_points(attacker,sum)
@@ -1051,7 +1078,7 @@ public player_killed(victim, attacker,Float:damage)
         return HAM_IGNORED
     if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
-    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && (g_Gamemode==0 || g_Gamemode==1))
+    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && is_skills_ok())
     {
         new Players[32]     
         new playerCount, i, CTalive = 0
