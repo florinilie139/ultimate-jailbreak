@@ -261,7 +261,7 @@ public client_disconnect(id)
 	 get_user_name(id,Nick,31)
 	 get_user_ip(id,usrip,31);
 	 get_user_authid(id,Authid,34) 
-	 print(0, "^x04[JBRomania.Ro]^x01 Jucatorul cu gag^x03 %s^x01[IP:^x03 %s^x01] a parasit serverul.",Nick,usrip)		
+	 print(0, "^x04[JB]^x01 Jucatorul cu gag^x03 %s^x01[IP:^x03 %s^x01] a parasit serverul.",Nick,usrip)		
 		
 	 g_Gaged[ id ] = false;
     	 g_SwearGag[ id ] = false;	

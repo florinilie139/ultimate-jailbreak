@@ -1217,7 +1217,7 @@ public player_killed(victim, attacker, shouldgib)
                                 set_bit(g_PlayerWanted, attacker)
                                 entity_set_int(attacker, EV_INT_skin, 5)
                                 
-                                format(message, 200,"^x04[JBRomania.Ro.RO]^x01Prizonierul ^x03%s a ^x01 devenit rebel",nameCT)
+                                format(message, 200,"^x04[JBRomania.Ro]^x01Prizonierul ^x03%s a ^x01 devenit rebel",nameCT)
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
                                 message_end();

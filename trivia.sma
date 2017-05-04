@@ -134,7 +134,7 @@ public Trivia (id)
     if(InTrivia[id] == false){
         message_begin( MSG_ONE, get_user_msgid("SayText"), {0,0,0}, id );
         write_byte  ( id );
-        write_string( "^x03[Trivia]^x04 Bine ai venit la trivia, pentru a raspunde scrie ^x01/t" );
+        write_string( "^x03[Trivia]^x04 Bine ai venit la trivia, pentru a raspunde scrie ^x01/r" );
         message_end ();
         InTrivia[id] = true
     }else{
@@ -259,7 +259,7 @@ public cmd_trivia (id)
         new line = read_argv(0, Args, 255);
         Args[line++]=' ';
         read_argv(1, Args[line], 255)
-        if((equali(Args,"trivia",6) || equali(Args,"say /t ",7)) && (InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) || /*g_Duel==11 && (g_DuelA == id || g_DuelB == id) ||*/ GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)){
+        if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) || /*g_Duel==11 && (g_DuelA == id || g_DuelB == id) ||*/ GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)){
             if(InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
                 cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*20);
                 new Name[50]
