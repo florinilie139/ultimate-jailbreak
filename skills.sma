@@ -14,6 +14,7 @@
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
 #define PLUGIN_CVAR    "Skills Mod"
+#define SERVER_IP "93.119.25.96"
 
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
 
@@ -88,7 +89,14 @@ new gp_SpecialVip
 
 public plugin_init ()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     LoadVips()
     
     register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)

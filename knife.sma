@@ -9,6 +9,7 @@
 #define PLUGIN_NAME    "Knife"
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
+#define SERVER_IP "93.119.25.96"
 
 #define CROWBARCOST    16000
 
@@ -55,7 +56,14 @@ new Float:gc_CrowbarMul
 
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     register_touch("crowbar", "worldspawn",    "cr_bar_snd")
     register_forward(FM_Touch, "crowbar_touch")
     register_forward(FM_EmitSound, "sound_emit")

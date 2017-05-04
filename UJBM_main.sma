@@ -16,6 +16,7 @@ Jocuri: Slender man
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.5"
 #define PLUGIN_CVAR    "Ultimate JailBreak Manager"
+#define SERVER_IP "93.119.25.96"
 
 #define TASK_STATUS        2487000
 #define TASK_FREEDAY    2487100
@@ -307,7 +308,13 @@ new IsVip[33]
 
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     Load();
     LoadVips();
     unregister_forward(FM_Spawn, gp_PrecacheSpawn)

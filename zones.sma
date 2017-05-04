@@ -15,6 +15,8 @@
 #define MAX_HEALTH 150
 #define MAX_EATEN 300
 
+#define SERVER_IP "93.119.25.96"
+
 new const PLUGIN_NAME[] = "Zones"
 new const PLUGIN_AUTHOR[] = "(|EcLiPsE|)"
 new const PLUGIN_VERSION[] = "1.0"
@@ -73,8 +75,14 @@ new g_SayText
 
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
     
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     register_forward(FM_PlayerPreThink, "PlayerPreThink", 0)
     //register_forward(FM_Touch, "FwdTouch", 0)
     for(new i = 0; i < typeZn; i ++)
