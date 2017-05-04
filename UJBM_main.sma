@@ -1217,7 +1217,7 @@ public player_killed(victim, attacker, shouldgib)
                                 set_bit(g_PlayerWanted, attacker)
                                 entity_set_int(attacker, EV_INT_skin, 5)
                                 
-                                format(message, 200,"^x04[JB]^x01Prizonierul ^x03%sa ^x01 devenit rebel",nameCT)
+                                format(message, 200,"^x04[JB]^x01Prizonierul ^x03%s^x01 a devenit rebel",nameCT)
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
                                 message_end();
@@ -1238,7 +1238,7 @@ public player_killed(victim, attacker, shouldgib)
                                 }*/
                                 if(get_bit(g_PlayerWanted,victim))
                                 {
-                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03 %s^x01a omorat rebelul ^x03%s",nameCT,nameT)
+                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
                                 }
                                 else if(get_bit(g_PlayerFreeday,victim))
                                 {
