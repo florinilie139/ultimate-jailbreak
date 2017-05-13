@@ -1573,7 +1573,7 @@ public round_start()
     }
     
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]^nTest", g_JailDay, Day, g_Time, g_Map);
+    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
     
     if(g_RoundEnd)
         return
@@ -2362,7 +2362,7 @@ public hud_status(task)
                     player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nTest", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
