@@ -1573,7 +1573,7 @@ public round_start()
     }
     
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
+    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]^nTest", g_JailDay, Day, g_Time, g_Map);
     
     if(g_RoundEnd)
         return
