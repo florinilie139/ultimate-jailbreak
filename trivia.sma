@@ -5,6 +5,7 @@
 #include <hamsandwich>
 #include <fun>
 #include <cstrike>
+#include <vip_base>
 
 #define PLUGIN_NAME    "Trivia Manager"
 #define PLUGIN_AUTHOR    "Mister X"
@@ -261,7 +262,14 @@ public cmd_trivia (id)
         read_argv(1, Args[line], 255)
         if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) || /*g_Duel==11 && (g_DuelA == id || g_DuelB == id) ||*/ GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)){
             if(InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
-                cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*20);
+                if(get_vip_type(id) == 2)
+				{
+					cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*40);
+				}
+				else
+				{
+					cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*20);
+				}
                 new Name[50]
                 static Players[32], Num, Player;
                 get_players(Players, Num, "bh");
