@@ -103,6 +103,10 @@ public LoadVips()
             parse(data, Vip[i][_name], 99, Vip[i][_pass], 99, type, 10);
             Vip[i][_tipvip] = str_to_num(type);
             i++;
+            if(i==100)
+			{
+                log_amx("Nu se pot incarca mai mult de 100")
+            }
         }
         log_amx("%d Vip cu skills au fost incarcati", i)
         MaxVip = i;
@@ -132,7 +136,7 @@ public load_vip (id)
 
 public player_spawn(id)
 {
-    if(!is_user_connected(id))
+    if(!is_user_connected(id) || !is_user_alive(id))
     return HAM_IGNORED
     
     WasWantedVIP2[id] = 0;
@@ -162,14 +166,14 @@ public player_spawn(id)
 
 public task_give_armor (id)
 {
-    if(id > g_MaxClients)
+    if(id > g_MaxClients || !is_user_alive(id))
         return
     cs_set_user_armor(id, 100, CS_ARMOR_KEVLAR)
 }
 
 public task_give_deagle (id)
 {
-    if(id > g_MaxClients)
+    if(id > g_MaxClients || !is_user_alive(id))
         return
     new iEnt = give_item(id, "weapon_deagle")
     if (is_valid_ent(iEnt))

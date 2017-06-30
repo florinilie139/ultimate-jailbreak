@@ -36,6 +36,8 @@ Jocuri: Slender man
 #define TEAM_MENU2        "#Team_Select"
 #define HUD_DELAY        Float:1.0
 #define CELL_RADIUS        Float:200.0
+#define VOICE_ADMIN_FLAG ADMIN_KICK
+
 
 #define get_bit(%1,%2)         ( %1 &   1 << ( %2 & 31 ) )
 #define set_bit(%1,%2)         %1 |=  ( 1 << ( %2 & 31 ) )
@@ -1293,7 +1295,7 @@ public voice_listening(receiver, sender, bool:listen)
 {
     if(!is_user_connected(receiver) || !is_user_connected(sender) || receiver == sender)
         return FMRES_IGNORED
-    if(get_user_flags(sender)&ADMIN_SLAY || get_vip_type(sender) > 0)
+    if(get_user_flags(sender)&VOICE_ADMIN_FLAG || get_vip_type(sender) > 0)
     {
         engfunc(EngFunc_SetClientListening, receiver, sender, true)
         return FMRES_SUPERCEDE
@@ -1628,7 +1630,7 @@ public cmd_voiceon(id)
 {
     client_cmd(id, "+voicerecord")
     set_bit(g_SimonVoice, id)
-    if(g_Simon == id || get_user_flags(id)&ADMIN_SLAY )
+    if(g_Simon == id || get_user_flags(id) & VOICE_ADMIN_FLAG)
         set_bit(g_SimonTalking, id)
     return PLUGIN_HANDLED
 }
@@ -1636,7 +1638,7 @@ public cmd_voiceoff(id)
 {
     client_cmd(id, "-voicerecord")
     clear_bit(g_SimonVoice, id)
-    if(g_Simon == id || get_user_flags(id)&ADMIN_SLAY)
+    if(g_Simon == id || get_user_flags(id) & VOICE_ADMIN_FLAG)
         clear_bit(g_SimonTalking, id)
     return PLUGIN_HANDLED
 }
@@ -4507,7 +4509,7 @@ public Menu_Handler(id, menu, item)
         {
             G_Info[1][id] -= Weapons_Price[G_Last[id][G_Info[0][id]-2]]
             G_Last[id][G_Info[0][id]-2] = 0
-            if(G_Info[0][id] < 5)Show_Menu(id)
+            if(G_Info[0][id] < 4)Show_Menu(id)
         }
         return
     }
@@ -4625,7 +4627,7 @@ public voice_enable_select(id, menu, item)
 }
 public cmd_simon_micr(id)
 {
-    if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY)) 
+    if (g_Simon == id || (get_user_flags(id) & VOICE_ADMIN_FLAG)) 
     {
         menu_players(id, CS_TEAM_T, 0, 1, "voice_enable_select", "%L", LANG_SERVER, "UJBM_MENU_VOICE")
     }
