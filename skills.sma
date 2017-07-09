@@ -75,6 +75,7 @@ new g_Simon;
 new g_Duel;
 new g_Gamemode;
 new g_PeaceTime;
+new g_DayOfTheWeek;
 new bool:ShowAc [33]
 new bool:firstRound = false
 
@@ -722,7 +723,7 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2 && g_PeaceTime == 0)
+	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2 && g_DayOfTheWeek%7!=6)
 		return true
 	return false
 }
@@ -754,7 +755,7 @@ public unfreeze (id)
 
 public cmd_thief (id)
 {
-    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T )
+    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T || g_PeaceTime == 1)
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -931,6 +932,11 @@ public return_peace()
     g_PeaceTime = 0;
 }
 
+public get_dayoftheweek()
+{
+    g_DayOfTheWeek = get_day()
+}
+
 public round_first()
 {
     firstRound = true;
@@ -944,6 +950,7 @@ public round_end()
         set_task(0.1,"round_end")
         g_PeaceTime = 1;
         set_task(PEACETIME,"return_peace");
+        set_task(5.0,"get_dayoftheweek");
         reload = 1;
     }
     else{

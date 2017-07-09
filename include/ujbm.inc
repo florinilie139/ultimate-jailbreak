@@ -19,3 +19,5 @@ native set_wanted(id);// set wanted on a prisoner
 native get_last();// returns ID of the last prisoner.
 
 native get_model(buffer[], lenght)
+
+native get_day();

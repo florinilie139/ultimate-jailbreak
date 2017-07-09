@@ -447,6 +447,7 @@ public plugin_natives()
     register_native ("set_wanted", "_set_wanted",0)
     register_native ("get_last", "_get_last",0)
     register_native ("get_model","_get_model",0)
+    register_native ("get_day","_get_day",0)
 } 
 public _get_simon(iPlugin, iParams)
 { 
@@ -486,11 +487,14 @@ public _set_wanted(iPlugin, iParams)
     entity_set_int(id, EV_INT_skin, 5)
     
 }
-
 public _get_model(iPlugin, iParams) 
 { 
     set_string(1, JBMODELSHORT, get_param(2));  
-}  
+}
+public _get_day(iPlugin, iParams)
+{
+    return g_JailDay;
+}
 public precache_spawn(ent)
 {
     if(is_valid_ent(ent))
