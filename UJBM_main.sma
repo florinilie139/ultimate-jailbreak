@@ -1737,7 +1737,7 @@ public cmd_minmodels(id)
 
 public cmd_nosleep(id)
 {
-    if(!is_user_alive(id) || g_Duel >=2 || !is_not_game() || cs_get_user_team(id) == CS_TEAM_CT)
+    if(!is_user_alive(id) || g_Duel >=2 || !is_not_game() || g_JailDay%7 == 6 || cs_get_user_team(id) == CS_TEAM_CT)
         return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }
