@@ -16,6 +16,7 @@
 
 #define MAXENTS 1000
 #define MAXMONEYS 50
+#define MAXMONEYTODROP 100000
 
 new moneybox[MAXENTS]
 new model[] = "models/w_money_david.mdl"
@@ -159,6 +160,8 @@ public deatha() {
                 else    fm_set_user_money(victim,fm_get_user_money(victim) - money)
                 }
         }
+        if(money > MAXMONEYTODROP)
+            money = MAXMONEYTODROP;
         make_money(victim,money,velo)
     }
     return PLUGIN_CONTINUE

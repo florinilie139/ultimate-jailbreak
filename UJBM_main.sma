@@ -135,7 +135,7 @@ enum _:days{
     NormalDay,        //1
     ZombieDay,        //2
     HnsDay,           //3
-    AlienDay,         //4
+    //AlienDay,       //4
     AlienHiddenDay,   //5
     GunDay,           //6
     ColaDay,          //7
@@ -480,7 +480,7 @@ public _set_wanted(iPlugin, iParams)
 {
     new id = get_param(1)
     if(!g_PlayerRevolt)
-            revolt_start()
+        revolt_start()
     clear_bit(g_PlayerFreeday, id)
     set_bit(g_PlayerWanted, id)
     entity_set_int(id, EV_INT_skin, 5)

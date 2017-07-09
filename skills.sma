@@ -20,6 +20,7 @@
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
 #define BASE_COUNTER_CAMO 30
 #define BASE_COUNTER_HEAL 9
+#define PEACETIME 45.0
 
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
 new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
@@ -73,6 +74,7 @@ new g_Killed[33];
 new g_Simon;
 new g_Duel;
 new g_Gamemode;
+new g_PeaceTime;
 new bool:ShowAc [33]
 new bool:firstRound = false
 
@@ -720,7 +722,7 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2)
+	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2 && g_PeaceTime == 0)
 		return true
 	return false
 }
@@ -752,7 +754,7 @@ public unfreeze (id)
 
 public cmd_thief (id)
 {
-    if (!is_user_alive(id)|| (g_Gamemode!=1 && g_Gamemode!=0 ) || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T )
+    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T )
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -854,7 +856,7 @@ public cmd_showac(id)
 }
 public cmd_picklock(iEnt, id)
 {
-    if(!is_user_alive(id) || (g_Gamemode!=1 && g_Gamemode!=0 ) || g_PlayerSkill[id][12]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
+    if(!is_user_alive(id) || !is_skills_ok() || g_PlayerSkill[id][12]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
         return HAM_IGNORED
     }
     if(pev(iEnt,pev_iuser4)){
@@ -924,6 +926,10 @@ public player_spawn(id)
             
     return HAM_IGNORED
 }
+public return_peace()
+{
+    g_PeaceTime = 0;
+}
 
 public round_first()
 {
@@ -936,6 +942,8 @@ public round_end()
     static reload = 0;
     if(reload == 0){
         set_task(0.1,"round_end")
+        g_PeaceTime = 1;
+        set_task(PEACETIME,"return_peace");
         reload = 1;
     }
     else{
