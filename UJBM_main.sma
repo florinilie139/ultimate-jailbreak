@@ -1155,7 +1155,10 @@ public player_killed(victim, attacker, shouldgib)
             if (victim == g_Simon && kteam == CS_TEAM_T){
                 cs_set_user_money(attacker, 16000 + cs_get_user_money(attacker))
             }
-            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 100)
+            else if (attacker == g_Simon) 
+            {
+                set_user_health(g_Simon, get_user_health(g_Simon) + 200)
+            }
         }
         case NightDay:
         {
@@ -2421,8 +2424,6 @@ public hud_status(task)
         case GravityDay:
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_GRAVITY")
-
-
         }
         case FireDay:
         {
@@ -3084,7 +3085,7 @@ public EndVote()
             {
                 client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
                 log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
-                cmd_game_alien()
+                cmd_game_alien2() //de scos
             }
             case(GunDay):
             {
@@ -4935,7 +4936,7 @@ public  simon_gameschoice(id, menu, item)
             client_print(0, print_console, "%s A DAT GRAVITY DAY", dst)
             log_amx("%s A DAT GRAVITY DAY", dst)
             set_cvar_num("sv_gravity",250)
-            cmd_pregame("cmd_game_gravity", 1, 0, 30.0)
+            cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
         }
         case(10):
         {
