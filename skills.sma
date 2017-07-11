@@ -723,7 +723,7 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-	if((g_Gamemode == 1 || g_Gamemode == 0) && g_Duel<2 && g_DayOfTheWeek%7!=6)
+	if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6)
 		return true
 	return false
 }
@@ -982,14 +982,14 @@ public round_end()
             if(cs_get_user_team(Players[i])== CS_TEAM_T )
             {
                 new sum = 0;
-                if(g_Killed[Players[i]] == CTtotal && CTtotal>1 && g_Duel!=2 && (g_Gamemode == 0 || g_Gamemode == 1)){
+                if(g_Killed[Players[i]] == CTtotal && CTtotal>1 && g_Duel!=2 && (g_Gamemode == Freeday || g_Gamemode == NormalDay)){
                     sum += CTtotal*2;
                     if(ShowAc[Players[i]]==true)
                         client_print(Players[i], print_chat, "+%d Spaima gardienilor",CTtotal*2);    
                 }
                 if(Talive == 1 && g_Duel!= 2)
                 {
-                    if((g_Gamemode == 1 || g_Gamemode == 0) && g_Killed[Players[i]]==0 && CTtotal>1){
+                    if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Killed[Players[i]]==0 && CTtotal>1){
                         sum+=10;
                         if(ShowAc[Players[i]]==true)
                             client_print(Players[i], print_chat, "+10 Ultimul in viata si nu esti rebel")
@@ -999,7 +999,7 @@ public round_end()
                             client_print(Players[i], print_chat, "+5 Ultimul in viata")
                     }
                 }
-                else if(g_Gamemode > 1 || g_Gamemode<0){
+                else if(g_Gamemode > NormalDay || g_Gamemode < Freeday ){
                     sum+=3;
                     if(ShowAc[Players[i]]==true)
                         client_print(Players[i], print_chat, "+3 Ai castigat un joc")
@@ -1048,7 +1048,7 @@ public fw_primary_attack(ent)
 public fw_primary_attack_post(ent)
 {
     new id = pev(ent,pev_owner)
-    if(g_Gamemode == 0 || g_Gamemode == 1){
+    if(g_Gamemode == Freeday || g_Gamemode == NormalDay){
         new Float:push[3]
         pev(id,pev_punchangle,push)
         xs_vec_sub(push,cl_pushangle[id],push)
@@ -1112,8 +1112,8 @@ public player_killed(victim, attacker,Float:damage)
     if(cs_get_user_team(attacker) == CS_TEAM_T && cs_get_user_team(victim) == CS_TEAM_CT)
     {
         new sum = 0
-        if(g_Gamemode > 1 || g_Gamemode < 0){
-            if(g_Gamemode == 4 || g_Gamemode ==5)
+        if(g_Gamemode > NormalDay || g_Gamemode < Freeday){
+            if(g_Gamemode == AlienDay || g_Gamemode == AlienHiddenDay)
                 sum+= g_Killed[victim]
             else
                 sum +=3
@@ -1147,8 +1147,8 @@ public player_killed(victim, attacker,Float:damage)
     if(cs_get_user_team(attacker) == CS_TEAM_CT && cs_get_user_team(victim) == CS_TEAM_T)
     {
         new sum = 0
-        if(g_Gamemode > 1 || g_Gamemode < 0){
-            if(g_Gamemode == 4 || g_Gamemode == 5){
+        if(g_Gamemode > NormalDay || g_Gamemode < Freeday ){
+            if(g_Gamemode == AlienDay || g_Gamemode == AlienHiddenDay){
                 sum += 2
                 g_Killed[attacker]++
             }else
@@ -1175,7 +1175,7 @@ public player_killed(victim, attacker,Float:damage)
                 client_print(attacker, print_chat,"+2 ai omorat un prizonnier deghizat")
         }
         add_points(attacker, sum)
-        if(g_Gamemode == 1){
+        if(g_Gamemode == NormalDay){
             new Players[32],playerCount, i, Talive=0, Ttotal = 0;
             get_players(Players, playerCount)
             for (i=0; i<playerCount; i++) 

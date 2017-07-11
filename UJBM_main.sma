@@ -135,6 +135,7 @@ enum _:days{
     NormalDay,        //1
     ZombieDay,        //2
     HnsDay,           //3
+    AlienDay,         //13
     AlienHiddenDay,   //4
     GunDay,           //5
     ColaDay,          //6
@@ -144,7 +145,6 @@ enum _:days{
     NightDay,         //10
     SpartaDay,        //11
     FunDay,           //12
-    AlienDay,         //13
     //AscunseleaDay,  //14
     //PrinseleaDay,   //15
     OneBullet         //16
@@ -904,7 +904,7 @@ public task_unfreeze(id)
     
     remove_task(TASK_SAFETIME + id)
     
-    if( is_user_alive(id) && cs_get_user_team(id) ==  CS_TEAM_T && is_not_game())
+    if( is_user_alive(id))
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
 }
 public task_inviz(id)
@@ -978,7 +978,7 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
         {
             return HAM_SUPERCEDE
         }
-        /*if(get_user_weapon(attacker) == CSW_KNIFE && g_GameMode == 15 && ateam == CS_TEAM_CT && Matadinnou == true)
+        /*if(get_user_weapon(attacker) == CSW_KNIFE && g_GameMode == Mata && ateam == CS_TEAM_CT && Matadinnou == true)
         {
             Mata = victim
             set_user_maxspeed(victim, 400.0)

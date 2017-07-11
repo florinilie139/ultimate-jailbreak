@@ -8,6 +8,29 @@ native get_simon(); //returns simon ID
 native get_gamemode(); // returning values: 0 - Freeday; 1 - Usual day; 2 - Zombie Day; 
 //3 - hide'n'seek; 4 - Fog Alien; 5 - -invisible Alien; 6 - hidden rpg game with gordon freeman (hidden, unfinished)
 
+enum _:days{
+    AlienDayT =-2,
+    ZombieDayT,       //-1
+    Freeday,          //0
+    NormalDay,        //1
+    ZombieDay,        //2
+    HnsDay,           //3
+    AlienDay,         //13
+    AlienHiddenDay,   //4
+    GunDay,           //5
+    ColaDay,          //6
+    GravityDay,       //7
+    FireDay,          //8
+    BugsDay,          //9
+    NightDay,         //10
+    SpartaDay,        //11
+    FunDay,           //12
+    //AscunseleaDay,  //14
+    //PrinseleaDay,   //15
+    OneBullet         //16
+}
+
+
 native get_duel() //2 freegun //3 box ....
 
 native bool:get_fd(id); // returns true if id has a freeday
