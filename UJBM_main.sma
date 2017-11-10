@@ -1148,7 +1148,7 @@ public player_killed(victim, attacker, shouldgib)
             {
                 cs_set_user_money(attacker, 16000+cs_get_user_money(attacker))
             }
-            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 100)
+            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 150)
         }
         case AlienHiddenDay:
         {
