@@ -16,13 +16,9 @@
 #endif
 #define _regex_included
 
-#if AMXX_VERSION_NUM >= 175
-	#pragma reqlib regex
-	#if !defined AMXMODX_NOAUTOLOAD
-		#pragma loadlib regex
-	#endif
-#else
-	#pragma library regex
+#pragma reqlib regex
+#if !defined AMXMODX_NOAUTOLOAD
+	#pragma loadlib regex
 #endif
 
 
@@ -305,16 +301,12 @@ native Regex:regex_match_all(const string[], const pattern[], flags = 0, error[]
 stock regex_match_simple(const str[], const pattern[], flags = 0, error[]= "", maxLen = 0, &errcode = 0)
 {
 	new Regex:regex = regex_compile_ex(pattern, flags, error, maxLen, errcode);
-
-	if (regex < 0)
+	if (regex < REGEX_OK)
 	{
 		return -1;
 	}
-
-	new substrings = regex_match_c(regex, str);
-
+	new substrings = regex_match_c(str, regex);
 	regex_free(regex);
-
 	return substrings;
 }
 

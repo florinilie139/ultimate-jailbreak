@@ -2,7 +2,7 @@
 #include <amxmisc>
 #include <fakemeta>
 #include <xs>
-#include <ujbm>
+#include <vip_base>
 
 #define PLUGIN "Magic Marker"
 #define VERSION "3.1"
@@ -32,7 +32,7 @@ public plugin_precache()
 
 public paint_handler(id, level, cid)
 {
-	if(get_vip(id) == false && !cmd_access(id, level, cid, 1))
+	if(get_vip_type(id) == 0 && !cmd_access(id, level, cid, 1))
 		return PLUGIN_HANDLED
 	
 	if(!is_user_alive(id))

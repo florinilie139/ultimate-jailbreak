@@ -15,6 +15,8 @@
 #define MAX_HEALTH 150
 #define MAX_EATEN 300
 
+#define SERVER_IP "93.119.25.96"
+
 new const PLUGIN_NAME[] = "Zones"
 new const PLUGIN_AUTHOR[] = "(|EcLiPsE|)"
 new const PLUGIN_VERSION[] = "1.0"
@@ -73,8 +75,14 @@ new g_SayText
 
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
     
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     register_forward(FM_PlayerPreThink, "PlayerPreThink", 0)
     //register_forward(FM_Touch, "FwdTouch", 0)
     for(new i = 0; i < typeZn; i ++)
@@ -519,7 +527,7 @@ public FoodMenuSelect (id, menu, item)
 {
     if(item == MENU_EXIT )
     {
-        g_MenuType[id]=g_MenuType[id]&2;
+        g_MenuType[id]=g_MenuType[id]&3;
         menu_destroy(menu)
         return PLUGIN_HANDLED
     }
@@ -714,8 +722,12 @@ public FwdTouch(ent, id)
         fGameTime = get_gametime()
         if((fGameTime - g_fLastTouch[id]) > REFRESH_TIME)
         {
-            set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
-            show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
+            //set_hudmessage(255, 20, 20, -1.0, 0.4, 1, 1.0, 1.5, 0.1, 0.1, 2)
+            //show_hudmessage(id, "** Esti in %s ! **",szNameEnt)
+            if(g_LastTouch[id] == CTZONE && cs_get_user_team(id) == CS_TEAM_T && !get_wanted(id))
+            {
+                client_print(id,print_center, "Esti in zona ct")
+            }
             
             g_fLastTouch[id] = fGameTime
             g_LastTouch[id] = getZonesType(szNameEnt)
@@ -725,6 +737,10 @@ public FwdTouch(ent, id)
             if(g_LastTouch[id] == CANTEEN && g_MenuType[id]==0)
             {
                 ShowFoodMenu(id);
+            }
+            else if(g_LastTouch[id] != CANTEEN)
+            {
+                g_MenuType[id]=g_MenuType[id]&2;
             }
         }
     }

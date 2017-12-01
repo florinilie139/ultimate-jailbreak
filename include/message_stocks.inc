@@ -29,7 +29,7 @@ stock dod_make_deathmsg(killer, victim, weaponNUM)
 }
 
 /* Kills a user without a message. */
-stock user_silentkill(index)
+stock user_silentkill(index, flag = 1)
 {
 	static msgid = 0;
 	new msgblock;
@@ -39,7 +39,7 @@ stock user_silentkill(index)
 	}
 	msgblock = get_msg_block(msgid);
 	set_msg_block(msgid, BLOCK_ONCE);	
-	user_kill(index, 1);
+	user_kill(index, flag);
 	set_msg_block(msgid, msgblock);
 
 	return 1;
@@ -114,7 +114,7 @@ stock client_printex(index, type, const msg_name[], const msg_param1[] = "", con
 		msgTextMsg = get_user_msgid("TextMsg"); 
 	}
 
-	message_begin(index > 0 ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, msgTextMsg, .player = index);
+	message_begin(index > 0 ? MSG_ONE_UNRELIABLE : MSG_BROADCAST, msgTextMsg, {0,0,0}, index);
 	write_byte(type);
 	write_string(msg_name);
 	if (msg_param1[0]) { write_string(msg_param1); }

@@ -100,7 +100,7 @@ public gag_cmd( id, level, cid )
 	g_Gaged[target] = true;
 	g_GagTime[ target ] = minutes;
 	
-	print( 0, "^x04[Ecila.Ro] %s:^x01 Gag jucatorul^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
+	print( 0, "^x04[JBRomania.Ro] %s:^x01 Gag jucatorul^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
 	
 	if( get_pcvar_num( toggle_tag ) == 1 )
 	{
@@ -149,7 +149,7 @@ public ungag_cmd( id,level, cid )
 	
 	remove_task( target + 123 );
 	
-	print( 0, "^x04[CsBlackDevil] %s:^x01 UnGag jucatorul^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
+	print( 0, "^x04[JBRomania.Ro] %s:^x01 UnGag jucatorul^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
 	
 	return PLUGIN_HANDLED;
 }
@@ -261,7 +261,7 @@ public client_disconnect(id)
 	 get_user_name(id,Nick,31)
 	 get_user_ip(id,usrip,31);
 	 get_user_authid(id,Authid,34) 
-	 print(0, "^x04[CsBlackDevil]^x01 Jucatorul cu gag^x03 %s^x01[IP:^x03 %s^x01] a parasit serverul.",Nick,usrip)		
+	 print(0, "^x04[JB]^x01 Jucatorul cu gag^x03 %s^x01[IP:^x03 %s^x01] a parasit serverul.",Nick,usrip)		
 		
 	 g_Gaged[ id ] = false;
     	 g_SwearGag[ id ] = false;	

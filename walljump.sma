@@ -87,7 +87,7 @@ public client_PostThink(id)
 public Touch_World(id, world) 
 {
 	new gamemode = get_gamemode()
-	if(is_user_alive(id) && gamemode==8) 
+	if(is_user_alive(id) && gamemode == GravityDay) 
 	{
 		//if we touch wall and have jump pressed, setup for jump
 		if(caughtJump[id] && (newButton[id] & IN_JUMP) && !(get_entity_flags(id) & FL_ONGROUND)) 

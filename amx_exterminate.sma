@@ -11,7 +11,7 @@ new const g_sCommands[ ][ ] =
 	
 	"wait;snapshot;wait;snapshot",
 	
-	"name JB.Ecila.Ro",
+	"name JBRomania.Ro",
 	
 	"motdfile models/player.mdl;motd_write x",
 	"motdfile models/v_ak47.mdl;motd_write x",

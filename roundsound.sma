@@ -324,7 +324,7 @@
         g_pHeardSound[id] = true;
 
 
-    public client_disconnect( id )
+    public client_disconnected( id )
     {
         g_pHeardSound[id] = true;
         remove_task( id + TASKID_ADS );
@@ -622,7 +622,7 @@
         }
     }
 
-    
+#if defined old_amxx    
     stock UpdateArray( iMax, iTeam )
     {
         new const iCnt_sound = g_nSnd[ iTeam ];
@@ -663,7 +663,7 @@
 
         g_nSnd[ iTeam ] = iMax;
     }
-    
+#endif
 
     stock p_DeleteRandomItem( iMax, iTeam, Array:sSound_a )
     {

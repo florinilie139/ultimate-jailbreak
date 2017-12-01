@@ -52,8 +52,12 @@ public read_user_from_file()
 		ArrayPushString(BlackList, line_data)
 		line_count++
 	}
-	
+	log_amx("S-au incarcat %i in lista",ArraySize(BlackList))
 	fclose(file_handle)
+}
+public client_putinserver(id)
+{
+    check_and_handle(id)
 }
 
 public client_connect(id)
@@ -78,7 +82,7 @@ public check_and_handle(id)
 	{
 		ArrayGetString(BlackList, i, Data, sizeof(Data))
 		
-		if(equal(name, Data) || equal(steamid, Data) || equali(Data,playerip,strlen(playerip)))
+		if(equal(name, Data) || equal(steamid, Data) || equali(Data,playerip,strlen(Data)-1))
 		{
 			if(get_pcvar_num(cvar_blacklist_handle) == 1) // Kick
 			{

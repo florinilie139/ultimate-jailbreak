@@ -6,6 +6,7 @@
 #include <fun>
 #include <cstrike>
 #include <ujbm>
+#include <vip_base>
 
 #define m_iVGUI			510
 #define m_fGameHUDInitialized	349
@@ -46,7 +47,7 @@ public plugin_init()
 	register_message(get_user_msgid("ShowMenu"), "message_ShowMenu");
 	register_message(get_user_msgid("VGUIMenu"), "message_VGUIMenu");
 	g_MsgShowMenu = get_user_msgid("ShowMenu")
-	register_concmd("jb_nomic", "adm_nomic", ADMIN_KICK)
+	//register_concmd("jb_nomic", "adm_nomic", ADMIN_KICK)
 	RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
 	register_clcmd("chooseteam","show_team_menu",0,"")
 	register_clcmd("jointeam", "jointeam")
@@ -175,7 +176,7 @@ public team_choice(id, menu, item)
 		{
 			if(!is_user_admin(id) && get_bit(g_PlayerNomic, id))
 				return PLUGIN_HANDLED
-			if((is_ct_allowed() || is_user_admin(id) || get_vip(id)) && cs_get_user_team(id) != CS_TEAM_CT)
+			if((is_ct_allowed() || is_user_admin(id) || get_vip_type(id)!=0) && cs_get_user_team(id) != CS_TEAM_CT)
 			{
 				count_teams()
 				msgblock = get_msg_block(g_MsgShowMenu)

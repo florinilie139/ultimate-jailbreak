@@ -4,11 +4,13 @@
 #include <fakemeta>
 #include <hamsandwich>
 #include <cstrike>
-#include <ujbm.inc>
+#include <ujbm>
+#include <vip_base>
 
 #define PLUGIN_NAME    "Knife"
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
+#define SERVER_IP "93.119.25.96"
 
 #define CROWBARCOST    16000
 
@@ -55,7 +57,14 @@ new Float:gc_CrowbarMul
 
 public plugin_init()
 {
+    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
+    
+    get_user_ip(0,ip,35,0);
+    if(equal(ip,SERVER_IP))
+    {
+        return PLUGIN_CONTINUE;
+    }
     register_touch("crowbar", "worldspawn",    "cr_bar_snd")
     register_forward(FM_Touch, "crowbar_touch")
     register_forward(FM_EmitSound, "sound_emit")
@@ -68,7 +77,7 @@ public plugin_init()
     RegisterHam(Ham_Killed, "player", "player_killed")
     RegisterHam(Ham_Weapon_SendWeaponAnim, "weapon_knife","Handl_Animation")
     RegisterHam(Ham_Item_Deploy, "weapon_knife", "Handl_Deploy")
-    gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "25.0")
+    gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "40.0")
     //set_task(0.5, "check", _, _, _, "b")
 }
 
@@ -133,8 +142,8 @@ public plugin_precache ()
     precache_sound("weapons/cbar_hit1.wav")
     precache_sound("weapons/cbar_miss1.wav")
     precache_sound("debris/metal2.wav")
-    //precache_sound("jbecila/halloween/EvilLaugh.wav")
-    precache_sound("jbecila/SurpriseMotherfucker.wav")
+    //precache_sound("jbDobs/halloween/EvilLaugh.wav")
+    precache_sound("jbDobs/SurpriseMotherfucker.wav")
     precache_sound(palo_deploy)
     precache_sound(palo_slash1)
     precache_sound(palo_slash2)
@@ -216,7 +225,7 @@ public CrowbarChoice (player, menu, item){
     nr = str_to_num(data)
     if(cs_get_user_money(player)<CROWBARCOST)
         client_print(player,print_chat,"N-ai destui bani")
-    else if(nr!=1 && _KnifesType[nr-2] == Admin && !(get_user_flags(player)&ADMIN_KICK) && !get_vip(player))
+    else if(nr!=1 && _KnifesType[nr-2] == Admin && !(get_user_flags(player)&ADMIN_KICK) && !get_vip_type(player))
         client_print(player,print_chat,"Trebuie sa ai admin ca sa il iei")
     else if((nr == 1 && cs_get_user_team(player)==CS_TEAM_CT) || nr!=1 && (_KnifesType[nr-2] == Tero || _KnifesType[nr-2] == Counter)  && CsTeams:_KnifesType[nr-2] != cs_get_user_team(player))
         client_print(player,print_chat,"Nu e pentru echipa ta")
@@ -251,7 +260,7 @@ public player_killed(victim, attacker, shouldgib)
             g_HasCrowbar[victim] = 0
         }
         if(is_user_alive(attacker) && cs_get_user_team(attacker) == CS_TEAM_T && g_HasCrowbar[attacker]>0 && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)==CS_TEAM_CT)
-            client_cmd(0, "spk jbecila/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbecila/halloween/EvilLaugh.wav")//
+            client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbDobs/halloween/EvilLaugh.wav")//
     }
     return HAM_IGNORED
 }
