@@ -3180,11 +3180,11 @@ public cmd_expire_time()
                         user_kill(Players[i],1)
             }
             break*/
-        case AlienDayT,GunDay,NightDay:
+        case AlienDayT,GunDay:
             for (i=0; i<playerCount && g_RoundEnd==0; i++) 
                 if (cs_get_user_team(Players[i]) == CS_TEAM_T)
                     user_kill(Players[i],1)
-        case HnsDay,AlienDay,AlienHiddenDay,GravityDay,BugsDay: //,PrinseleaDay
+        case HnsDay,AlienDay,AlienHiddenDay,GravityDay,BugsDay,NightDay: //,PrinseleaDay
             for (i=0; i<playerCount && g_RoundEnd==0; i++)
             {
                 if (cs_get_user_team(Players[i]) == CS_TEAM_CT && !get_bit(g_BackToCT, Players[i]))
