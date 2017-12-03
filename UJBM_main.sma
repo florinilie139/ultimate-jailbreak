@@ -1128,6 +1128,10 @@ public player_killed(victim, attacker, shouldgib)
         kteam = cs_get_user_team(attacker)
     vteam = cs_get_user_team(victim)
     
+    if(cs_get_user_team(victim) == CS_TEAM_T && !(get_user_flags(id) & VOICE_ADMIN_FLAG))
+    {
+        cmd_voiceoff(id)
+    }
     
     get_user_name(attacker,nameCT,31)
     get_user_name(victim,nameT,31)
