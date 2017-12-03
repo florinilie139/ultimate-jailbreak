@@ -1111,6 +1111,7 @@ public task_last()
     {
         if (get_pcvar_num(gp_AutoLastresquest) && is_not_game()){
             clear_bit(g_PlayerWanted, g_PlayerLast)
+            set_bit(g_PlayerVoice, g_PlayerLast)
             cmd_lastrequest(g_PlayerLast)
         }
     }
