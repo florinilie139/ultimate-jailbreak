@@ -1089,7 +1089,7 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
 
 public player_killed(victim, attacker,Float:damage)
 {
-    if(!is_user_connected(victim))
+    if(!is_user_connected(victim) || !is_user_connected(attacker))
         return HAM_IGNORED
     if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
