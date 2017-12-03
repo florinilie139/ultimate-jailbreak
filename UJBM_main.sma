@@ -4630,13 +4630,69 @@ public voice_enable_select(id, menu, item)
     cmd_simonmenu(id)
     return PLUGIN_HANDLED
 }
+
 public cmd_simon_micr(id)
 {
     if (g_Simon == id || (get_user_flags(id) & VOICE_ADMIN_FLAG)) 
     {
-        menu_players(id, CS_TEAM_T, 0, 1, "voice_enable_select", "%L", LANG_SERVER, "UJBM_MENU_VOICE")
+        static menu, menuname[32], option[64]
+        formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_VOICE")
+        menu = menu_create(menuname, "cmd_simon_micr_choice")
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_VOICE_INDIVIDUAL")
+        menu_additem(menu, option, "1", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_VOICE_ON_ALL")
+        menu_additem(menu, option, "2", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_VOICE_OFF_ALL")
+        menu_additem(menu, option, "3", 0)
+        menu_display(id, menu)
     }
+    return PLUGIN_HANDLED  
 }
+
+public cmd_simon_micr_choice(id,menu, item)
+{
+    if(item == MENU_EXIT || !(id == g_Simon ||(get_user_flags(id) & ADMIN_SLAY)) )
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static src[32], dst[32], data[5], access, callback,i
+    menu_item_getinfo(menu, item, access, data, charsmax(data), src, charsmax(src), callback)
+    menu_destroy(menu)
+    get_user_name(id, src, charsmax(src))
+    switch(data[0])
+    {
+        case('1'): 
+        {
+            menu_players(id, CS_TEAM_T, 0, 1, "voice_enable_select", "%L", LANG_SERVER, "UJBM_MENU_VOICE")
+        }
+        case('2'):
+        {
+            
+            for(i = 1; i <= g_MaxClients; i++)
+            {
+                if(!is_user_connected(i) || !is_user_alive(i) || cs_get_user_team(i) == CS_TEAM_CT)
+                    continue
+                set_bit(g_PlayerVoice, i)
+                get_user_name(i, dst, charsmax(dst))
+                player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_VOICEENABLED", src, dst)
+            }
+        }
+        case('3'):
+        {
+            for(i = 1; i <= g_MaxClients; i++)
+            {
+                if(!is_user_connected(i) || !is_user_alive(i) || cs_get_user_team(i) == CS_TEAM_CT)
+                    continue
+                clear_bit(g_PlayerVoice, i)
+                get_user_name(i, dst, charsmax(dst))
+                player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_GUARD_VOICEDISABLED", src, dst)
+            }
+        }
+    }
+    return PLUGIN_HANDLED
+}
+
 public  na2team(id) {
     if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
     {
