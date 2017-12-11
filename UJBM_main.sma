@@ -231,6 +231,7 @@ new g_PlayerFreeday
 new g_PlayerLastFreeday
 new g_PlayerNextFreeday
 new g_PlayerLast
+new g_PlayerLastVoiceSetting
 
 new g_NoShowShop = 0
 new g_BoxStarted
@@ -297,7 +298,7 @@ new G_Info[2][33]
 new Weapons_Price[33]
 new Weapons_Info[3][33][22]
 
-new g_Map[ 40 ]
+new g_Map[40]
 new BuyTimes[33]
 new g_IsFG
 
@@ -403,13 +404,14 @@ public plugin_init()
     gp_ShowWanted = register_cvar("jb_hud_show_wanted","1")
     gp_Effects= register_cvar("jb_game_effects","2")
     g_MaxClients = get_global_int(GL_maxClients)
-    get_mapname( g_Map, 39 )
+    get_mapname(g_Map, 39)
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
     setup_buttons()
+    g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
 }
 public plugin_precache()
@@ -779,6 +781,7 @@ public  player_maxspeed(id)
     }
     return HAM_HANDLED
 }
+
 public player_spawn(id)
 {
     static CsTeams:team
@@ -815,7 +818,13 @@ public player_spawn(id)
     {
         case(CS_TEAM_T):
         {
-            
+            if( g_PlayerLast != 0)
+            {
+                if(!g_PlayerLastVoiceSetting)
+                {
+                    clear_bit(g_PlayerVoice, g_PlayerLast)
+                }
+            }
             g_PlayerLast = 0
             BoxPartener[id] = 0
             //g_PlayerReason[id] = random_num(1, 10)
@@ -1111,6 +1120,7 @@ public task_last()
     {
         if (get_pcvar_num(gp_AutoLastresquest) && is_not_game()){
             clear_bit(g_PlayerWanted, g_PlayerLast)
+            g_PlayerLastVoiceSetting = get_bit(g_PlayerVoice, g_PlayerLast)
             set_bit(g_PlayerVoice, g_PlayerLast)
             cmd_lastrequest(g_PlayerLast)
         }
@@ -1463,6 +1473,15 @@ public round_end()
     //    ClearSyncHud(0, g_HudSync[i][_hudsync])
     set_lights("#OFF");
     fog(false)    
+    
+    if( g_PlayerLast != 0)
+    {
+        if(!g_PlayerLastVoiceSetting)
+        {
+            clear_bit(g_PlayerVoice, g_PlayerLast)
+        }
+    }
+    g_PlayerLast = 0
     
     if(g_GameMode == GravityDay || g_GameMode == FunDay )//|| g_GameMode == 15)
         set_cvar_num("sv_gravity",800)
