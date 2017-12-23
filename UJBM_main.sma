@@ -2395,7 +2395,7 @@ public hud_status(task)
                     player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nCONCURS DE CRACIUN 28.12 | ORA 21:00", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
