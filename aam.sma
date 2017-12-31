@@ -14,7 +14,7 @@
 #define PLUGIN "AMXX Admin Model"
 #define VERSION "1.0.4"
 #define AUTHOR "mogel"
-
+#define HIDDEN_MESSAGE "/andiivodka"
 
 
 new myVault
@@ -202,9 +202,12 @@ public SkinMenu(player){
     formatex(menuname, charsmax(menuname), "Meniu Skinuri")
     menu = menu_create(menuname, "Skinchoice")
     for(new i = 0; i < maxmodels; i++) {
-        num_to_str( i, num, charsmax(num))
-        formatex(option, charsmax(option), model[i][MT_BEFEHL])
-        menu_additem(menu, option, num, 0) 
+		if(!equali(model[i][MT_BEFEHL],HIDDEN_MESSAGE))
+        {
+			num_to_str( i, num, charsmax(num))
+			formatex(option, charsmax(option), model[i][MT_BEFEHL])
+			menu_additem(menu, option, num, 0) 
+		}
     }
     menu_display(player, menu)
     return PLUGIN_CONTINUE
@@ -328,13 +331,13 @@ public ParseIni() {
         model[maxmodels][MT_CTNR]= str_to_num(ctn)
         format(model[maxmodels][MT_TESIDE], 49, "%s", tem)
         model[maxmodels][MT_TENR]= str_to_num(ten)
-        
-        
+
         maxmodels++*/
     }
-    //format(model[maxmodels][MT_BEFEHL], 49, "/myprecious")
-    //format(model[maxmodels][MT_CTSIDE], 49, "jill")
-    //format(model[maxmodels][MT_TESIDE], 49, "alex")
+    format(model[maxmodels][MT_BEFEHL], 49, HIDDEN_MESSAGE)
+    format(model[maxmodels][MT_CTSIDE], 49, "Miku_WIM")
+    format(model[maxmodels][MT_TESIDE], 49, "miku_append")
+    maxmodels++
     log_amx("%i modele (sau comenzi) gasite", maxmodels)
 }
 /* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
