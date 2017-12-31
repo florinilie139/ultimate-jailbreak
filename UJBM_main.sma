@@ -1455,8 +1455,6 @@ public round_end()
         g_PlayerFreeday = g_PlayerNextFreeday
         g_PlayerNextFreeday = 0
     }
-    
-    g_PlayerLast = 0
     g_BoxStarted = 0
     g_Simon = 0
     g_SimonAllowed = 0
@@ -1619,7 +1617,7 @@ public round_start()
     set_task(HUD_DELAY, "hud_status", TASK_STATUS, _, _, "b")
     set_task(random_float(2.0,5.0), "SimonAllowed")
     set_task(5.0, "task_last", TASK_LAST)
-    
+    server_cmd("bh_enabled 1")    
 }
 public resetsimon ()
 {
