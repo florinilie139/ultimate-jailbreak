@@ -1225,6 +1225,7 @@ public player_killed(victim, attacker, shouldgib)
             {
                 g_Simon = 0
                 resetsimon()
+                emit_sound(0, CHAN_AUTO, "jbextreme/simondead.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
                 //ClearSyncHud(0, g_HudSync[2][_hudsync])
                 //player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
             }    
@@ -1703,6 +1704,7 @@ public cmd_open(id)
         new name[32]
         get_user_name(id, name, 31)
         client_print(0, print_chat, "%s a deschis usa",name)
+        emit_sound(0, CHAN_AUTO, "jbextreme/opendoor.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     }
     return PLUGIN_HANDLED
 }
@@ -2393,7 +2395,7 @@ public hud_status(task)
                     player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb^nGreNN. ne suge pl", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
