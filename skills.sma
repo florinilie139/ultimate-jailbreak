@@ -21,6 +21,7 @@
 #define BASE_COUNTER_CAMO 30
 #define BASE_COUNTER_HEAL 9
 #define PEACETIME 45.0
+#define DODGE_CHANCE 5 //DAVID
 
 
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
@@ -64,6 +65,7 @@ enum _:skills{
     INVIERE,  
     LACATUS,  
     RECUL,
+    DODGE,
     ACURATETE,
     MAXSKILL
 }
@@ -158,6 +160,7 @@ public plugin_init ()
     register_clcmd("say /top","cmd_top")
     register_clcmd("say /list","cmd_list")
     register_clcmd("say /rskill","cmd_askreset")
+    register_clcmd("say /matatactusicufractu","_give_points_all")
     register_concmd("amx_reload_skills", "cmd_reload_skills_all", ADMIN_RCON, "Reloads all skills" );
     register_srvcmd("give_points","_give_points")
     new skillh = register_cvar("skill_help", "1")
@@ -181,6 +184,21 @@ public _give_points (id,level,cid)
     read_argv(2, points, 2)
     
     add_points(str_to_num(ids),str_to_num(points))
+}
+
+public _give_points_all (id,level,cid)
+{
+    new points[3]
+    read_argv(1, points, 2)
+    
+    for(new i =1;i<=MAX_PLAYERS;i++)
+    {
+        if(is_user_connected(i))
+        {
+            add_points(i,str_to_num(points))
+        }
+    }
+    
 }
 
 public LoadVips ()
@@ -1097,6 +1115,11 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
             return HAM_SUPERCEDE
         }
     }
+    if(g_PlayerSkill[attacker][DODGE] && random_num(0,DODGE_CHANCE) == 0)
+    {
+        SetHamParamFloat(4, 0.0)
+        return HAM_OVERRIDE
+    }
     new Float:dmg = 0.0
     if(is_user_alive(attacker) && get_user_weapon(attacker) == CSW_KNIFE)
         dmg = damage * (15 * g_PlayerSkill[attacker][PUTERE])/100
@@ -1257,7 +1280,7 @@ public cmd_player_skill (id)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_GRAVITY",g_PlayerSkill[id][SARITURA]+1, g_Prices[g_PlayerSkill[id][SARITURA]])
         menu_additem(menu, option, "5", 0)
     }
-    if(g_PlayerSkill[id][REZISTENTA] < 3 || (g_PlayerSkill[id][REZISTENTA] < 4 && g_Players4[id]))
+    if(g_PlayerSkill[id][DODGE] == 0 && (g_PlayerSkill[id][REZISTENTA] < 3 || (g_PlayerSkill[id][REZISTENTA] < 4 && g_Players4[id])))
     {
         formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HARD_SKIN",g_PlayerSkill[id][REZISTENTA]+1, g_Prices[g_PlayerSkill[id][REZISTENTA]])
         menu_additem(menu, option, "6", 0)
@@ -1305,10 +1328,15 @@ public cmd_player_skill (id)
         menu_additem(menu, option, "12", 0)
     }
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TIER IV ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if((g_PlayerSkill[id][RECUL] < 1 || (g_PlayerSkill[id][RECUL] < 2 && g_Players4[id])))
+    if(g_PlayerSkill[id][RECUL] < 1 || (g_PlayerSkill[id][RECUL] < 2 && g_Players4[id]))
     {
         formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_RECOIL",g_PlayerSkill[id][RECUL]+1, g_Prices[g_PlayerSkill[id][RECUL]*2+3])
         menu_additem(menu, option, "13", 0)
+    }
+    if(g_PlayerSkill[id][DODGE] < 1  && g_PlayerSkill[id][REZISTENTA] == 0)
+    {
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_DODGE",g_PlayerSkill[id][DODGE]+1, g_Prices[g_PlayerSkill[id][DODGE]*2+3])
+        menu_additem(menu, option, "14", 0)
     }
     menu_display(id, menu)
     
@@ -1367,7 +1395,7 @@ public  skills_shop(id, menu, item)
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
                 }
             }
-        case 7,9,11,12,13:
+        case 7,9,11,12,13,14:
             if(g_PlayerSkill[id][skil] < 2)
             {
                 if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]*2+3]){
@@ -1386,6 +1414,8 @@ public  skills_shop(id, menu, item)
                         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
                     else if(skil == RECUL)
                         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
+                    else if(skil == DODGE)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DODGE",g_PlayerSkill[id][skil])
                 }else{
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
                 }
