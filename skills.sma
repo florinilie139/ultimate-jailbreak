@@ -63,16 +63,16 @@ enum _:skills{
     VINDECARE,
     INVIERE,  
     LACATUS,  
-    RECUL,    
+    RECUL,
     ACURATETE,
     MAXSKILL
 }
 
 new const esp_colors[5][3]={{0,255,0},{100,60,60},{60,60,100},{255,0,255},{128,128,128}}
 
-new g_PlayerSkill [MAX_PLAYERS][MAXSKILL]
-new g_PlayerPoints[MAX_PLAYERS][2]
-new bool:g_PlayerRevived[MAX_PLAYERS]
+new g_PlayerSkill [MAX_PLAYERS+1][MAXSKILL]
+new g_PlayerPoints[MAX_PLAYERS+1][2]
+new bool:g_PlayerRevived[MAX_PLAYERS+1]
 
 new const g_Prices[] = { 5, 10, 15, 20, 25, 30, 35, 40} //  5, 10, 15, 20, 25, 30, 35, 40
 new const g_Alpha[] =  { 255, 140, 80, 15, 0}
@@ -82,14 +82,14 @@ new const Float:g_freezet[] = {0.0, 0.5, 1.0, 1.5, 2.0}
 
 new laser
 
-new g_IsDisguise[MAX_PLAYERS];
-new g_UsedDisguise[MAX_PLAYERS];
-new g_UsedThief[MAX_PLAYERS];
-new bool:g_Players4[MAX_PLAYERS];
-new g_IsCamo[MAX_PLAYERS];
-new bool:g_UseInfra[MAX_PLAYERS];
-new origins[MAX_PLAYERS][3], tmp_origin[3], counter[MAX_PLAYERS];
-new g_Killed[MAX_PLAYERS];
+new g_IsDisguise[MAX_PLAYERS+1];
+new g_UsedDisguise[MAX_PLAYERS+1];
+new g_UsedThief[MAX_PLAYERS+1];
+new bool:g_Players4[MAX_PLAYERS+1];
+new g_IsCamo[MAX_PLAYERS+1];
+new bool:g_UseInfra[MAX_PLAYERS+1];
+new origins[MAX_PLAYERS+1][3], tmp_origin[3], counter[MAX_PLAYERS+1];
+new g_Killed[MAX_PLAYERS+1];
 new g_Simon;
 new g_Duel;
 new g_Gamemode;
@@ -98,7 +98,7 @@ new g_DayOfTheWeek;
 new bool:ShowAc [MAX_PLAYERS]
 new bool:firstRound = false
 
-new Float:cl_pushangle[MAX_PLAYERS][3]
+new Float:cl_pushangle[MAX_PLAYERS+1][3]
 
 new myVault
 enum _:_vip { _name[100], _pass[100], _sk[20]}
@@ -235,7 +235,7 @@ public reload_skills_all()
 
 public reload_skills(id)
 {
-    for(new j = 0; j <= MAXSKILL; j++)
+    for(new j = 0; j < MAXSKILL; j++)
         g_PlayerSkill[id][j] = 0
     g_PlayerPoints[id][0] = 0
     g_PlayerPoints[id][1] = 0
@@ -261,7 +261,7 @@ public reload_skills(id)
             get_user_name(id,name,99)
             for(new id2 = 0; id2<TotalSaved;id2++)
                 if(equal(name,Leaved[id2][_name])){
-                    for(new i = 1; i<=MAXSKILL; i++){
+                    for(new i = 1; i<MAXSKILL; i++){
                         g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
                     }
                     g_PlayerPoints[id][0] = Leaved[id2][_points];
@@ -342,7 +342,7 @@ public save_vip(id)
     for(new id2 = 0; id2<TotalSaved;id2++)
     if(equal(name,Leaved[id2][_nume])){
         ok = 1
-        for(new i = 1; i<=MAXSKILL;i++)
+        for(new i = 1; i<MAXSKILL;i++)
         Leaved[id2][_skill + i] = g_PlayerSkill[id][i];
         Leaved[id2][_points] = g_PlayerPoints[id][0]
         Leaved[id2][_points + 1] = g_PlayerPoints[id][1]
@@ -350,7 +350,7 @@ public save_vip(id)
     }
     if(ok==0){
         get_user_name(id, Leaved[TotalSaved][_nume], 99)
-        for(new i = 1; i<=MAXSKILL;i++)
+        for(new i = 1; i<MAXSKILL;i++)
         Leaved[TotalSaved][_skill+i]=g_PlayerSkill[id][i];
         Leaved[TotalSaved][_points] = g_PlayerPoints[id][0]
         Leaved[TotalSaved][_points + 1] = g_PlayerPoints[id][1]
@@ -374,7 +374,7 @@ public setData(player) {
     format(vaultkey, 49, "skill.%s",name)
 
     new Len = 0
-    for(new i = 1; i <= MAXSKILL; i++)
+    for(new i = 1; i < MAXSKILL; i++)
         Len += format(data[Len], (sizeof data - 1) - Len,"%d, ",g_PlayerSkill[player][i]);
     
     Len += format(data[Len], (sizeof data - 1) - Len,"%d, %d",g_PlayerPoints[player][0],g_PlayerPoints[player][1]);
@@ -396,7 +396,7 @@ stock getData(player) {
     new vaultdata[200],num[100]
     nvault_get(myVault, vaultkey, vaultdata, 199)
     //log_amx(vaultdata)
-    for(new i = 1; i<=MAXSKILL;i++)
+    for(new i = 1; i<MAXSKILL;i++)
     {
         strtok(vaultdata,num,99,vaultdata,199,',')
         g_PlayerSkill[player][i]=str_to_num(num)
@@ -522,7 +522,7 @@ public cmd_reset (id, menu, item)
     menu_destroy(menu)
     if(data[0]=='1')
     {
-        for(new j = 0; j <= MAXSKILL; j++)
+        for(new j = 0; j < MAXSKILL; j++)
             g_PlayerSkill[id][j] = 0
         g_PlayerPoints[id][0] = g_PlayerPoints[id][1]
         if(is_user_alive(id))
