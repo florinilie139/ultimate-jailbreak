@@ -22,6 +22,7 @@
 #define BASE_COUNTER_HEAL 9
 #define PEACETIME 45.0
 
+
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
 new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
 new const _WeaponsFreeAmmo[] = { 120, 70, 120, 120, 120, 300, 40 }
@@ -49,11 +50,29 @@ new const g_HudSync[][_hud] =
 
 #define REFRESH_TIME 0.3
 
+enum _:skills{
+    PUTERE=1,   
+    VITEZA,   
+    CAMUFLAJ, 
+    DEGHIZARE,
+    SARITURA, 
+    REZISTENTA,
+    FURT,     
+    INGHETARE,
+    INFRAROSU,
+    VINDECARE,
+    INVIERE,  
+    LACATUS,  
+    RECUL,    
+    ACURATETE,
+    MAXSKILL
+}
+
 new const esp_colors[5][3]={{0,255,0},{100,60,60},{60,60,100},{255,0,255},{128,128,128}}
 
-new g_PlayerSkill [33][33]
-new g_PlayerPoints[33][2]
-new bool:g_PlayerRevived[33]
+new g_PlayerSkill [MAX_PLAYERS][MAXSKILL]
+new g_PlayerPoints[MAX_PLAYERS][2]
+new bool:g_PlayerRevived[MAX_PLAYERS]
 
 new const g_Prices[] = { 5, 10, 15, 20, 25, 30, 35, 40} //  5, 10, 15, 20, 25, 30, 35, 40
 new const g_Alpha[] =  { 255, 140, 80, 15, 0}
@@ -63,33 +82,33 @@ new const Float:g_freezet[] = {0.0, 0.5, 1.0, 1.5, 2.0}
 
 new laser
 
-new g_IsDisguise[33];
-new g_UsedDisguise[33];
-new g_UsedThief[33];
-new bool:g_Players4[33];
-new g_IsCamo[33];
-new bool:g_UseInfra[33];
-new origins[33][3], tmp_origin[3], counter[33];
-new g_Killed[33];
+new g_IsDisguise[MAX_PLAYERS];
+new g_UsedDisguise[MAX_PLAYERS];
+new g_UsedThief[MAX_PLAYERS];
+new bool:g_Players4[MAX_PLAYERS];
+new g_IsCamo[MAX_PLAYERS];
+new bool:g_UseInfra[MAX_PLAYERS];
+new origins[MAX_PLAYERS][3], tmp_origin[3], counter[MAX_PLAYERS];
+new g_Killed[MAX_PLAYERS];
 new g_Simon;
 new g_Duel;
 new g_Gamemode;
 new g_PeaceTime;
 new g_DayOfTheWeek;
-new bool:ShowAc [33]
+new bool:ShowAc [MAX_PLAYERS]
 new bool:firstRound = false
 
-new Float:cl_pushangle[33][3]
+new Float:cl_pushangle[MAX_PLAYERS][3]
 
 new myVault
 enum _:_vip { _name[100], _pass[100], _sk[20]}
 new Vip[100][_vip]
 new MaxVip
-new IsVip[33]
+new IsVip[MAX_PLAYERS]
 
-new Resetused[33]
+new Resetused[MAX_PLAYERS]
 
-enum _:_arg { _nume[100], _skill[32], _points[2] }
+enum _:_arg { _nume[100], _skill[MAXSKILL], _points[2] }
 new Leaved[200][_arg]
 new TotalSaved
 new gp_SpecialVip
@@ -209,14 +228,14 @@ public cmd_reload_skills_all(id, level, cid )
 
 public reload_skills_all()
 {
-    for(new i =1;i<33;i++)
+    for(new i =1;i<=MAX_PLAYERS;i++)
         if(is_user_connected(i))
             reload_skills(i);
 }
 
 public reload_skills(id)
 {
-    for(new j = 0; j <= 15; j++)
+    for(new j = 0; j <= MAXSKILL; j++)
         g_PlayerSkill[id][j] = 0
     g_PlayerPoints[id][0] = 0
     g_PlayerPoints[id][1] = 0
@@ -242,7 +261,7 @@ public reload_skills(id)
             get_user_name(id,name,99)
             for(new id2 = 0; id2<TotalSaved;id2++)
                 if(equal(name,Leaved[id2][_name])){
-                    for(new i = 1; i<=15; i++){
+                    for(new i = 1; i<=MAXSKILL; i++){
                         g_PlayerSkill[id][i] = Leaved[id2][_skill + i];
                     }
                     g_PlayerPoints[id][0] = Leaved[id2][_points];
@@ -323,7 +342,7 @@ public save_vip(id)
     for(new id2 = 0; id2<TotalSaved;id2++)
     if(equal(name,Leaved[id2][_nume])){
         ok = 1
-        for(new i = 1; i<=15;i++)
+        for(new i = 1; i<=MAXSKILL;i++)
         Leaved[id2][_skill + i] = g_PlayerSkill[id][i];
         Leaved[id2][_points] = g_PlayerPoints[id][0]
         Leaved[id2][_points + 1] = g_PlayerPoints[id][1]
@@ -331,7 +350,7 @@ public save_vip(id)
     }
     if(ok==0){
         get_user_name(id, Leaved[TotalSaved][_nume], 99)
-        for(new i = 1; i<=15;i++)
+        for(new i = 1; i<=MAXSKILL;i++)
         Leaved[TotalSaved][_skill+i]=g_PlayerSkill[id][i];
         Leaved[TotalSaved][_points] = g_PlayerPoints[id][0]
         Leaved[TotalSaved][_points + 1] = g_PlayerPoints[id][1]
@@ -355,7 +374,7 @@ public setData(player) {
     format(vaultkey, 49, "skill.%s",name)
 
     new Len = 0
-    for(new i = 1; i <= 15; i++)
+    for(new i = 1; i <= MAXSKILL; i++)
         Len += format(data[Len], (sizeof data - 1) - Len,"%d, ",g_PlayerSkill[player][i]);
     
     Len += format(data[Len], (sizeof data - 1) - Len,"%d, %d",g_PlayerPoints[player][0],g_PlayerPoints[player][1]);
@@ -377,7 +396,7 @@ stock getData(player) {
     new vaultdata[200],num[100]
     nvault_get(myVault, vaultkey, vaultdata, 199)
     //log_amx(vaultdata)
-    for(new i = 1; i<=15;i++)
+    for(new i = 1; i<=MAXSKILL;i++)
     {
         strtok(vaultdata,num,99,vaultdata,199,',')
         g_PlayerSkill[player][i]=str_to_num(num)
@@ -459,8 +478,8 @@ public cmd_top (id)
     Len += format(Msg[Len], 2048 - Len,"<html><body style=^"background-color:black;color:white^"><table width=^"100%%^"><tr><th>Nume</th><th>Puncte</th><th>Skilluri</th>")
     new Players [32],inum;
     get_players(Players,inum)
-    static bool:PlayerAp[33]
-    for(new i=0; i<33;i++)
+    static bool:PlayerAp[MAX_PLAYERS]
+    for(new i=0; i<=MAX_PLAYERS;i++)
         PlayerAp[i]=false
     for(new times=0;times<inum;times++){
         new plmax=0,maxim=-1;
@@ -477,7 +496,7 @@ public cmd_top (id)
         new name[256]
         get_user_name(plmax,name,255)
         Len += format(Msg[Len], 2048 - Len,"<tr><td>%s</td><th>%d</th><th>",name,g_PlayerPoints[plmax][0])
-        for(new skil = 1;skil<=15;skil++)
+        for(new skil = 1;skil<=MAXSKILL;skil++)
             Len += format(Msg[Len], 2048 - Len,"%d ",g_PlayerSkill[plmax][skil])
         Len += format(Msg[Len], 2048 - Len,"</th></tr>")
     }
@@ -503,7 +522,7 @@ public cmd_reset (id, menu, item)
     menu_destroy(menu)
     if(data[0]=='1')
     {
-        for(new j = 0; j <= 15; j++)
+        for(new j = 0; j <= MAXSKILL; j++)
             g_PlayerSkill[id][j] = 0
         g_PlayerPoints[id][0] = g_PlayerPoints[id][1]
         if(is_user_alive(id))
@@ -548,23 +567,23 @@ public check_players ()
     for(new i=0; i<inum; i++)
     {
         new player = Players[i]
-        if((g_PlayerSkill[player][3] != 0 && cs_get_user_team(player) == CS_TEAM_T) || (g_PlayerSkill[player][10]!=0 && cs_get_user_team(player)== CS_TEAM_CT)){
+        if((g_PlayerSkill[player][CAMUFLAJ] != 0 && cs_get_user_team(player) == CS_TEAM_T) || (g_PlayerSkill[player][VINDECARE]!=0 && cs_get_user_team(player)== CS_TEAM_CT)){
             get_user_origin(player, tmp_origin)
             if(tmp_origin[0] == origins[player][0] &&  tmp_origin[1] == origins[player][1] && tmp_origin[2] == origins[player][2] && is_skills_ok() && get_user_weapon(player) == CSW_KNIFE){
                 counter[player]++ //player has not moved since last check
-                if(counter[player] >= BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
-                    if(counter[player] == BASE_COUNTER_CAMO - g_PlayerSkill[player][3]*6){
-                        set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][3]]);
+                if(counter[player] >= BASE_COUNTER_CAMO - g_PlayerSkill[player][CAMUFLAJ]*6  && cs_get_user_team(player)== CS_TEAM_T){  //player was not moving during last HEAL_INTERVAL seconds
+                    if(counter[player] == BASE_COUNTER_CAMO - g_PlayerSkill[player][CAMUFLAJ]*6){
+                        set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][CAMUFLAJ]]);
                         g_IsCamo[player]=1;
                     }
                     client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
-                if(counter[player] >= BASE_COUNTER_HEAL && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][10]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
+                if(counter[player] >= BASE_COUNTER_HEAL && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][VINDECARE]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
-                    if(health + g_PlayerSkill[player][10]> g_maxhp[g_PlayerSkill[player][10]])
-                        set_user_health(player, g_maxhp[g_PlayerSkill[player][10]])
+                    if(health + g_PlayerSkill[player][VINDECARE]> g_maxhp[g_PlayerSkill[player][VINDECARE]])
+                        set_user_health(player, g_maxhp[g_PlayerSkill[player][VINDECARE]])
                     else
-                        set_user_health(player, health + g_PlayerSkill[player][10])
+                        set_user_health(player, health + g_PlayerSkill[player][VINDECARE])
                     client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
                 }
             }else{
@@ -578,7 +597,7 @@ public check_players ()
                 origins[player][2] = tmp_origin[2]
             }
         }
-        if((g_PlayerSkill[player][9] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][9] == 2) && is_skills_ok() && cs_get_user_team(player) == CS_TEAM_CT){
+        if((g_PlayerSkill[player][INFRAROSU] == 1 && g_UseInfra[player] == true || g_PlayerSkill[player][INFRAROSU] == 2) && is_skills_ok() && cs_get_user_team(player) == CS_TEAM_CT){
             new spec_id=player, Float:my_origin[3], Float:smallest_angle=180.0, smallest_id=0, Float:xp=2.0,Float:yp=2.0
             entity_get_vector(player,EV_VEC_origin,my_origin)
             
@@ -626,10 +645,10 @@ public check_players ()
                             }else{
                                 color = target_team
                             }
-                            if(distance_target_hitpoint<255.0*g_PlayerSkill[player][9]){
+                            if(distance_target_hitpoint<255.0*g_PlayerSkill[player][INFRAROSU]){
                                 if(g_UseInfra[player]== true)
                                     make_TE_BEAMPOINTS(player,color,v_bone_start,v_bone_end,floatround(scaled_bone_width),target_team,actual_bright)
-                                if(g_PlayerSkill[player][9] == 2){
+                                if(g_PlayerSkill[player][INFRAROSU] == 2){
                                     new Float:ret[2]
                                     new Float:x_angle=get_screen_pos(spec_id,v_middle,ret)
                                     if (smallest_angle>floatabs(x_angle)){
@@ -645,10 +664,10 @@ public check_players ()
                     }
                 }
             }
-            if(g_PlayerSkill[player][9] == 2 && smallest_id>0 && smallest_id<32)
+            if(g_PlayerSkill[player][INFRAROSU] == 2 && smallest_id>0 && smallest_id<=MAX_PLAYERS)
             {
                 set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
-                new guns[32], weapon[2]
+                new guns[MAX_PLAYERS], weapon[2]
                 new numWeapons = 0, j
                 get_user_weapons(smallest_id, guns, numWeapons)
                 for (j=0; j<numWeapons; j++)
@@ -668,15 +687,15 @@ public check_players ()
 public client_PreThink(id)
 {
     if(is_user_alive(id) && is_skills_ok()){
-        if(g_PlayerSkill[id][2]!=0){
+        if(g_PlayerSkill[id][VITEZA]!=0){
             //if(get_user_button(id) & IN_FORWARD)
-                set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][2] * 30 )
+                set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][VITEZA] * 30 )
             //else if(!(get_user_button(id) & IN_FORWARD))
             //    set_user_maxspeed(id, 250.0)
         }
-        if(g_PlayerSkill[id][5]!=0){
+        if(g_PlayerSkill[id][SARITURA]!=0){
             if(get_user_button(id) & IN_JUMP)
-                set_user_gravity(id, g_Gravity[g_PlayerSkill[id][5]])
+                set_user_gravity(id, g_Gravity[g_PlayerSkill[id][SARITURA]])
             if( entity_get_float(id, EV_FL_flFallVelocity) > 0){
                 set_user_gravity(id, 1.0)
             }
@@ -685,10 +704,10 @@ public client_PreThink(id)
 }
 public cmd_disguise (id)
 {
-    if (!is_user_alive(id) || g_PlayerSkill[id][4]== 0 || !is_skills_ok() || cs_get_user_team(id) != CS_TEAM_T)
+    if (!is_user_alive(id) || g_PlayerSkill[id][DEGHIZARE]== 0 || !is_skills_ok() || cs_get_user_team(id) != CS_TEAM_T)
         return PLUGIN_HANDLED
         
-    new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
+    new player_origin[3],player_origins[3], players[MAX_PLAYERS], inum=0, dist, last_dist=99999, last_id
     
     get_user_origin(id,player_origin,0)
     get_players(players,inum,"b")
@@ -708,7 +727,7 @@ public cmd_disguise (id)
                 set_pev(id, pev_flags, pev(id, pev_flags)| FL_FROZEN)
                 g_UsedDisguise[last_id] = 1
                 g_IsDisguise[id] = 1
-                set_task(10.0 - g_PlayerSkill[id][4] * 2,"disguise_done", 3900 + id);
+                set_task(10.0 - g_PlayerSkill[id][DEGHIZARE] * 2,"disguise_done", 3900 + id);
             }else{
                 client_print(id,print_center,("Hainele i-au fost luate deja"))
                 return PLUGIN_HANDLED
@@ -730,7 +749,7 @@ bool:is_skills_ok()
 
 public disguise_done (id)
 {
-    if(id > 32)
+    if(id > MAX_PLAYERS)
         id -= 3900
     
     remove_task(3900 + id)
@@ -745,7 +764,7 @@ public disguise_done (id)
 }
 public unfreeze (id)
 {
-    if(id > 32)
+    if(id > MAX_PLAYERS)
         id -= 5300
     
     remove_task(5300 + id)
@@ -755,7 +774,7 @@ public unfreeze (id)
 
 public cmd_thief (id)
 {
-    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][7]== 0 || cs_get_user_team(id) != CS_TEAM_T || g_PeaceTime == 1)
+    if (!is_user_alive(id)|| !is_skills_ok() || g_PlayerSkill[id][FURT]== 0 || cs_get_user_team(id) != CS_TEAM_T || g_PeaceTime == 1)
         return PLUGIN_HANDLED
         
     new player_origin[3],player_origins[3], players[32], inum=0, dist, last_dist=99999, last_id
@@ -775,9 +794,9 @@ public cmd_thief (id)
         }
         if (last_dist<80) {
             if(g_UsedThief[last_id] < 2){
-                if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2) == 0){
+                if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][FURT])*2) == 0){
                     g_UsedThief[last_id] ++
-                    new money = 1500 * g_PlayerSkill[id][7]
+                    new money = 1500 * g_PlayerSkill[id][FURT]
                     new money1 =  cs_get_user_money(id)
                     new money2 = cs_get_user_money(last_id)
                     if(money > money2)
@@ -786,19 +805,19 @@ public cmd_thief (id)
                     cs_set_user_money(last_id,money2-money)
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_THIEF_DONE",money)
                     if(cs_get_user_team(last_id)== CS_TEAM_CT){
-                        if(random_num(0,(g_PlayerSkill[id][7]+1))==0){
+                        if(random_num(0,(g_PlayerSkill[id][FURT]+1))==0){
                             set_wanted(id)
                             client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                     }else
-                        if(random_num(0,(g_PlayerSkill[id][7]+2))==0){
+                        if(random_num(0,(g_PlayerSkill[id][FURT]+2))==0){
                             set_wanted(id)
                             client_print(id, print_center, "%L", LANG_SERVER,"SKILLS_THIEF_CAUGHT")
                         }
                 }else{
-                    if(random_num(0,g_PlayerSkill[id][7])==0)
+                    if(random_num(0,g_PlayerSkill[id][FURT])==0)
                         g_UsedThief[last_id] ++
-                    client_print(id, print_center,"%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][7])*2)
+                    client_print(id, print_center,"%L", LANG_SERVER, "SKILLS_THIEF_LOSE",(3 + g_UsedThief[last_id] - g_PlayerSkill[id][FURT])*2)
                 }
             }else{
                 client_print(id,print_center,("I-au fost luati bani deja"))
@@ -857,7 +876,7 @@ public cmd_showac(id)
 }
 public cmd_picklock(iEnt, id)
 {
-    if(!is_user_alive(id) || !is_skills_ok() || g_PlayerSkill[id][12]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
+    if(!is_user_alive(id) || !is_skills_ok() || g_PlayerSkill[id][LACATUS]==0 || cs_get_user_team(id)!=CS_TEAM_T || cs_get_user_money(id)<500 || get_user_weapon(id)!=CSW_KNIFE ){
         return HAM_IGNORED
     }
     if(pev(iEnt,pev_iuser4)){
@@ -870,7 +889,7 @@ public cmd_picklock(iEnt, id)
     arg[0]=iEnt
     cs_set_user_money(id, money-500);
     set_pev(id, pev_flags, pev(id, pev_flags)| FL_FROZEN)
-    set_task(10.0 - g_PlayerSkill[id][12]*2,"finish_picklocking",5100+id,arg,2)
+    set_task(10.0 - g_PlayerSkill[id][LACATUS]*2,"finish_picklocking",5100+id,arg,2)
     return HAM_HANDLED
 }
 public finish_picklocking(param[], id)
@@ -878,14 +897,14 @@ public finish_picklocking(param[], id)
     if(id>32)
         id-=5100;
     set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
-    if(random_num(0,3-g_PlayerSkill[id][12])==0)
+    if(random_num(0,3-g_PlayerSkill[id][LACATUS])==0)
     {
         new iEnt
         iEnt = param[0]
         ExecuteHamB(Ham_Use,iEnt,0,0,1,1.0)
         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
     }else{
-        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][12]-1)/2)
+        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][LACATUS]-1)/2)
     }
 }
 
@@ -897,7 +916,7 @@ public revive (id)
         ExecuteHamB(Ham_CS_RoundRespawn, id)
         dllfunc(DLLFunc_Spawn, id)
         give_item(id,"weapon_knife")
-        if(g_PlayerSkill[id][11] >= 2){
+        if(g_PlayerSkill[id][INVIERE] >= 2){
             set_user_health(id, 150)
             new j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(id, _WeaponsFree[j])
@@ -916,7 +935,7 @@ public player_spawn(id)
         g_UsedDisguise[id] = 0
         g_PlayerRevived[id] = false
     }else{
-        if(g_PlayerSkill[id][4] == 3 && g_IsDisguise[id] == 1)
+        if(g_PlayerSkill[id][DEGHIZARE] == 3 && g_IsDisguise[id] == 1)
             set_task(1.0 ,"disguise_done", 3900 + id);
         else
             g_IsDisguise[id] = 0
@@ -960,7 +979,7 @@ public round_end()
             reload_skills_all();
         }
         reload = 0;
-        new Players[32],playerCount, i, Talive=0, CTalive = 0, Ttotal = 0, CTtotal = 0;
+        new Players[MAX_PLAYERS],playerCount, i, Talive=0, CTalive = 0, Ttotal = 0, CTtotal = 0;
         get_players(Players, playerCount)
         for (i=0; i<playerCount; i++) 
         {
@@ -1052,7 +1071,7 @@ public fw_primary_attack_post(ent)
         new Float:push[3]
         pev(id,pev_punchangle,push)
         xs_vec_sub(push,cl_pushangle[id],push)
-        xs_vec_mul_scalar(push,(1.0 - 0.5*g_PlayerSkill[id][13]),push)
+        xs_vec_mul_scalar(push,(1.0 - 0.5*g_PlayerSkill[id][RECUL]),push)
         xs_vec_add(push,cl_pushangle[id],push)
         set_pev(id,pev_punchangle,push)
     }
@@ -1071,17 +1090,17 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
             if(ShowAc[attacker]==true)
                 client_print(attacker, print_chat, "+%d pentru %.2f damage",sum,damage)
         }
-        if(cs_get_user_team(attacker) == CS_TEAM_CT && get_user_weapon(attacker) == CSW_GLOCK18 && g_PlayerSkill[attacker][8] > 0)
+        if(cs_get_user_team(attacker) == CS_TEAM_CT && get_user_weapon(attacker) == CSW_GLOCK18 && g_PlayerSkill[attacker][INGHETARE] > 0)
         {
             set_pev(victim, pev_flags, pev(victim, pev_flags)| FL_FROZEN)
-            set_task(g_freezet[g_PlayerSkill[attacker][8]],"unfreeze",5300 + victim)
+            set_task(g_freezet[g_PlayerSkill[attacker][INGHETARE]],"unfreeze",5300 + victim)
             return HAM_SUPERCEDE
         }
     }
     new Float:dmg = 0.0
     if(is_user_alive(attacker) && get_user_weapon(attacker) == CSW_KNIFE)
-        dmg = damage * (15 * g_PlayerSkill[attacker][1])/100
-    dmg = dmg - damage * (15 * g_PlayerSkill[victim][6])/100
+        dmg = damage * (15 * g_PlayerSkill[attacker][PUTERE])/100
+    dmg = dmg - damage * (15 * g_PlayerSkill[victim][REZISTENTA])/100
     SetHamParamFloat(4, (damage + dmg > 0)?(damage + dmg):(0.0))
     return HAM_OVERRIDE
     
@@ -1091,11 +1110,11 @@ public player_killed(victim, attacker,Float:damage)
 {
     if(!is_user_connected(victim) || !is_user_connected(attacker))
         return HAM_IGNORED
-    if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][4] >= 3 && g_IsDisguise[victim] == 1)
+    if(cs_get_user_team(victim) == CS_TEAM_T && g_PlayerSkill[victim][DEGHIZARE] >= 3 && g_IsDisguise[victim] == 1)
         g_IsDisguise[victim] = 0
-    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][11] >= 1 && g_PlayerRevived[victim] == false && is_skills_ok())
+    if(cs_get_user_team(victim) == CS_TEAM_CT && g_PlayerSkill[victim][INVIERE] >= 1 && g_PlayerRevived[victim] == false && is_skills_ok())
     {
-        new Players[32]     
+        new Players[MAX_PLAYERS]     
         new playerCount, i, CTalive = 0
         get_players(Players, playerCount, "a") 
         for (i=0; i<playerCount; i++) 
@@ -1223,72 +1242,72 @@ public cmd_player_skill (id)
     menu = menu_create(menuname, "skills_shop")
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TIER I ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if(g_PlayerSkill[id][1] < 3 || (g_PlayerSkill[id][1] < 4 && g_Players4[id]))
+    if(g_PlayerSkill[id][PUTERE] < 3 || (g_PlayerSkill[id][PUTERE] < 4 && g_Players4[id]))
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_STRENGH",g_PlayerSkill[id][1]+1, g_Prices[g_PlayerSkill[id][1]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_STRENGH",g_PlayerSkill[id][PUTERE]+1, g_Prices[g_PlayerSkill[id][PUTERE]])
         menu_additem(menu, option, "1", 0)    
     }
-    if(g_PlayerSkill[id][2] < 3 || (g_PlayerSkill[id][2] < 4 && g_Players4[id]))
+    if(g_PlayerSkill[id][VITEZA] < 3 || (g_PlayerSkill[id][VITEZA] < 4 && g_Players4[id]))
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_SPEED",g_PlayerSkill[id][2]+1, g_Prices[g_PlayerSkill[id][2]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_SPEED",g_PlayerSkill[id][VITEZA]+1, g_Prices[g_PlayerSkill[id][VITEZA]])
         menu_additem(menu, option, "2", 0)
     }
-    if(g_PlayerSkill[id][5] < 3 || (g_PlayerSkill[id][5] < 4 && g_Players4[id]))
+    if(g_PlayerSkill[id][SARITURA] < 3 || (g_PlayerSkill[id][SARITURA] < 4 && g_Players4[id]))
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_GRAVITY",g_PlayerSkill[id][5]+1, g_Prices[g_PlayerSkill[id][5]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_GRAVITY",g_PlayerSkill[id][SARITURA]+1, g_Prices[g_PlayerSkill[id][SARITURA]])
         menu_additem(menu, option, "5", 0)
     }
-    if(g_PlayerSkill[id][6] < 3 || (g_PlayerSkill[id][6] < 4 && g_Players4[id]))
+    if(g_PlayerSkill[id][REZISTENTA] < 3 || (g_PlayerSkill[id][REZISTENTA] < 4 && g_Players4[id]))
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HARD_SKIN",g_PlayerSkill[id][6]+1, g_Prices[g_PlayerSkill[id][6]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HARD_SKIN",g_PlayerSkill[id][REZISTENTA]+1, g_Prices[g_PlayerSkill[id][REZISTENTA]])
         menu_additem(menu, option, "6", 0)
     }
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TIER II ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if((g_PlayerSkill[id][3] < 3 || (g_PlayerSkill[id][3] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_T)
+    if((g_PlayerSkill[id][CAMUFLAJ] < 3 || (g_PlayerSkill[id][CAMUFLAJ] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_T)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HIDE",g_PlayerSkill[id][3]+1, g_Prices[g_PlayerSkill[id][3]+1])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HIDE",g_PlayerSkill[id][CAMUFLAJ]+1, g_Prices[g_PlayerSkill[id][CAMUFLAJ]+1])
         menu_additem(menu, option, "3", 0)
     }
-    if((g_PlayerSkill[id][4] < 3 || (g_PlayerSkill[id][4] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_T)
+    if((g_PlayerSkill[id][DEGHIZARE] < 3 || (g_PlayerSkill[id][DEGHIZARE] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_T)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_DISGUISE",g_PlayerSkill[id][4]+1, g_Prices[g_PlayerSkill[id][4]+1])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_DISGUISE",g_PlayerSkill[id][DEGHIZARE]+1, g_Prices[g_PlayerSkill[id][DEGHIZARE]+1])
         menu_additem(menu, option, "4", 0)
     }
-    if((g_PlayerSkill[id][8] < 3 || (g_PlayerSkill[id][8] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_CT)
+    if((g_PlayerSkill[id][INGHETARE] < 3 || (g_PlayerSkill[id][INGHETARE] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_CT)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_FREEZE",g_PlayerSkill[id][8]+1, g_Prices[g_PlayerSkill[id][8]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_FREEZE",g_PlayerSkill[id][INGHETARE]+1, g_Prices[g_PlayerSkill[id][INGHETARE]])
         menu_additem(menu, option, "8", 0)
     }
-    if((g_PlayerSkill[id][10] < 3 || (g_PlayerSkill[id][10] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_CT)
+    if((g_PlayerSkill[id][VINDECARE] < 3 || (g_PlayerSkill[id][VINDECARE] < 4 && g_Players4[id])) && cs_get_user_team(id)==CS_TEAM_CT)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HEALING",g_PlayerSkill[id][10]+1, g_Prices[g_PlayerSkill[id][10]])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_HEALING",g_PlayerSkill[id][VINDECARE]+1, g_Prices[g_PlayerSkill[id][VINDECARE]])
         menu_additem(menu, option, "10", 0)
     }
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TIER III ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if(g_PlayerSkill[id][9] < 2 && cs_get_user_team(id)==CS_TEAM_CT)
+    if(g_PlayerSkill[id][INFRAROSU] < 2 && cs_get_user_team(id)==CS_TEAM_CT)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_INFRARED",g_PlayerSkill[id][9]+1, g_Prices[g_PlayerSkill[id][9]*2+3])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_INFRARED",g_PlayerSkill[id][INFRAROSU]+1, g_Prices[g_PlayerSkill[id][INFRAROSU]*2+3])
         menu_additem(menu, option, "9", 0)
     }
-    if(g_PlayerSkill[id][11] < 2 && cs_get_user_team(id)==CS_TEAM_CT)
+    if(g_PlayerSkill[id][INVIERE] < 2 && cs_get_user_team(id)==CS_TEAM_CT)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_REVIVE",g_PlayerSkill[id][11]+1, g_Prices[g_PlayerSkill[id][11]*2+3])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_REVIVE",g_PlayerSkill[id][INVIERE]+1, g_Prices[g_PlayerSkill[id][INVIERE]*2+3])
         menu_additem(menu, option, "11", 0)
     }
-    if((g_PlayerSkill[id][7] < 2) && cs_get_user_team(id)==CS_TEAM_T)
+    if((g_PlayerSkill[id][FURT] < 2) && cs_get_user_team(id)==CS_TEAM_T)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_THIEF",g_PlayerSkill[id][7]+1, g_Prices[g_PlayerSkill[id][7]*2+3])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_THIEF",g_PlayerSkill[id][FURT]+1, g_Prices[g_PlayerSkill[id][FURT]*2+3])
         menu_additem(menu, option, "7", 0)
     }
-    if((g_PlayerSkill[id][12] < 2) && cs_get_user_team(id)==CS_TEAM_T)
+    if((g_PlayerSkill[id][LACATUS] < 2) && cs_get_user_team(id)==CS_TEAM_T)
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_PICKLOCK",g_PlayerSkill[id][12]+1, g_Prices[g_PlayerSkill[id][12]*2+3])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_PICKLOCK",g_PlayerSkill[id][LACATUS]+1, g_Prices[g_PlayerSkill[id][LACATUS]*2+3])
         menu_additem(menu, option, "12", 0)
     }
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ TIER IV ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if((g_PlayerSkill[id][13] < 1 || (g_PlayerSkill[id][13] < 2 && g_Players4[id])))
+    if((g_PlayerSkill[id][RECUL] < 1 || (g_PlayerSkill[id][RECUL] < 2 && g_Players4[id])))
     {
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_RECOIL",g_PlayerSkill[id][13]+1, g_Prices[g_PlayerSkill[id][13]*2+3])
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_RECOIL",g_PlayerSkill[id][RECUL]+1, g_Prices[g_PlayerSkill[id][RECUL]*2+3])
         menu_additem(menu, option, "13", 0)
     }
     menu_display(id, menu)
@@ -1308,58 +1327,71 @@ public  skills_shop(id, menu, item)
     menu_destroy(menu)
     
     new skil = str_to_num(data)
-    if(g_PlayerSkill[id][skil] < 2 && (skil==7 || skil==9 || skil == 11 || skil == 12 || skil == 13)){
-        if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]*2+3]){
-            g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]*2+3]
-            g_PlayerSkill[id][skil] += 1
-            if(skil == 7)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
-            else if(skil == 9){
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
-                if(g_UseInfra[id]==false)
-                    set_task(1.0,"cmd_askinfrared",id)
+    switch(skil){
+        case 3,4:
+            if(g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])){
+                if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]+1]){
+                    g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]+1]
+                    g_PlayerSkill[id][skil] += 1
+                    if(skil == 3)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
+                    else if(skil == 4)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
+                }else{
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
+                }
             }
-            else if(skil == 11)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
-            else if(skil == 12)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
-            else if(skil == 13)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
-        }else{
-            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
-        }
-    }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && (skil == 3 || skil == 4)){
-        if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]+1]){
-            g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]+1]
-            g_PlayerSkill[id][skil] += 1
-            if(skil == 3)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HIDE",g_PlayerSkill[id][skil])
-            else if(skil == 4)
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DISGUISE",g_PlayerSkill[id][skil])
-        }else{
-            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
-        }
-    }else if((g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id])) && g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]])
-    {
-        g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]]
-        g_PlayerSkill[id][skil] += 1
-        switch(skil)
-        {
-            case(1):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
-            case(2):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
-            case(5):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
-            case(6):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
-            case(8):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
-            case(10):
-                client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
-        }
-    }else{
-        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
+        case 1,2,5,6,8,10:
+            if(g_PlayerSkill[id][skil] < 3 || (g_PlayerSkill[id][skil] < 4 && g_Players4[id]))
+            {
+                if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]])
+                {
+                    g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]]
+                    g_PlayerSkill[id][skil] += 1
+                    switch(skil)
+                    {
+                        case(1):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_STRENGH",g_PlayerSkill[id][skil])
+                        case(2):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SPEED",g_PlayerSkill[id][skil])
+                        case(5):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_GRAVITY",g_PlayerSkill[id][skil])
+                        case(6):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HARD_SKIN",g_PlayerSkill[id][skil])
+                        case(8):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_FREEZE",g_PlayerSkill[id][skil])
+                        case(10):
+                            client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
+                    }
+                }else{
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
+                }
+            }
+        case 7,9,11,12,13:
+            if(g_PlayerSkill[id][skil] < 2)
+            {
+                if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]*2+3]){
+                    g_PlayerPoints[id][0] -= g_Prices[g_PlayerSkill[id][skil]*2+3]
+                    g_PlayerSkill[id][skil] += 1
+                    if(skil == FURT)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_THIEF",g_PlayerSkill[id][skil])
+                    else if(skil == INFRAROSU){
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_INFRARED",g_PlayerSkill[id][skil])
+                        if(g_UseInfra[id]==false)
+                            set_task(1.0,"cmd_askinfrared",id)
+                    }
+                    else if(skil == INVIERE)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_REVIVE",g_PlayerSkill[id][skil])
+                    else if(skil == LACATUS)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_PICKLOCK",g_PlayerSkill[id][skil])
+                    else if(skil == RECUL)
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
+                }else{
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
+                }
+            }      
+        default:
+            client_print(id, print_center, "INVALID REQUEST");
     }
     cmd_player_skill (id)
     return PLUGIN_HANDLED
@@ -1413,20 +1445,20 @@ public admin_verify_skills(id,level,cid)
     client_print(id,print_console,"//Puncte:        %d",g_PlayerPoints[player][0])
     client_print(id,print_console,"//Puncte totale:    %d",g_PlayerPoints[player][1])
     client_print(id,print_console,"//===============================")
-    client_print(id,print_console,"//Putere:         %d",g_PlayerSkill[player][1])
-    client_print(id,print_console,"//Viteza:         %d",g_PlayerSkill[player][2])
-    client_print(id,print_console,"//Camuflaj:       %d",g_PlayerSkill[player][3])
-    client_print(id,print_console,"//Deghizare:      %d",g_PlayerSkill[player][4])
-    client_print(id,print_console,"//Saritura:       %d",g_PlayerSkill[player][5])
-    client_print(id,print_console,"//Rezistenta:     %d",g_PlayerSkill[player][6])
-    client_print(id,print_console,"//Furt:           %d",g_PlayerSkill[player][7])
-    client_print(id,print_console,"//Inghetare:        %d",g_PlayerSkill[player][8])
-    client_print(id,print_console,"//Infrarosu:        %d %d",g_PlayerSkill[player][9], g_UseInfra[player])
-    client_print(id,print_console,"//Vindecare:        %d",g_PlayerSkill[player][10])
-    client_print(id,print_console,"//Inviere:        %d",g_PlayerSkill[player][11])
-    client_print(id,print_console,"//Lacatus:        %d",g_PlayerSkill[player][12])
-    client_print(id,print_console,"//Recul:            %d",g_PlayerSkill[player][13])
-    client_print(id,print_console,"//Acuratete:          %d",g_PlayerSkill[player][14])
+    client_print(id,print_console,"//Putere:         %d",g_PlayerSkill[player][PUTERE])
+    client_print(id,print_console,"//Viteza:         %d",g_PlayerSkill[player][VITEZA])
+    client_print(id,print_console,"//Camuflaj:       %d",g_PlayerSkill[player][CAMUFLAJ])
+    client_print(id,print_console,"//Deghizare:      %d",g_PlayerSkill[player][DEGHIZARE])
+    client_print(id,print_console,"//Saritura:       %d",g_PlayerSkill[player][SARITURA])
+    client_print(id,print_console,"//Rezistenta:     %d",g_PlayerSkill[player][REZISTENTA])
+    client_print(id,print_console,"//Furt:           %d",g_PlayerSkill[player][FURT])
+    client_print(id,print_console,"//Inghetare:        %d",g_PlayerSkill[player][INGHETARE])
+    client_print(id,print_console,"//Infrarosu:        %d %d",g_PlayerSkill[player][INFRAROSU], g_UseInfra[player])
+    client_print(id,print_console,"//Vindecare:        %d",g_PlayerSkill[player][VINDECARE])
+    client_print(id,print_console,"//Inviere:        %d",g_PlayerSkill[player][INVIERE])
+    client_print(id,print_console,"//Lacatus:        %d",g_PlayerSkill[player][LACATUS])
+    client_print(id,print_console,"//Recul:            %d",g_PlayerSkill[player][RECUL])
+    client_print(id,print_console,"//Acuratete:          %d",g_PlayerSkill[player][ACURATETE])
     client_print(id,print_console,"//////////////////////////////////")
     return PLUGIN_HANDLED
 }
