@@ -66,6 +66,7 @@ enum _:skills{
     LACATUS,  
     RECUL,
     DODGE,
+    SILENTIOS,
     ACURATETE,
     MAXSKILL
 }
@@ -268,6 +269,7 @@ public reload_skills(id)
     IsVip[id] = 0
     Resetused[id] = false
     set_user_rendering(id)
+    set_user_footsteps(id,0)
     if(firstRound == false)
     {
         if(get_pcvar_num(gp_SpecialVip)!=0)
@@ -553,6 +555,7 @@ public cmd_reset (id, menu, item)
                 entity_set_int(id, EV_INT_body, 3+random_num(1,2))
             }
         }
+        set_user_footsteps(id,0)
         g_IsDisguise[id] = 0
         g_UseInfra[id] = false
         g_Killed[id] = 0
@@ -957,6 +960,10 @@ public player_spawn(id)
             set_task(1.0 ,"disguise_done", 3900 + id);
         else
             g_IsDisguise[id] = 0
+        if(g_PlayerSkill[id][SILENTIOS])
+        {
+            set_user_footsteps(id,1)
+        }
     }
     Resetused[id] = 0
     g_UsedThief[id] = 0
@@ -1338,6 +1345,11 @@ public cmd_player_skill (id)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_DODGE",g_PlayerSkill[id][DODGE]+1, g_Prices[g_PlayerSkill[id][DODGE]*2+3])
         menu_additem(menu, option, "14", 0)
     }
+    if(g_PlayerSkill[id][SILENTIOS] < 1 && cs_get_user_team(id)==CS_TEAM_T)
+    {
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "SKILLS_SILENTIOS",g_PlayerSkill[id][SILENTIOS]+1, g_Prices[g_PlayerSkill[id][SILENTIOS]*2+3])
+        menu_additem(menu, option, "15", 0)
+    }
     menu_display(id, menu)
     
     return PLUGIN_HANDLED
@@ -1395,7 +1407,7 @@ public  skills_shop(id, menu, item)
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
                 }
             }
-        case 7,9,11,12,13,14:
+        case 7,9,11,12,13,14,15:
             if(g_PlayerSkill[id][skil] < 2)
             {
                 if(g_PlayerPoints[id][0] >= g_Prices[g_PlayerSkill[id][skil]*2+3]){
@@ -1416,6 +1428,10 @@ public  skills_shop(id, menu, item)
                         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_RECOIL",g_PlayerSkill[id][skil])
                     else if(skil == DODGE)
                         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DODGE",g_PlayerSkill[id][skil])
+                    else if(skil == SILENTIOS){
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SILENTIONS",g_PlayerSkill[id][skil])
+                        set_user_footsteps(id,1)
+                    }
                 }else{
                     client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]*2+3] - g_PlayerPoints[id][0])
                 }
