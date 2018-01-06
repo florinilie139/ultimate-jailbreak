@@ -1122,7 +1122,8 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
             return HAM_SUPERCEDE
         }
     }
-    if(g_PlayerSkill[attacker][DODGE] && random_num(0,DODGE_CHANCE) == 0)
+    if(is_user_alive(attacker) && get_user_weapon(attacker)!=CSW_KNIFE && 
+        g_PlayerSkill[victim][DODGE] && random_num(0,DODGE_CHANCE) == 0)
     {
         SetHamParamFloat(4, 0.0)
         return HAM_OVERRIDE
