@@ -498,7 +498,7 @@ public cmd_top (id)
     Len += format(Msg[Len], 2048 - Len,"<html><body style=^"background-color:black;color:white^"><table width=^"100%%^"><tr><th>Nume</th><th>Puncte</th><th>Skilluri</th>")
     new Players [32],inum;
     get_players(Players,inum)
-    static bool:PlayerAp[MAX_PLAYERS]
+    static bool:PlayerAp[MAX_PLAYERS+1]
     for(new i=0; i<=MAX_PLAYERS;i++)
         PlayerAp[i]=false
     for(new times=0;times<inum;times++){
