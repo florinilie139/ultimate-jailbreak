@@ -80,7 +80,7 @@ handleMemoryPatches()
     }
 
     new bool:isLinuxServer = bool:is_linux_server();
-    new bool:newVersion    = isLinuxServer && getEngineBuildVersion() / 100 >= 59; // build 59xx
+    new bool:newVersion    = 1 //isLinuxServer && (getEngineBuildVersion() / 100 >= 59 || getEngineBuildVersion() == 1306); // build 59xx or ReHLDS
     
     new address;
     new functionSize;
