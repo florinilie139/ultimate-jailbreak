@@ -161,12 +161,12 @@ public plugin_init ()
     register_clcmd("say /top","cmd_top")
     register_clcmd("say /list","cmd_list")
     register_clcmd("say /rskill","cmd_askreset")
-    register_clcmd("say /matatactusicufractu","_give_points_all")
+    register_clcmd("say /damipomanatati","_give_points_all")
     register_concmd("amx_reload_skills", "cmd_reload_skills_all", ADMIN_RCON, "Reloads all skills" );
     register_srvcmd("give_points","_give_points")
     new skillh = register_cvar("skill_help", "1")
     gp_SpecialVip = register_cvar("special_vip","0")
-    //register_concmd("amx_addpoints","admin_points",ADMIN_LEVEL_E,"<nick> <Points to give>")
+    register_concmd("amx_addpoints","admin_points",ADMIN_LEVEL_E,"<nick> <Points to give>")
     register_concmd("amx_skills","admin_verify_skills",ADMIN_ALL,"<nick> # Verify a player's skills")
     myVault = nvault_open("vipskills")
     if (myVault == INVALID_HANDLE) log_amx("Failed loading the vault")
@@ -1404,7 +1404,7 @@ public  skills_shop(id, menu, item)
                             client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_HEALING",g_PlayerSkill[id][skil])
                     }
                 }else{
-                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]+1] - g_PlayerPoints[id][0])
+                    client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_NOT_ENOUGH",g_Prices[g_PlayerSkill[id][skil]] - g_PlayerPoints[id][0])
                 }
             }
         case 7,9,11,12,13,14,15:
@@ -1429,7 +1429,7 @@ public  skills_shop(id, menu, item)
                     else if(skil == DODGE)
                         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_DODGE",g_PlayerSkill[id][skil])
                     else if(skil == SILENTIOS){
-                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SILENTIONS",g_PlayerSkill[id][skil])
+                        client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_UPGRADE_SILENTIOS",g_PlayerSkill[id][skil])
                         set_user_footsteps(id,1)
                     }
                 }else{

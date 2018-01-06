@@ -433,6 +433,8 @@ public plugin_precache()
     precache_sound("ambience/the_horror2.wav")
     precache_sound("debris/metal2.wav")
     precache_sound("items/gunpickup2.wav")
+    precache_sound("jbextreme/simondead2.wav")
+    precache_sound("jbextreme/opendoor3.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -1225,7 +1227,7 @@ public player_killed(victim, attacker, shouldgib)
             {
                 g_Simon = 0
                 resetsimon()
-                emit_sound(0, CHAN_AUTO, "jbextreme/simondead.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                emit_sound(0, CHAN_AUTO, "jbextreme/simondead2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
                 //ClearSyncHud(0, g_HudSync[2][_hudsync])
                 //player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
             }    
@@ -1704,7 +1706,7 @@ public cmd_open(id)
         new name[32]
         get_user_name(id, name, 31)
         client_print(0, print_chat, "%s a deschis usa",name)
-        emit_sound(0, CHAN_AUTO, "jbextreme/opendoor.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     }
     return PLUGIN_HANDLED
 }
@@ -1735,9 +1737,13 @@ public cmd_box(id)
                 emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             }
             else{
+                new dst[50]
+                get_user_name(id, dst, 49)
                 set_cvar_num("mp_tkpunish", 0)
                 set_cvar_num("mp_friendlyfire", 0)
                 g_BoxStarted = 0
+                client_print(0, print_console, "%s A DEZACTIVAT BOX", dst)
+                log_amx("%s A DEZACTIVAT BOX", dst)
             }
         }
         else
@@ -4810,6 +4816,7 @@ public  simon_choice(id, menu, item)
             new name[32]
             get_user_name(id, name, 31)
             client_print(0, print_chat, "%s a deschis usa",name)
+            emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             cmd_simonmenu(id)
         }
         case('2'): cmd_freeday(id)
