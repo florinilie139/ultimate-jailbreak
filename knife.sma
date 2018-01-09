@@ -79,6 +79,7 @@ public plugin_init()
     RegisterHam(Ham_Item_Deploy, "weapon_knife", "Handl_Deploy")
     gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "40.0")
     //set_task(0.5, "check", _, _, _, "b")
+    return PLUGIN_CONTINUE
 }
 
 
@@ -243,7 +244,7 @@ public player_damage(victim, ent, attacker, Float:damage, bits){
     if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker || gp_MultiDMG==0)
         return HAM_IGNORED
     g_Duel = get_duel()
-    if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)!=cs_get_user_team(attacker) && (((g_GameMode == 12 || g_GameMode == 10) && cs_get_user_team(attacker)==CS_TEAM_CT) || (g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != -1 && g_GameMode != 2 && g_GameMode != 12 && g_GameMode!=10))))
+    if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)!=cs_get_user_team(attacker) && (((g_GameMode == 12 || g_GameMode == 10) && cs_get_user_team(attacker)==CS_TEAM_CT) || (g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != -1 && g_GameMode != 2 && g_GameMode != 12 && g_GameMode!=10 && g_GameMode!=7))))
     {
         SetHamParamFloat(4, damage * gc_CrowbarMul)
         return HAM_OVERRIDE
