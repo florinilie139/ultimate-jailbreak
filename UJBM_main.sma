@@ -378,6 +378,7 @@ public plugin_init()
     register_clcmd("say /reguli", "cmd_help")
     register_clcmd("say /whosimon","cmd_whosimon")
     register_clcmd("say /gunshop","gunsmenu")
+    register_clcmd("say /choosesimon","cmd_adminchoosesimon")
     register_clcmd("say_team /gunshop","gunsmenu")
     //register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
@@ -1778,6 +1779,57 @@ public cmd_nosleep(id)
         return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }
+public cmd_adminchoosesimon(id)
+{
+    if (g_SimonAllowed == 1 && is_not_game() && (get_user_flags(id) & ADMIN_SLAY) && g_Simon==0)
+    {
+        static i, name[32], num[5], menu, menuname[32]
+        formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SIMON")
+        menu = menu_create(menuname, "admin_select_simon")
+        for(i = 1; i <= g_MaxClients; i++)
+        {
+            if(!is_user_connected(i) || !is_user_alive(i) || (id == i))
+                continue
+            if(Simons[i] == 0 && CS_TEAM_CT == cs_get_user_team(i))
+            {
+                get_user_name(i, name, charsmax(name))
+                num_to_str(i, num, charsmax(num))
+                menu_additem(menu, name, num, 0)
+            }
+        }
+        menu_display(id, menu)
+    }
+}
+
+public admin_select_simon(id, menu, item)
+{
+    if(item == MENU_EXIT)
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    
+    static dst[32], data[5], player, access, callback, simonname[32]
+    
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    menu_destroy(menu)
+    player = str_to_num(data)
+    
+    if(g_SimonAllowed != 1 || !is_not_game() || !is_user_connected(player) || !is_user_alive(player) || g_Simon!=0 || Simons[player] != 0 || CS_TEAM_CT != cs_get_user_team(player))
+    {
+        return PLUGIN_HANDLED
+    }
+    
+    get_user_name(id, dst, charsmax(dst))
+    get_user_name(player,simonname,charsmax(simonname))
+    
+    client_print(0, print_console, "%s a ales simon pe %s", dst,simonname)
+    log_amx("%s a ales simon pe %s", dst,simonname)
+    
+    cmd_simon(player)
+    
+    return PLUGIN_HANDLED
+}
 public cmd_freeday(id)
 {
     if (g_GameMode == NormalDay)
@@ -2498,25 +2550,28 @@ public freeday_select(id, menu, item)
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
     freeday_set(id, player, false)
-
+    menu_destroy(menu)
+    
     return PLUGIN_HANDLED
 }
 public freeday_select_next(id, menu, item)
+{
+    if(item == MENU_EXIT)
     {
-        if(item == MENU_EXIT)
-        {
-            menu_destroy(menu)
-            return PLUGIN_HANDLED
-        }
-        
-        static dst[32], data[5], player, access, callback
-        
-        menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
-        player = str_to_num(data)
-        freeday_set(id, player, true)
-        
+        menu_destroy(menu)
         return PLUGIN_HANDLED
     }
+    
+    static dst[32], data[5], player, access, callback
+    
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    player = str_to_num(data)
+    freeday_set(id, player, true)
+    menu_destroy(menu)
+    
+    return PLUGIN_HANDLED
+}
+
 public duel_knives(id, menu, item)
 {
     static dst[32], data[5], access, callback, option[128], player, src[32]
