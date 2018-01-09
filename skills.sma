@@ -98,7 +98,7 @@ new g_Duel;
 new g_Gamemode;
 new g_PeaceTime;
 new g_DayOfTheWeek;
-new bool:ShowAc [MAX_PLAYERS]
+new bool:ShowAc [MAX_PLAYERS+1]
 new bool:firstRound = false
 
 new Float:cl_pushangle[MAX_PLAYERS+1][3]
@@ -107,9 +107,9 @@ new myVault
 enum _:_vip { _name[100], _pass[100], _sk[20]}
 new Vip[100][_vip]
 new MaxVip
-new IsVip[MAX_PLAYERS]
+new IsVip[MAX_PLAYERS+1]
 
-new Resetused[MAX_PLAYERS]
+new Resetused[MAX_PLAYERS+1]
 
 enum _:_arg { _nume[100], _skill[MAXSKILL], _points[2] }
 new Leaved[200][_arg]
@@ -688,7 +688,7 @@ public check_players ()
             if(g_PlayerSkill[player][INFRAROSU] == 2 && smallest_id>0 && smallest_id<=MAX_PLAYERS)
             {
                 set_hudmessage(255, 255, 0, floatabs(xp), floatabs(yp), 0, 0.0, REFRESH_TIME, 0.0, 0.0)
-                new guns[MAX_PLAYERS], weapon[2]
+                new guns[32], weapon[2]
                 new numWeapons = 0, j
                 get_user_weapons(smallest_id, guns, numWeapons)
                 for (j=0; j<numWeapons; j++)
