@@ -1122,7 +1122,7 @@ public on_damage(id)
     new attacker = get_user_attacker(id);
     new skIndex[2];
     
-    if(onfire[attacker] == true && is_user_alive(id) && is_user_alive(attacker))
+    if(is_user_alive(id) && is_user_alive(attacker) && onfire[attacker] == true )
     {
         skIndex[0] = id;
         onfire[id] = true;
