@@ -232,9 +232,9 @@ public SetPlayerModel(player, cmd[]) {
     new flags = get_user_flags(player)
     if ((!(flags & ADMIN_MENU) && get_vip_type(player) == 0))
     {
-        new name[33]
+/*        new name[33]
         get_user_name(player, name, 32)
-        client_print(player, print_chat, "%s trebuie sa ai admin pentru modele", name)
+        client_print(player, print_chat, "%s trebuie sa ai admin pentru modele", name)*/
         return 0
     }
     
