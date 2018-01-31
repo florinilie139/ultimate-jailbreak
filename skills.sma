@@ -404,7 +404,7 @@ public setData(player) {
     return PLUGIN_CONTINUE
 }
 stock getData(player) {
-    // Crash fÃ¼r den Compiler
+    // Crash für den Compiler
     // if (myVault == INVALID_HANDLE) return "empty"
     
     new name[35]
@@ -516,7 +516,7 @@ public cmd_top (id)
         new name[256]
         get_user_name(plmax,name,255)
         Len += format(Msg[Len], 2048 - Len,"<tr><td>%s</td><th>%d</th><th>",name,g_PlayerPoints[plmax][0])
-        for(new skil = 1;skil<=MAXSKILL;skil++)
+        for(new skil = 1;skil<MAXSKILL;skil++)
             Len += format(Msg[Len], 2048 - Len,"%d ",g_PlayerSkill[plmax][skil])
         Len += format(Msg[Len], 2048 - Len,"</th></tr>")
     }
