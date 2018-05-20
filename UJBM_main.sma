@@ -2537,6 +2537,25 @@ public hud_status(task)
         }*/
     }
 }
+public paint_select(id, menu, item)
+{
+    if(item == MENU_EXIT)
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    
+    static src[32], dst[32], data[5], player, access, callback
+    
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    player = str_to_num(data)
+    server_cmd("painttero %d",player)
+    menu_destroy(menu)
+    get_user_name(id, src, charsmax(src))
+    client_print(0,print_console,"%s a dat lui %s paint",src,dst)
+    
+    return PLUGIN_HANDLED
+}
 public freeday_select(id, menu, item)
 {
     if(item == MENU_EXIT)
@@ -4844,6 +4863,8 @@ public  cmd_simonmenu(id)
         menu_additem(menu, option, "5", 0)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PUNISH")
         menu_additem(menu, option, "6", 0)
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PAINT")
+        menu_additem(menu, option, "a", 0)
         if(g_GameMode == NormalDay)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_SIMON_GAMES")
@@ -4902,6 +4923,7 @@ public  simon_choice(id, menu, item)
         case('7'): cmd_simongamesmenu(id)
         case('8'): client_cmd(id,"bind ^"%s^" ^"say /menu^"", bindstr)
         case('9'): cmd_funmenu(id)
+        case('a'): menu_players(id, CS_TEAM_T, id, 1, "paint_select", "%L", LANG_SERVER, "UJBM_MENU_PAINT")
     }        
     return PLUGIN_HANDLED
 }
