@@ -1092,7 +1092,7 @@ public fw_primary_attack(ent)
 public fw_primary_attack_post(ent)
 {
     new id = pev(ent,pev_owner)
-    if(g_Gamemode == Freeday || g_Gamemode == NormalDay){
+    if(is_skills_ok()){
         new Float:push[3]
         pev(id,pev_punchangle,push)
         xs_vec_sub(push,cl_pushangle[id],push)
