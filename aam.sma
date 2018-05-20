@@ -147,23 +147,6 @@ public client_command(player) {
     if (cmd[0] != '/') return PLUGIN_CONTINUE
 
     // jetzt die Befehle durchtesten
-    if (equali(cmd,"/stopreset"))
-    {
-        if(g_reset[player]==true)
-        {
-            g_reset[player]=false
-            client_print(player,print_chat,"Nu ti se va mai reseta modelul")
-        }
-    }
-    if (equali(cmd,"/startreset"))
-    {
-        if(g_reset[player]==false)
-            {
-                g_reset[player]=true
-                client_print(player,print_chat,"Ti se va reseta modelul la fiecare spawn")
-            }
-    }
-    
     if (equali(cmd, "/skinmenu"))
         SkinMenu(player)
     if(SetPlayerModel(player, cmd) == 1)
@@ -201,6 +184,20 @@ public SkinMenu(player){
     static menu, menuname[32], option[64], num[5]
     formatex(menuname, charsmax(menuname), "Meniu Skinuri")
     menu = menu_create(menuname, "Skinchoice")
+
+    if(g_reset[player]==true)
+    {
+        formatex(option, charsmax(option), "Stop Re-set")
+        menu_additem(menu, option, num, 's') 
+    }
+    if(g_reset[player]==false)
+    {
+        formatex(option, charsmax(option), "Start Re-set")
+        menu_additem(menu, option, num, 't') 
+    }
+    formatex(option, charsmax(option), "Reseteaza skin")
+    menu_additem(menu, option, num, 'd') 
+
     for(new i = 0; i < maxmodels; i++) {
 		if(!equali(model[i][MT_BEFEHL],HIDDEN_MESSAGE))
         {
@@ -219,8 +216,17 @@ public Skinchoice (player, menu, item){
     }
     static dst[32], data[5], access, callback,nr
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
-    nr = str_to_num(data)
-    SetPlayerModel(player,model[nr][MT_BEFEHL])
+    switch(data[0])
+    {
+        case 'd': SetPlayerModel(player,"/restartskin");
+        case 's': SetPlayerModel(player,"/stopreset");
+        case 't': SetPlayerModel(player,"/startreset");
+        default:
+        {
+            nr = str_to_num(data)
+            SetPlayerModel(player,model[nr][MT_BEFEHL])
+        }
+    }
     menu_destroy(menu)
     return PLUGIN_HANDLED
 }
@@ -238,11 +244,24 @@ public SetPlayerModel(player, cmd[]) {
         return 0
     }
     
-    if (equali(cmd, "/default"))
+    if (equali(cmd, "/restartskin"))
     {
         cs_reset_user_model(player)
         return 1
     }
+    
+    if (equali(cmd,"/stopreset") && g_reset[player]==true)
+    {
+        g_reset[player]=false
+        client_print(player,print_chat,"Nu ti se va mai reseta modelul")
+        return 1
+    }
+    if (equali(cmd,"/startreset") && g_reset[player]==false)
+    {
+        g_reset[player]=true
+        client_print(player,print_chat,"Ti se va reseta modelul la fiecare spawn")
+        return 1
+    }    
     
     for(new i = 0; i < maxmodels; i++)
     {
