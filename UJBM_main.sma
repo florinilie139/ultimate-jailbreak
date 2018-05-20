@@ -3229,6 +3229,10 @@ public EndVote()
         }
     }
 }
+public cmd_done_game_prepare ()
+{
+    g_GamePrepare = 0;
+}
 
 public cmd_expire_time()
 {
@@ -3519,6 +3523,7 @@ public  cmd_game_alien2()
     g_BoxStarted = 0
     jail_open()
     g_DoNotAttack = 3;
+    g_GamePrepare = 1;
     g_GameWeapon[1] = CSW_KNIFE
     g_GameMode = AlienHiddenDay
     g_GamesAp[AlienHiddenDay]=true
@@ -3569,6 +3574,7 @@ public  cmd_game_alien2()
     if (hp < 20) hp = 200
     set_user_health(g_Simon, hp*playerCount)
     set_task(20.0, "give_items_alien", TASK_GIVEITEMS)
+    set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     set_lights("z")
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(2.5, "radar_alien", TASK_RADAR, _, _, "b")
@@ -3853,6 +3859,7 @@ public cmd_game_sparta()
     jail_open()
     g_GameMode = SpartaDay
     g_GamesAp[SpartaDay]=true
+    g_GamePrepare = 1;
     g_DoNotAttack = 1;
     g_GameWeapon[0] = CSW_DEAGLE
     g_GameWeapon[1] = CSW_KNIFE
@@ -3880,6 +3887,7 @@ public cmd_game_sparta()
             set_user_health(Players[i], 100)
         }
     }
+    set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
