@@ -144,7 +144,7 @@ public Show_Menu_Cam(id)
    new szCam = menu_create("\rVizualizare \dCamera^n\r", "Show_SubMenu_Cam");
    
    menu_additem(szCam, " \rVizualizare \d3D", "1", 0);
-   menu_additem(szCam, " \rVizualizare \dde Sus", "2", 0);
+   //menu_additem(szCam, " \rVizualizare \dde Sus", "2", 0);
    menu_additem(szCam, " \rVizualizare \dNormala", "3", 0);
    menu_additem(szCam, " \rVizualizare \dStanga", "4", 0);
    
