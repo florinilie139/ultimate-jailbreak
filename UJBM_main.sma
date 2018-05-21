@@ -153,6 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
+new const _PoliceSounds[][] = { " " } //sound police
 
 new SpriteExplosion
 
@@ -411,6 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
+    set_task(120.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
@@ -420,12 +422,14 @@ public plugin_precache()
     precache_model(JBMODELLOCATION)
     static i
     BeaconSprite = precache_model("sprites/shockwave.spr")    
-    for(i = 0; i < sizeof(_RpgModels); i++)
+/*    for(i = 0; i < sizeof(_RpgModels); i++)
             precache_model(_RpgModels[i])
     for(i = 0; i < sizeof(_RpgSounds); i++)
-            precache_sound(_RpgSounds[i])
-    SpriteExplosion = precache_model("sprites/fexplo1.spr")     
-    m_iTrail = precache_model("sprites/smoke.spr")
+            precache_sound(_RpgSounds[i])*/
+    for(i = 0; i < sizeof(_PoliceSounds); i++)
+            precache_sound(_PoliceSounds[i])    
+    //SpriteExplosion = precache_model("sprites/fexplo1.spr")     
+    //m_iTrail = precache_model("sprites/smoke.spr")
     precache_sound("alien_alarm.wav")
     precache_sound("jbextreme/nm_goodbadugly.wav")
     precache_sound("jbextreme/rumble.wav")
@@ -1623,6 +1627,13 @@ public round_start()
     set_task(5.0, "task_last", TASK_LAST)
     server_cmd("bh_enabled 1")    
 }
+
+public play_sound_police ()
+{
+    new i = random_num(0, sizeof(_PoliceSounds) - 1)
+    emit_sound(0, CHAN_VOICE, _PoliceSounds[i], 1.0, ATTN_NORM, 0, PITCH_LOW)
+}
+
 public resetsimon ()
 {
     new Players[32]     
@@ -2453,7 +2464,7 @@ public hud_status(task)
                     player_hudmessage(0, 3, HUD_DELAY, {255, 25, 50}, "%s", wanted)
                 
             }
-            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb^nGreNN. ne suge pl", g_JailDay, Day)
+            player_hudmessage(0, 0, HUD_DELAY, {0, 255, 0}, "[ Ziua %d, %s ]^nwww.evils.ro/jb", g_JailDay, Day)
             if(g_Simon==0 && g_SimonAllowed==1 && g_GameMode!=Freeday && is_not_game() && !is_user_alive(g_PlayerLast))
             {
                 resetsimon()
