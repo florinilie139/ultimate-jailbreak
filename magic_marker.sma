@@ -26,11 +26,23 @@ public plugin_init()
     register_clcmd("-paint", "paint_handler", USAGE_LEVEL, "Paint on the walls!")
     register_srvcmd("painttero", "enable_disable_paint")
     register_forward(FM_PlayerPreThink, "forward_FM_PlayerPreThink", 0)
+    register_logevent("round_start", 2, "0=World triggered", "1=Round_Start")
 }
 
 public plugin_precache()
 {
     spriteid = precache_model("sprites/lgtning.spr")
+}
+
+public client_connect(id)
+{
+    is_paint[id] = false
+}
+
+public round_start()
+{
+    for(new i = 1;i <= MAX_PLAYERS; i++)
+        is_paint[i] = false
 }
 
 public enable_disable_paint(id,level,cid)
