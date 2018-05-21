@@ -12,7 +12,7 @@ new const PLUGIN_VERSION[] = "1.0"
 new const PLUGIN_PREFIX[] = "Fun"
 
 static const g_szBallBounce[] = "kickball/bounce.wav"
-static const g_szBallModel[] = "models/kickball/ball.mdl"
+static const g_szBallModel[] = "models/kickball/ball2.mdl"
 static const g_szBallName[] = "ball"
 
 enum

@@ -24,12 +24,12 @@ public admin_chteam(id, level, cid) {
 	if(cmd[4]=='t')
 	{
 		cs_set_user_team(player,1);
-		client_print(0, print_chat, "%s la mutat pe %s la TERRORIST",admin, name);
+		client_print(0, print_chat, "%s l-a mutat pe %s la PRIZONIERI",admin, name);
 	}
 	if(cmd[4]=='c')
 	{
 		cs_set_user_team(player,2);
-		client_print(0, print_chat, "%s la mutat pe %s la COUNTER TERRORIST",admin, name);
+		client_print(0, print_chat, "%s l-a mutat pe %s la GARDIENI",admin, name);
 	}
 	if(cmd[4]=='s')
 	{

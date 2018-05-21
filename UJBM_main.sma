@@ -153,7 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { " " } //sound police
+new const _PoliceSounds[][] = { "sound/jbdobs/police/test1.mp3", "sound/jbdobs/police/test2.mp3" } //sound police
 
 new SpriteExplosion
 
@@ -412,7 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(120.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(5.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
@@ -2563,7 +2563,7 @@ public paint_select(id, menu, item)
     server_cmd("painttero %d",player)
     menu_destroy(menu)
     get_user_name(id, src, charsmax(src))
-    client_print(0,print_console,"%s a setat lui %s paint",src,dst)
+    client_print(0,print_chat,"%s A SETAT LUI %s PAINT!",src,dst)
     
     return PLUGIN_HANDLED
 }
@@ -3180,74 +3180,74 @@ public EndVote()
         {
             case(AlienHiddenDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
                 cmd_game_alien2()
             }
             case(ZombieDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ZOMBIE DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY!!!")
                 cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
             case(HnsDay): 
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE HNS DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE HNS DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE HNS DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE HNS DAY!!!")
                 cmd_pregame("cmd_game_hns", 2, 0, 60.0)
             }
             case(AlienDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE ALIEN DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
                 cmd_game_alien2() //de scos
             }
             case(GunDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GUN DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE GUNDAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE GUN DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE GUNDAY!!!")
                 cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
             }
             case(SpartaDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE SPARTA DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
                 cmd_game_sparta()
             }
             case(GravityDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE GRAVITY DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE GRAVITY DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY!!!")
                 set_cvar_num("sv_gravity",250)
                 cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
             }
             case(FireDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE FIRE DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE FIRE DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY!!!")
                 cmd_pregame("cmd_game_fire", 2, 1, 30.0)
             }
             case(BugsDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE BUGs DAY")
-                log_amx("IN ACEASTA SAMBATA ESTE BUGs DAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE BUGs DAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE BUGs DAY!!!")
                 cmd_game_bugs()
             }
             case(NightDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
-                log_amx("IN ACEASTA SAMBATA ESTE NIGHTCRAWLER")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE NIGHTCRAWLER!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE NIGHTCRAWLER!!!")
                 cmd_game_nightcrawler()
             }
             case(ColaDay):
             {
-                client_print(0, print_console, "IN ACEASTA SAMBATA ESTE COLADAY")
-                log_amx("IN ACEASTA SAMBATA ESTE COLADAY")
+                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE COLADAY!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE COLADAY!!!")
                 cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
             }
             case(OneBullet):
             {
-                client_print(0, print_console, "server gives onebullet")
+                client_print(0, print_chat, "server gives onebullet")
                 log_amx("server gives onebullet")
                 cmd_pregame("cmd_game_onebullet", 0, 0, 30.0)
             }
