@@ -2552,7 +2552,7 @@ public paint_select(id, menu, item)
     server_cmd("painttero %d",player)
     menu_destroy(menu)
     get_user_name(id, src, charsmax(src))
-    client_print(0,print_console,"%s a dat lui %s paint",src,dst)
+    client_print(0,print_console,"%s a setat lui %s paint",src,dst)
     
     return PLUGIN_HANDLED
 }
