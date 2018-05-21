@@ -188,15 +188,15 @@ public SkinMenu(player){
     if(g_reset[player]==true)
     {
         formatex(option, charsmax(option), "Stop Re-set")
-        menu_additem(menu, option, num, 's') 
+        menu_additem(menu, option, "s", 0) 
     }
     if(g_reset[player]==false)
     {
         formatex(option, charsmax(option), "Start Re-set")
-        menu_additem(menu, option, num, 't') 
+        menu_additem(menu, option, "t", 0) 
     }
     formatex(option, charsmax(option), "Reseteaza skin")
-    menu_additem(menu, option, num, 'd') 
+    menu_additem(menu, option, "d", 0) 
 
     for(new i = 0; i < maxmodels; i++) {
 		if(!equali(model[i][MT_BEFEHL],HIDDEN_MESSAGE))
@@ -246,7 +246,7 @@ public SetPlayerModel(player, cmd[]) {
     
     if (equali(cmd, "/restartskin"))
     {
-        cs_reset_user_model(player)
+        reset(player)
         return 1
     }
     
