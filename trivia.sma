@@ -11,6 +11,8 @@
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
 
+#define TASK_GLOW 1100
+
 enum _trivia { _enun[100], _ras[50], _ap, _type}
 new TriviaList[1000][_trivia]
 new TriviaType[100][100]
@@ -310,6 +312,8 @@ public cmd_trivia (id)
                     GameTrivia = 0
                     GameTimeTrivia = 0
                 }
+                set_user_rendering(id, kRenderFxGlowShell, 225, 165, 0, kRenderNormal, 25)
+                set_task(10.0,"turn_glow_off",TASK_GLOW+id)
                 /*if(g_Duel == 11)
                 {
                     if(id==g_DuelA)
@@ -356,6 +360,19 @@ public cmd_trivia (id)
     }
     return PLUGIN_CONTINUE;
 }
+
+public turn_glow_off (id)
+{
+    if(id > TASK_GLOW)
+    {
+        id -= TASK_GLOW;
+    }
+    if(is_user_alive(id))
+    {
+        set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+    }
+}
+
 public ShowTriviaTop (id)
 {
     static Sort[100][2];
