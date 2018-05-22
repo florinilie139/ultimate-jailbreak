@@ -153,7 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "sound/jbdobs/police/test1.mp3", "sound/jbdobs/police/test2.mp3" } //sound police
+new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav" } //sound police
 
 new SpriteExplosion
 
@@ -412,7 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(5.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(120.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
@@ -1630,8 +1630,12 @@ public round_start()
 
 public play_sound_police ()
 {
-    new i = random_num(0, sizeof(_PoliceSounds) - 1)
-    emit_sound(0, CHAN_VOICE, _PoliceSounds[i], 1.0, ATTN_NORM, 0, PITCH_LOW)
+    new sunet = random_num(0, sizeof(_PoliceSounds) - 1)
+    for(new i = 1; i <= g_MaxClients; i++)
+    {
+        if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_CT)
+            emit_sound(i, CHAN_VOICE, _PoliceSounds[sunet], 1.0, ATTN_NORM, 0, PITCH_NORM)
+    }
 }
 
 public resetsimon ()
@@ -1717,7 +1721,7 @@ public cmd_open(id)
         jail_open()
         new name[32]
         get_user_name(id, name, 31)
-        client_print(0, print_chat, "%s a deschis usa",name)
+        client_print(0, print_chat, "%s A DESCHIS USA!!!",name)
         emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     }
     return PLUGIN_HANDLED
@@ -2413,7 +2417,7 @@ public hud_status(task)
                     n += copy(wanted[n], charsmax(wanted) - n, "^n^t")
                     n += copy(wanted[n], charsmax(wanted) - n, name)
                     if(check_model(i)==false)
-                        set_user_rendering(i, kRenderFxGlowShell, 700, 0, 0, kRenderNormal, 25)
+                        set_user_rendering(i, kRenderFxGlowShell, 0, 70, 0, kRenderNormal, 25)
                 }
             }
             player_hudmessage(0, 2, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_FREEDAY")
@@ -4910,7 +4914,7 @@ public  simon_choice(id, menu, item)
             jail_open()
             new name[32]
             get_user_name(id, name, 31)
-            client_print(0, print_chat, "%s a deschis usa",name)
+            client_print(0, print_chat, "%s A DESCHIS USA!!!",name)
             emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             cmd_simonmenu(id)
         }
@@ -4924,7 +4928,7 @@ public  simon_choice(id, menu, item)
                 emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
                 new name[32]
                 get_user_name(id, name, 31)
-                client_print(0, print_chat, "%s a dat ding",name)
+                client_print(0, print_chat, "%s A DAT DING!!!",name)
                 ding_on = 0
                 set_task(5.0,"power_ding",5146)
             }

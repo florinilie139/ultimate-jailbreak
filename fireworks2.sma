@@ -1036,7 +1036,6 @@ public client_putinserver(id) if (!is_user_bot(id)) set_task(15.0,"display_info"
 
 public display_info(id)
 {
-	client_print(id,print_chat,"Simply say 'fireworks' to open the fireworks menu")
 	client_cmd(id,"bind 1 slot1")
 	client_cmd(id,"bind 2 slot2")
 	client_cmd(id,"bind 3 slot3")
