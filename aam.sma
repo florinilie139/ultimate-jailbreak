@@ -246,7 +246,7 @@ public SetPlayerModel(player, cmd[]) {
     
     if (equali(cmd, "/restartskin"))
     {
-        reset(player)
+        set_user_info(player,"model",szDefault)
         return 1
     }
     

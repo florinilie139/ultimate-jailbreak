@@ -412,7 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(120.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(90.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
@@ -1634,7 +1634,7 @@ public play_sound_police ()
     for(new i = 1; i <= g_MaxClients; i++)
     {
         if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_CT)
-            emit_sound(i, CHAN_VOICE, _PoliceSounds[sunet], 1.0, ATTN_NORM, 0, PITCH_NORM)
+            emit_sound(i, CHAN_AUTO, _PoliceSounds[sunet], 1.0, ATTN_NORM, 0, PITCH_NORM)
     }
 }
 
