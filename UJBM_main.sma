@@ -153,7 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav" "jbdobs/police/police3.wav"} //sound police
+new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav", "jbdobs/police/police3.wav", "jbdobs/police/police4.wav", "jbdobs/police/police5.wav", "jbdobs/police/police6.wav", "jbdobs/police/police7.wav"} //sound police
 
 new SpriteExplosion
 
