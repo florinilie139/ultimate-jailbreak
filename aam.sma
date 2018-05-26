@@ -187,12 +187,12 @@ public SkinMenu(player){
 
     if(g_reset[player]==true)
     {
-        formatex(option, charsmax(option), "Stop Re-set")
+        formatex(option, charsmax(option), "Nu mai folosi acelasi SKIN")
         menu_additem(menu, option, "s", 0) 
     }
     if(g_reset[player]==false)
     {
-        formatex(option, charsmax(option), "Start Re-set")
+        formatex(option, charsmax(option), "Foloseste acelasi SKIN")
         menu_additem(menu, option, "t", 0) 
     }
     formatex(option, charsmax(option), "Reseteaza skin")

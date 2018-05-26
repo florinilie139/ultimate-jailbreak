@@ -153,7 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav" } //sound police
+new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav" "jbdobs/police/police3.wav"} //sound police
 
 new SpriteExplosion
 
@@ -4877,8 +4877,6 @@ public  cmd_simonmenu(id)
         formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_GONG")
         menu_additem(menu, option, "5", 0)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PUNISH")
-        menu_additem(menu, option, "6", 0)
-        formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         menu_additem(menu, option, "a", 0)
         if(g_GameMode == NormalDay)
         {
@@ -4891,6 +4889,8 @@ public  cmd_simonmenu(id)
             menu_additem(menu, option, "9", 0)
         }
         formatex(option, charsmax(option), "%L",LANG_SERVER, "UJBM_MENU_BIND",bindstr)
+        menu_additem(menu, option, "6", 0)
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         menu_additem(menu, option, "8", 0)
         menu_display(id, menu)
     }
