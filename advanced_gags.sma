@@ -100,7 +100,7 @@ public gag_cmd( id, level, cid )
 	g_Gaged[target] = true;
 	g_GagTime[ target ] = minutes;
 	
-	print( 0, "^x04[JBRomania.Ro] %s:^x01 Gag jucatorul^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
+	print( 0, "^x04[JB EVILS] %s:^x01 Gag jucatorul^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
 	
 	if( get_pcvar_num( toggle_tag ) == 1 )
 	{
@@ -149,7 +149,7 @@ public ungag_cmd( id,level, cid )
 	
 	remove_task( target + 123 );
 	
-	print( 0, "^x04[JBRomania.Ro] %s:^x01 UnGag jucatorul^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
+	print( 0, "^x04[JB EVILS] %s:^x01 UnGag jucatorul^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
 	
 	return PLUGIN_HANDLED;
 }

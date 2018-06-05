@@ -36,7 +36,7 @@ native open_football_menu(id);
 #define PLUGIN_NAME	"JailBreak Romania"
 #define PLUGIN_AUTHOR	"Fantasy / Joropito"
 #define PLUGIN_VERSION	"2.0"
-#define PLUGIN_CVAR	"jbromania"
+#define PLUGIN_CVAR	"jbevils"
 
 #define ADMIN_ACCESS ADMIN_MAP
 

@@ -153,7 +153,7 @@ enum _:days{
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "jbdobs/police/police1.wav", "jbdobs/police/police2.wav", "jbdobs/police/police3.wav", "jbdobs/police/police4.wav", "jbdobs/police/police5.wav", "jbdobs/police/police6.wav", "jbdobs/police/police7.wav"} //sound police
+new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"} //sound police
 
 new SpriteExplosion
 
@@ -412,7 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(90.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(80.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE

