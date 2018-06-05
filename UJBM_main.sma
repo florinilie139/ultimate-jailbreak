@@ -4877,7 +4877,7 @@ public  cmd_simonmenu(id)
         formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_GONG")
         menu_additem(menu, option, "5", 0)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PUNISH")
-        menu_additem(menu, option, "a", 0)
+        menu_additem(menu, option, "8", 0)
         if(g_GameMode == NormalDay)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_SIMON_GAMES")
@@ -4891,7 +4891,7 @@ public  cmd_simonmenu(id)
         formatex(option, charsmax(option), "%L",LANG_SERVER, "UJBM_MENU_BIND",bindstr)
         menu_additem(menu, option, "6", 0)
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PAINT")
-        menu_additem(menu, option, "8", 0)
+        menu_additem(menu, option, "a", 0)
         menu_display(id, menu)
     }
     return PLUGIN_HANDLED

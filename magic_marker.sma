@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <fakemeta>
+#include <hamsandwich>
 #include <xs>
 #include <vip_base>
 #include <cstrike>
@@ -26,6 +27,7 @@ public plugin_init()
     register_clcmd("-paint", "paint_handler", USAGE_LEVEL, "Paint on the walls!")
     register_srvcmd("painttero", "enable_disable_paint")
     register_forward(FM_PlayerPreThink, "forward_FM_PlayerPreThink", 0)
+    RegisterHam(Ham_Killed, "player", "player_killed")
     register_logevent("round_start", 2, "0=World triggered", "1=Round_Start")
 }
 
@@ -37,6 +39,8 @@ public plugin_precache()
 public client_connect(id)
 {
     is_paint[id] = false
+    is_drawing[id] = false
+    is_holding[id] = false
 }
 
 public round_start()
@@ -182,4 +186,17 @@ bool:is_aiming_at_sky(index)
     fm_get_aim_origin(index, origin);
 
     return engfunc(EngFunc_PointContents, origin) == CONTENTS_SKY;
+}
+
+public player_killed(victim, attacker, shouldgib)
+{
+    if(0 < victim < MAX_PLAYERS + 1)
+    {
+        return HAM_IGNORED
+    }
+    
+    is_paint[victim] = false
+    is_drawing[victim] = false
+    is_holding[victim] = false
+    return HAM_IGNORED
 }
