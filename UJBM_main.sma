@@ -412,7 +412,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(80.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(200.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     return PLUGIN_CONTINUE
