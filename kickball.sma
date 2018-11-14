@@ -101,8 +101,8 @@ public ShowMainMenu(id)
     new szBuffer[512], iLen
     new col[3], col2[3]
     
-    col = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\r" : "\d"
-    col2 = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\w" : "\d"
+    col = ((get_user_flags(id) & ADMIN_SLAY) || id==get_simon()) ? "\r" : "\d"
+    col2 = ((get_user_flags(id) & ADMIN_SLAY) || id==get_simon()) ? "\w" : "\d"
     
     iLen = formatex(szBuffer, sizeof szBuffer - 1, "\r[\y%s`\r] \wJail Football^n^n", PLUGIN_PREFIX)
     
@@ -122,8 +122,8 @@ public ShowBallMenu(id)
     new szBuffer[512], iLen
     new col[3], col2[3]
     
-    col = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\r" : "\d"
-    col2 = ((get_user_flags(id) & ADMIN_RCON) || id==get_simon()) ? "\w" : "\d"
+    col = ((get_user_flags(id) & ADMIN_SLAY) || id==get_simon()) ? "\r" : "\d"
+    col2 = ((get_user_flags(id) & ADMIN_SLAY) || id==get_simon()) ? "\w" : "\d"
     
     iLen = formatex(szBuffer, sizeof szBuffer - 1, "\r[\y%s`\r] \wJail Ball^n^n", PLUGIN_PREFIX)
     
@@ -191,7 +191,7 @@ public PlayerPreThink(id)
 
 public UpdateBall(id)
 {
-    if(!id || get_user_flags( id ) & ADMIN_BAN || id == get_simon() )
+    if(!id || get_user_flags( id ) & ADMIN_SLAY || id == get_simon() )
     {
         if(is_valid_ent(gBall))
         {
@@ -401,7 +401,7 @@ public SaveAll(id)
 
 public HandleMainMenu(id, key)
 {
-    if((key == 2 || key == 3 || key == 4) && !((get_user_flags(id) & ADMIN_RCON) || id==get_simon())) {
+    if((key == 2 || key == 3 || key == 4) && !((get_user_flags(id) & ADMIN_SLAY) || id==get_simon())) {
         ShowMainMenu(id)
         return PLUGIN_HANDLED
     }
@@ -462,7 +462,7 @@ public HandleMainMenu(id, key)
 
 public HandleBallMenu(id, key)
 {
-    if(key != 9 && !((get_user_flags(id) & ADMIN_RCON) || id==get_simon())) {
+    if(key != 9 && !((get_user_flags(id) & ADMIN_SLAY) || id==get_simon())) {
         ShowBallMenu(id)
         return PLUGIN_HANDLED
     }
