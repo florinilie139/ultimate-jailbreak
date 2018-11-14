@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <fakemeta>
 #include <cstrike>
+#include <ujbm>
 
 #define PLUGIN    "Players Drop Money"
 #define AUTHOR    "Sh!nE*"
@@ -82,10 +83,17 @@ public hook_drop(id) {
     return PLUGIN_CONTINUE
 }
 
-public reset_pick(id)    can_pickup[id] = true
+public reset_pick(id)    
+{
+can_pickup[id] = true
+}
 
 public deatha() {
-    if(!get_pcvar_num(ison))    return PLUGIN_CONTINUE
+    new g_GameMode = get_gamemode()
+    if(g_GameMode != 0 && g_GameMode != 1)
+        return PLUGIN_CONTINUE
+    if(!get_pcvar_num(ison))
+        return PLUGIN_CONTINUE
     
     new money, Float:velo[3]
     new victim = read_data(2)
