@@ -20,7 +20,7 @@
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
 #define BASE_COUNTER_CAMO 30
 #define BASE_COUNTER_HEAL 9
-#define PEACETIME 45.0
+#define PEACETIME 40.0
 #define DODGE_CHANCE 5 //DAVID
 
 
@@ -814,6 +814,12 @@ public cmd_thief (id)
             }
         }
         if (last_dist<80) {
+			if(g_PlayerSkill[last_id][FURT] != 0){
+				if(!get_wanted(id))
+				    set_wanted(id)
+				client_print(id,print_center,"Ai gresit buzunarul baiatul meu")
+				return PLUGIN_HANDLED
+			}
             if(g_UsedThief[last_id] < 2){
                 if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][FURT])*2) == 0){
                     g_UsedThief[last_id] ++
@@ -1129,9 +1135,11 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
         return HAM_OVERRIDE
     }
     new Float:dmg = 0.0
+	const m_LastHitGroup = 75; 
     if(is_user_alive(attacker) && get_user_weapon(attacker) == CSW_KNIFE)
         dmg = damage * (15 * g_PlayerSkill[attacker][PUTERE])/100
-    dmg = dmg - damage * (15 * g_PlayerSkill[victim][REZISTENTA])/100
+	if(get_pdata_int(victim, m_LastHitGroup ) != HIT_HEAD)
+        dmg = dmg - damage * (15 * g_PlayerSkill[victim][REZISTENTA])/100
     SetHamParamFloat(4, (damage + dmg > 0)?(damage + dmg):(0.0))
     return HAM_OVERRIDE
     
