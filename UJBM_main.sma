@@ -457,13 +457,13 @@ public plugin_precache()
     precache_sound("jbextreme/nm_goodbadugly.wav")
     precache_sound("jbextreme/rumble.wav")
     precache_sound("jbextreme/brass_bell_C.wav")
-    precache_sound("jbextreme/money.wav")
+    //precache_sound("jbextreme/money.wav")
     precache_sound("ambience/the_horror2.wav")
     precache_sound("debris/metal2.wav")
     precache_sound("items/gunpickup2.wav")
     precache_sound("jbextreme/simondead2.wav")
     precache_sound("jbextreme/opendoor3.wav")
-	precache_sound("jbextreme/sparta.wav")
+	precache_sound("jbextreme/sparta1.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -2153,9 +2153,12 @@ public lastrequest_select(id, menu, item)
     {
         case(1):
         {
-            emit_sound(0, CHAN_AUTO, "jbextreme/money.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            emit_sound(0, CHAN_AUTO, "jbdobs/SurpriseMotherfucker.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             user_silentkill(id)
             cs_set_user_money(id,cs_get_user_money(id)+16000,1)
+			client_print(0,print_chat,"%s a selectat 16000$!", dst)
+			formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SEL1", dst)
+            player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
         }
         case(2):
         {
@@ -4054,7 +4057,7 @@ public  cmd_game_nightcrawler()
 }
 public cmd_game_sparta()
 {
-    emit_sound(0, CHAN_AUTO, "jbextreme/sparta.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    emit_sound(0, CHAN_AUTO, "jbextreme/sparta1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
 	g_Simon =0
     g_BoxStarted = 0
     g_nogamerounds = 0
@@ -5031,7 +5034,6 @@ public  na2team(id) {
 		client_print(0, print_chat, "%s a colorat prizonierii in 2 echipe!", src)
 	    player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_COLOR", src)
 		client_cmd(0,"spk vox/doop")
-        new s = get_pcvar_num (gp_ShowColor)
         new playerCount, i 
         new Players[32] 
         new bool:orange = true
@@ -5044,8 +5046,8 @@ public  na2team(id) {
                 {        
                     entity_set_int(Players[i], EV_INT_skin, 1)
                     orange=false;
-                    if (s == 1) show_color(Players[i])
 					set_user_rendering(Players[i], kRenderFxGlowShell, 225, 125, 0, kRenderNormal, 25)
+					player_hudmessage(Players[i], 10, HUD_DELAY + 1.0, {200, 100, 0}, "%L", LANG_SERVER, "UJBM__COLOR_ORANGE")
 		            set_task(10.0,"turn_glow_off",TASK_RANDOM+Players[i])
                 }
                 else 
@@ -5053,8 +5055,8 @@ public  na2team(id) {
 				    
                     entity_set_int(Players[i], EV_INT_skin, 2)
                     orange=true;
-                    if (s == 1) show_color(Players[i])
 					set_user_rendering(Players[i], kRenderFxGlowShell, 225, 225, 225, kRenderNormal, 25)
+					player_hudmessage(Players[i], 10, HUD_DELAY + 1.0, {255, 255, 255}, "%L", LANG_SERVER, "UJBM__COLOR_WHITE")
 		            set_task(10.0,"turn_glow_off",TASK_RANDOM+Players[i])
                 }
             }
