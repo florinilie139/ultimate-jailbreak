@@ -31,6 +31,7 @@ new WinGameTrivia[2]
 new LeftTopTrivia[33]
 new LeftTopTriviaName[33][30]
 new LeftTrivia
+new DuelTrivia,DuelA,DuelB
 
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 
@@ -53,6 +54,7 @@ public plugin_init()
     register_clcmd("trivia", "cmd_trivia")
     register_clcmd("say /trivia","Trivia")
     register_srvcmd("simon_trivia","simon_trivia");
+    register_srvcmd("duel_trivia","duel_trivia")
     
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
@@ -129,6 +131,9 @@ public round_end ()
 {
     GameTrivia = 0
     GameTimeTrivia = 0
+    DuelTrivia = 0
+    DuelA = 0
+    DuelB = 0
     remove_task(222200);
 }
 
@@ -206,7 +211,7 @@ public GameShowQuestion()
 {
     if(task_exists(222200))
         remove_task(222200);
-    if(GameTrivia==0 /*|| g_Duel!=11*/)
+    if(GameTrivia==0)
         return
     if(GameTimeTrivia == 0){
         new RndNum = random_num(0,TotalTrivia);
@@ -252,8 +257,23 @@ public GameShowQuestion()
             player_hudmessage(Player, 1, 1.0, {200, 100, 0}, "Timp : %d",GameTimeTrivia)
         }
         GameTimeTrivia--
+        
     }
+    
     set_task(1.0, "GameShowQuestion", 222200, "", 0, "", 0);
+}
+
+public cmd_is_in_trivia(id)
+{
+    if(InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR))
+    {
+        return 1;
+    }
+    if(g_Duel==11 && (DuelA == id || DuelB == id) || GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)
+    {
+        return 2;
+    }
+    return 0;
 }
 public cmd_trivia (id)
 {
@@ -262,8 +282,8 @@ public cmd_trivia (id)
         new line = read_argv(0, Args, 255);
         Args[line++]=' ';
         read_argv(1, Args[line], 255)
-        if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) || /*g_Duel==11 && (g_DuelA == id || g_DuelB == id) ||*/ GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)){
-            if(InTrivia[id] && (!is_user_alive(id) || cs_get_user_team(id) == CS_TEAM_SPECTATOR) && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
+        if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (cmd_is_in_trivia(id) != 0){
+            if(cmd_is_in_trivia(id) == 1 && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
                 if(get_vip_type(id) == 2)
 				{
 					cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*40);
@@ -299,7 +319,7 @@ public cmd_trivia (id)
                 }
                 TimeTrivia = 0
                 ShowQuestion();
-            }else if(is_user_alive(id) && (/*g_Duel==11 && (g_DuelA == id || g_DuelB == id) ||*/ GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T) && containi(Args,  TriviaList[GameCurrentTrivia][_ras]) != -1){
+            }else if(cmd_is_in_trivia(id) == 2 && containi(Args,  TriviaList[GameCurrentTrivia][_ras]) != -1){
                 remove_task(222200);
                 new Name[50]
                 static Players[32], Num, Player;
@@ -307,30 +327,42 @@ public cmd_trivia (id)
                 get_user_name(id,Name,49)
                 new text [250]
                 
-                if(GameTrivia == 1){
+                if(GameTrivia == 1 && DuelTrivia == 0){
                     server_cmd("give_points %d 1",id)
                     GameTrivia = 0
                     GameTimeTrivia = 0
                 }
                 set_user_rendering(id, kRenderFxGlowShell, 225, 165, 0, kRenderNormal, 25)
                 set_task(10.0,"turn_glow_off",TASK_GLOW+id)
-                /*if(g_Duel == 11)
+                if(DuelTrivia == 1)
                 {
-                    if(id==g_DuelA)
+                    if(id==DuelA)
                         WinGameTrivia[0]++
                     else
                         WinGameTrivia[1]++
-                    if(WinGameTrivia[0] >= 5){
-                        user_kill(g_DuelB)
-                        server_cmd("give_points %d 3",g_DuelA)
-                    }else if(WinGameTrivia[1] >= 5){
-                        user_kill(g_DuelA)
-                        server_cmd("give_points %d 1",g_DuelB)
-                    }else {
-                        GameTimeTrivia = 0
-                        GameShowQuestion();
+                    if(WinGameTrivia[0] >= 5)
+                    {
+                        user_kill(DuelB)
+                        DuelTrivia = 0;
+                        server_cmd("give_points %d 3",DuelA)
+                        DuelA = 0
+                        DuelB = 0
                     }
-                }*/
+                    else if(WinGameTrivia[1] >= 5)
+                    {
+                        user_kill(DuelA)
+                        DuelTrivia = 0;
+                        server_cmd("give_points %d 1",DuelB)
+                        DuelA = 0
+                        DuelB = 0
+                    }
+                    else
+                    {
+                        GameTimeTrivia = 0
+                        remove_task(222200);
+                        set_task(5.0,"GameShowQuestion", 222200, "", 0, "", 0);
+                    }
+                }
                 
                 for(new i = 0 ; i < Num ; i++)
                 {
@@ -345,13 +377,13 @@ public cmd_trivia (id)
                     write_byte  ( Player );
                     write_string( text );
                     message_end ();
-                    /*if(g_Duel == 11){
+                    if(DuelTrivia == 1){
                         format(text,249, "^x03[Trivia]^x01 Scorul este %d:%d",WinGameTrivia[0],WinGameTrivia[1])
                         message_begin( MSG_ONE, get_user_msgid("SayText"), {0,0,0}, Player );
                         write_byte  ( Player );
                         write_string( text );
                         message_end ();
-                    }*/
+                    }
                 }
                 emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             }
@@ -487,19 +519,27 @@ public select_list (id, menu, item)
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     return PLUGIN_CONTINUE
 }
-/*
-public duel_trivia (id,player)
+
+public duel_trivia ()
 {
+    new id[3],player[3]
+    if(DuelTrivia != 0)
+    {
+        return;
+    }
+    read_argv(1, id, 2)
+    read_argv(2, player, 2)
     WinGameTrivia[0] = 0
     WinGameTrivia[1] = 0
-    strip_user_weapons(id)
-    g_DuelA = id
-    g_DuelB = player
-    strip_user_weapons(player)
+    DuelA = str_to_num(id)
+    DuelB = str_to_num(player)
+    DuelTrivia = 1;
+    GameTrivia = 1;
+    /* in ujbm main
     player_glow(id, g_Colors[3])
-    player_glow(player, g_Colors[2])
+    player_glow(player, g_Colors[2])*/
     menu_trivia(id)
-}*/
+}
 
 public putin_toptrivia (id)
 {
