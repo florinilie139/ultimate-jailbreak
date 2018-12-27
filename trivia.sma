@@ -269,7 +269,7 @@ public cmd_is_in_trivia(id)
     {
         return 1;
     }
-    if(g_Duel==11 && (DuelA == id || DuelB == id) || GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)
+    if(DuelTrivia==1 && (DuelA == id || DuelB == id) || GameTrivia == 1 && cs_get_user_team(id) == CS_TEAM_T)
     {
         return 2;
     }
@@ -282,7 +282,7 @@ public cmd_trivia (id)
         new line = read_argv(0, Args, 255);
         Args[line++]=' ';
         read_argv(1, Args[line], 255)
-        if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (cmd_is_in_trivia(id) != 0){
+        if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (cmd_is_in_trivia(id) != 0)){
             if(cmd_is_in_trivia(id) == 1 && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
                 if(get_vip_type(id) == 2)
 				{
@@ -538,7 +538,7 @@ public duel_trivia ()
     /* in ujbm main
     player_glow(id, g_Colors[3])
     player_glow(player, g_Colors[2])*/
-    menu_trivia(id)
+    menu_trivia(DuelA)
 }
 
 public putin_toptrivia (id)
