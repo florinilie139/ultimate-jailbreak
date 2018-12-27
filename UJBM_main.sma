@@ -88,6 +88,7 @@ Jocuri: Slender man
     #define OFFSET_CSMONEY  140
  #endif
 
+const WPNS_SCOPE_BITSUM = (1<<CSW_SCOUT) | (1<<CSW_AUG) | (1<<CSW_SG550) | (1<<CSW_AWP) | (1<<CSW_G3SG1) | (1<<CSW_SG552)
 
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 enum _lastrequest { _knife, _deagle, _freeday, _weapon }
@@ -176,16 +177,41 @@ new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999 }
 
 new const _Duel[][_duel] =
 {
-    { "Deagle",        CSW_DEAGLE,     "weapon_deagle",     "UJBM_MENU_LASTREQ_OPT4",     "UJBM_MENU_LASTREQ_SEL4"  },
+    { "m249",        CSW_M249,         "weapon_m249",         "M249",     "S-a selectat M249 Duel"  },
+    { "Grenades",     CSW_HEGRENADE,     "weapon_hegrenade", "HE",    "S-a selectat HE Duel"  },
+    { "Rulette",     33,             "weapon_deagle",     "Ruleta ruseasca",     "S-a selectat Ruleta ruseasca" },
+    { "Trivia",        34,                "weapon_knife",        "Trivia",     "S-a selectat Trivia Duel" },
+    
     //{ "Grenades",     CSW_FLASHBANG,     "weapon_flashbang", "UJBM_MENU_LASTREQ_OPT5",     "UJBM_MENU_LASTREQ_SEL5"  }, //rpg!!!
     ///rpg
-    { "Grenades",     CSW_HEGRENADE,     "weapon_hegrenade", "UJBM_MENU_LASTREQ_OPT6",    "UJBM_MENU_LASTREQ_SEL6"  },
-    { "m249",        CSW_M249,         "weapon_m249",         "UJBM_MENU_LASTREQ_OPT8",     "UJBM_MENU_LASTREQ_SEL8"  },
-    { "Awp",         CSW_AWP,         "weapon_awp",         "UJBM_MENU_LASTREQ_OPT7",     "UJBM_MENU_LASTREQ_SEL7"  },
-    { "Scout",         CSW_SCOUT,         "weapon_scout",     "UJBM_MENU_LASTREQ_OPT9",     "UJBM_MENU_LASTREQ_SEL9"  },
-    { "Rulette",     33,             "weapon_deagle",     "UJBM_MENU_LASTREQ_OPT10",     "UJBM_MENU_LASTREQ_SEL10" }
-//    { "Trivia",        34,                "weapon_knife",        "UJBM_MENU_LASTREQ_OPT11",     "UJBM_MENU_LASTREQ_SEL11" }
     
+    { "Deagle",        CSW_DEAGLE,     "weapon_deagle",     "Deagle",     "S-a selectat Deagle Duel"  },
+    { "P228",         CSW_P228,         "weapon_p228",     "P228",     "S-a selectat P228 Duel"    },
+    { "Fiveseven",         CSW_FIVESEVEN,         "weapon_fiveseven",     "Fiveseven",     "S-a selectat Fiveseven Duel"    },
+    { "USP",         CSW_USP,         "weapon_usp",     "USP",     "S-a selectat USP Duel"    },
+    { "Glock",         CSW_GLOCK18,         "weapon_glock18",     "Glock",     "S-a selectat Glock Duel"    },
+    { "Elite",         CSW_ELITE,         "weapon_elite",     "Elite",     "S-a selectat Elite Duel"    },
+    
+    { "XM1014",         CSW_XM1014,         "weapon_xm1014",     "XM1014",     "S-a selectat XM1014 Duel"    },
+    { "M3",         CSW_M3,         "weapon_m3",     "M3",     "S-a selectat M3 Duel"    },
+    
+    { "Mac10",         CSW_MAC10,         "weapon_mac10",     "Mac-10",     "S-a selectat Mac-10 Duel"    },
+    { "UMP45",         CSW_UMP45,         "weapon_ump45",     "UMP45",     "S-a selectat UMP45 Duel"    },
+    { "MP5Navy",         CSW_MP5NAVY,         "weapon_mp5navy",     "MP5",     "S-a selectat MP5 Duel"    },
+    { "Tmp",         CSW_TMP,         "weapon_tmp",     "Tmp",     "S-a selectat Tmp Duel"    },
+    { "P90",         CSW_P90,         "weapon_p90",     "P90",     "S-a selectat P90 Duel"    },
+
+    { "Galil",         CSW_GALIL,         "weapon_galil",     "Galil",     "S-a selectat Galil Duel"    },
+    { "Famas",         CSW_FAMAS,         "weapon_famas",     "Famas",     "S-a selectat Famas Duel"    },
+    { "M4A1",         CSW_M4A1,         "weapon_m4a1",     "M4A1",     "S-a selectat M4A1 Duel"    },
+    { "Ak47",         CSW_AK47,        "weapon_ak47",     "Ak47",     "S-a selectat Ak47 Duel"    },
+    
+    { "G3sg1",         CSW_G3SG1,         "weapon_g3sg1",     "G3sg1",     "S-a selectat G3sg1 Duel"    },
+    { "Aug",         CSW_AUG,         "weapon_aug",     "Aug",     "S-a selectat Aug Duel"    },
+    { "Sg550",         CSW_SG550,         "weapon_sg550",     "Sg550",     "S-a selectat Sg550 Duel"    },
+    { "Awp",         CSW_AWP,         "weapon_awp",         "Awp",     "S-a selectat Awp Duel"  },
+    { "Scout",         CSW_SCOUT,         "weapon_scout",     "Scout",     "S-a selectat Scout Duel"    }
+
 }
 // Reasons
 new const g_Reasons[][] =  {
@@ -264,6 +290,7 @@ new g_Fonarik = 0
 new CTallowed[31]
 new Tallowed[31]
 new bindstr[33]
+new g_Scope
 
 new gmsgBombDrop
 new ding_on = 1
@@ -313,6 +340,8 @@ new g_IsFG
 
 new g_ResultVote[33]
 new g_DayTimer = 0
+
+new HamHook:Ham_SecondaryAttack[6]
 
 public plugin_init()
 {
@@ -376,7 +405,7 @@ public plugin_init()
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
     register_clcmd("say /fd", "cmd_freeday")
-	register_clcmd("say /removefd", "cmd_removefd")
+    register_clcmd("say /removefd", "cmd_removefd")
     register_clcmd("say /menu", "cmd_simonmenu")
     register_clcmd("say /freeday", "cmd_freeday")
     register_clcmd("say /day", "cmd_freeday")
@@ -429,6 +458,20 @@ public plugin_init()
     set_task(100.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
+    
+    new iWpnid
+    for(new i, j; i < sizeof(_Duel); i++)
+    {
+        iWpnid = _Duel[i][_csw]
+        
+        if((1<<iWpnid) & WPNS_SCOPE_BITSUM)
+        {
+            Ham_SecondaryAttack[j] = RegisterHam(Ham_Weapon_SecondaryAttack, _Duel[i][_entname], "fw_player_scope", false)
+            DisableHamForward(Ham_SecondaryAttack[j])
+            j++;
+        }
+    }
+    
     return PLUGIN_CONTINUE
 }
 
@@ -466,8 +509,8 @@ public plugin_precache()
     precache_sound("jbextreme/simondead2.wav")
     precache_sound("jbextreme/opendoor3.wav")
     precache_sound("jbextreme/sparta1.wav")
-	precache_sound("jbextreme/hns.wav")
-	precache_sound("jbextreme/lina.wav")
+    precache_sound("jbextreme/hns.wav")
+    precache_sound("jbextreme/lina.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -579,7 +622,7 @@ public client_putinserver(id)
     g_PlayerSpect[id] = 0
     g_PlayerSimon[id] = 0
     Simons[id]=0
-	SimonTimes[id]=0
+    SimonTimes[id]=0
     BoxPartener[id]=0
     BuyTimes[id]=0
     first_join(id)
@@ -849,7 +892,7 @@ public player_spawn(id)
     clear_bit(g_PlayerWanted, id)
     team = cs_get_user_team(id)
     if (!get_bit(g_NoShowShop,id)) 
-	   set_task(5.0,"cmd_shop",id)
+       set_task(5.0,"cmd_shop",id)
     
     switch(team)
     {
@@ -1347,6 +1390,7 @@ public player_killed(victim, attacker, shouldgib)
                             g_Duel = 0
                             g_DuelA = 0
                             g_DuelB = 0
+                            g_Scope = 1
                             server_cmd("jb_unblock_weapons")
                         }
                     }
@@ -1609,16 +1653,16 @@ public remove_all_fd()
     get_players(Players, playerCount, "ac") 
     for (i=0; i<playerCount; i++)
         if(cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]))
-		{
-		    if(!get_bit(g_PlayerWanted, Players[i]) && get_bit(g_PlayerFreeday, Players[i]))
-		        FDnr++
-		    else if(!get_bit(g_PlayerWanted, Players[i]) && !get_bit(g_PlayerFreeday, Players[i]))
-		        Tnr++
-			else if(get_bit(g_PlayerWanted, Players[i]))
-			    Wnr++
-		}
+        {
+            if(!get_bit(g_PlayerWanted, Players[i]) && get_bit(g_PlayerFreeday, Players[i]))
+                FDnr++
+            else if(!get_bit(g_PlayerWanted, Players[i]) && !get_bit(g_PlayerFreeday, Players[i]))
+                Tnr++
+            else if(get_bit(g_PlayerWanted, Players[i]))
+                Wnr++
+        }
     if(FDnr > 0 && Tnr <= 1 && Wnr == 0)
-	{
+    {
         for (i=0; i<playerCount; i++) 
         {
             if(cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]) && get_bit(g_PlayerFreeday, Players[i]) && !get_bit(g_PlayerWanted, Players[i]))
@@ -1643,24 +1687,24 @@ public remove_all_fd()
         set_dhudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
         show_dhudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
         FreedayRemoved = 1
-	}
-	return PLUGIN_CONTINUE
+    }
+    return PLUGIN_CONTINUE
 }
 public FreedayTimeDone()
 {
-	FreedayTime = 0
-	remove_all_fd()
-	switch(g_JailDay%7)
-	{
-	    case 1, 2, 3, 4:
-		{
-	        client_print(0, print_chat, "De acum se poate primi/cumpara FD doar pentru runda urmatoare.")
-		}
-		case 5:
-		{
-			client_print(0, print_chat, "De acum nu se mai poate primi/cumpara FD. Daca un gardian va da FD pentru ziua urmatoare il veti primi automat luni.")
-		}
-	}
+    FreedayTime = 0
+    remove_all_fd()
+    switch(g_JailDay%7)
+    {
+        case 1, 2, 3, 4:
+        {
+            client_print(0, print_chat, "De acum se poate primi/cumpara FD doar pentru runda urmatoare.")
+        }
+        case 5:
+        {
+            client_print(0, print_chat, "De acum nu se mai poate primi/cumpara FD. Daca un gardian va da FD pentru ziua urmatoare il veti primi automat luni.")
+        }
+    }
 }
 public round_start()
 {
@@ -1743,7 +1787,7 @@ public round_start()
 }
 
 public play_sound_police ()
-{	
+{    
     new sunet = random_num(0, sizeof(_PoliceSounds) - 1)
     for(new i = 1; i <= g_MaxClients; i++)
     {
@@ -1813,7 +1857,7 @@ public cmd_simon(id)
     if(g_SimonAllowed == 1 && is_not_game() && team == CS_TEAM_CT && is_user_alive(id) && !g_Simon && Simons[id]==0  && !is_user_alive(g_PlayerLast) && g_JailDay%7!=0)
     {
         Simons[id]=1
-		SimonTimes[id]++
+        SimonTimes[id]++
         g_Simon = id
         server_cmd("painttero %d",g_Simon)
         get_user_name(id, name, charsmax(name))
@@ -1974,7 +2018,7 @@ public admin_select_simon(id, menu, item)
 public cmd_removefd(id)
 {
     if(get_user_flags(id) & ADMIN_KICK)
-	    menu_players(id, CS_TEAM_T, id, 1, "removefd_select", "%L", LANG_SERVER, "UJBM_MENU_REMOVE_FD")
+        menu_players(id, CS_TEAM_T, id, 1, "removefd_select", "%L", LANG_SERVER, "UJBM_MENU_REMOVE_FD")
 }
 public removefd_select(id, menu, item)
 {
@@ -1988,10 +2032,10 @@ public removefd_select(id, menu, item)
     new rez
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
-	get_user_name(id, src, charsmax(src))
-	get_user_name(player, dst, charsmax(dst))
-	if(get_bit(g_PlayerFreeday, player))
-	{
+    get_user_name(id, src, charsmax(src))
+    get_user_name(player, dst, charsmax(dst))
+    if(get_bit(g_PlayerFreeday, player))
+    {
         clear_bit(g_PlayerFreeday, player)
         if(check_model(player)==false)
         set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
@@ -2003,11 +2047,11 @@ public removefd_select(id, menu, item)
         else{
             log_amx("Caugth rez to be %d",rez)
             entity_set_int(player, EV_INT_body, 0)
-		
-	    }
-		client_print(0, print_chat, "%s i-a scos FD-ul lui %s", src, dst)
-		client_print(0, print_console, "%s i-a scos FD-ul lui %s", src, dst)
-	}
+        
+        }
+        client_print(0, print_chat, "%s i-a scos FD-ul lui %s", src, dst)
+        client_print(0, print_console, "%s i-a scos FD-ul lui %s", src, dst)
+    }
     menu_destroy(menu)
     
     return PLUGIN_HANDLED
@@ -2035,7 +2079,7 @@ public cmd_freeday(id)
         }
     }
     if (g_GameMode == Freeday || (g_GameMode == NormalDay && !FreedayTime))
-	{
+    {
         static menu, menuname[32], option[64]
         if((is_user_alive(id) && cs_get_user_team(id) == CS_TEAM_CT) || (get_user_flags(id) & ADMIN_SLAY))
         {
@@ -2078,7 +2122,7 @@ public freeday_choice(id, menu, item)
                 g_Simon = 0
                 get_user_name(id, dst, charsmax(dst))
                 client_print(0, print_console, "%s a dat FD All", dst)
-				client_print(0, print_chat, "%s a dat FD All", dst)
+                client_print(0, print_chat, "%s a dat FD All", dst)
                 server_print("JBE Client %i a dat FD All", id)
                 g_GameMode = Freeday
                 emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -2138,9 +2182,10 @@ public cmd_punish(id)
 }
 public is_not_game()
     return  ((g_GameMode == Freeday || g_GameMode == NormalDay) && g_GamePrepare==0)
+    
 public cmd_lastrequest(id)
-{
-    static i, num[5], menu, menuname[32], option[64]
+{   
+    static i, menu, menuname[32], option[64]
     if (!is_user_alive(g_PlayerLast))
         return PLUGIN_CONTINUE
     new Players[32] 
@@ -2177,12 +2222,18 @@ public cmd_lastrequest(id)
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT3")
     menu_additem(menu, option, "3", 0)
     
-    for(i = 0; i < sizeof(_Duel); i++)
-    {
-        num_to_str(i + 4, num, charsmax(num))
-        formatex(option, charsmax(option), "%L", LANG_SERVER, _Duel[i][_opt])
-        menu_additem(menu, option, num, 0)
-    }
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT4")
+    menu_additem(menu, option, "4", 0)
+    
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT5")
+    menu_additem(menu, option, "5", 0)
+    
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT6")
+    menu_additem(menu, option, "6", 0)
+    
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT7")
+    menu_additem(menu, option, "7", 0)
+    
     menu_display(id, menu)
     return PLUGIN_CONTINUE
 }
@@ -2193,7 +2244,7 @@ public lastrequest_select(id, menu, item)
         menu_destroy(menu)
         return PLUGIN_HANDLED
     }
-    static i, dst[32], data[5], access, callback, option[64],nr
+    static i, dst[32], data[5], access, callback, option[64],nr, menu_s4s, menuname[32], num[5]
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     get_user_name(id, dst, charsmax(dst))
     nr = str_to_num(data)
@@ -2221,7 +2272,6 @@ public lastrequest_select(id, menu, item)
             g_Countdown=120
             cmd_saytime()
             g_Duel = nr
-            
         }
         case(3):
         {
@@ -2232,15 +2282,85 @@ public lastrequest_select(id, menu, item)
         {
             cmd_lrgame(id)
         }
-        default:
+        case(7):
         {
             //server_cmd("bh_noslowdown 0")
+            
+            formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_S4S")
+            menu_s4s = menu_create(menuname, "shot4shot_select")
+            
+            for(i = 3; i < sizeof(_Duel); i++)
+            {
+                num_to_str(i + 4, num, charsmax(num))
+                formatex(option, charsmax(option), "%s", _Duel[i][_opt])
+                menu_additem(menu_s4s, option, num, 0)
+            }
+            menu_display(id, menu_s4s)
+            
+            g_Duel = nr
+        }
+        default:
+        {
             menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
             g_Duel = nr
         }
     }
     menu_destroy(menu)
     return PLUGIN_HANDLED
+}
+public scope_select(id, menu, item)
+{
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback,nr
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    nr = str_to_num(data)
+    if(nr)
+    {
+        g_Scope = 1
+    }
+    else
+    {
+        g_Scope = 0
+    }
+    menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
+    return PLUGIN_CONTINUE
+}
+public shot4shot_select(id, menu, item)
+{
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback, option[64],nr, menu_scope, menuname[32]
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    nr = str_to_num(data)
+    switch(_Duel[nr][_csw])
+    {
+        case CSW_SCOUT, CSW_AWP, CSW_AUG, CSW_G3SG1, CSW_SG550:
+        {
+            formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE")
+            menu_scope = menu_create(menuname, "scope_select")
+            
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE1")
+            menu_additem(menu, option, "1", 0)
+    
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE0")
+            menu_additem(menu, option, "0", 0)
+            
+            menu_display(id, menu_scope)
+        }
+        default:
+        {
+            menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
+        }
+        
+    }
+    return PLUGIN_CONTINUE
 }
 public cmd_lrgame(id)
 {
@@ -2484,7 +2604,7 @@ public adm_box(id)
     return PLUGIN_HANDLED
 }
 public revolt_start()
-{	
+{    
     client_cmd(0,"speak ambience/siren")
     set_task(8.0, "stop_sound")
     hud_status(0)
@@ -2595,25 +2715,25 @@ stock show_count()
                     if(!get_bit(g_PlayerWanted, Players[i]) && get_bit(g_PlayerFreeday, Players[i]))
                         TFreeday++
                     else if(!get_bit(g_PlayerWanted, Players[i]) && !get_bit(g_PlayerFreeday, Players[i]))
-					{
-		                if(g_GameMode == Freeday)
-						    TFreeday++
-						else
-						    TAlive++
-					}
-			        else if(get_bit(g_PlayerWanted, Players[i]))
-			            TWanted++
+                    {
+                        if(g_GameMode == Freeday)
+                            TFreeday++
+                        else
+                            TAlive++
+                    }
+                    else if(get_bit(g_PlayerWanted, Players[i]))
+                        TWanted++
                 }
             }
-            if ( cs_get_user_team(Players[i]) == CS_TEAM_CT)
-            {
+        if ( cs_get_user_team(Players[i]) == CS_TEAM_CT)
+        {
                 CTs++
-            }
+        }
     }
     TAll--
     CTs++
     if(TAll/CTs >= 2 && CTs <= 8)
-	{
+    {
         formatex(szStatus, charsmax(szStatus), "%L", LANG_SERVER, "UJBM_STATUS_YES", TAlive, TWanted, TFreeday)
         message_begin(MSG_BROADCAST, get_user_msgid("StatusText"), {0,0,0}, 0)
         write_byte(0)
@@ -2639,12 +2759,12 @@ public hud_status(task)
     show_count()
     get_players(Players, playerCount, "c") 
     for (i=0; i<playerCount; i++)
-	{
+    {
         if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
             CTnum++
         if(cs_get_user_team(Players[i]) == CS_TEAM_T)
             Tnum++
-	}
+    }
     Tnum--
     CTnum++
     if(Tnum/CTnum >= 2 && CTnum <= 8)
@@ -2656,7 +2776,7 @@ public hud_status(task)
         else
             player_hudmessage(Players[i], 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCN")
     }
-    		
+            
     switch (g_GameMode)        
     {
         case Freeday:
@@ -2913,7 +3033,7 @@ public duel_guns(id, menu, item)
     }
     
     get_user_name(id, src, charsmax(src))
-    formatex(option, charsmax(option), "%L^n%L", LANG_SERVER, _Duel[g_Duel - 4][_sel], src, LANG_SERVER, "UJBM_MENU_DUEL_SEL", src, dst)
+    formatex(option, charsmax(option), "%s^n%L", _Duel[g_Duel - 4][_sel], LANG_SERVER, "UJBM_MENU_DUEL_SEL", src, dst)
     if(g_Duel != 11)
         emit_sound(0, CHAN_AUTO, "jbextreme/nm_goodbadugly.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         
@@ -2982,6 +3102,10 @@ public duel_guns(id, menu, item)
             }
             player_hudmessage(id, 10, HUD_DELAY + 10.0, {200, 100, 0}, "%L", LANG_SERVER, "UJBM_RRSTART")
             server_cmd("jb_unblock_weapons")
+        }
+        case 34:
+        {
+            server_cmd("duel_trivia %d %d", g_DuelA, g_DuelB)
         }
         case CSW_HEGRENADE:
         {
@@ -4550,22 +4674,22 @@ public cmd_shop(id)
         }*/
         if (containi(Tallowed,"f") >= 0 && !get_bit(g_PlayerWanted, id))
         {
-			if(FreedayTime == 1)
+            if(FreedayTime == 1)
             {
-			    if(g_JailDay%7 !=0 && g_JailDay%7 != 6)
-				{
-				    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FD", FDCOST)
-				    menu_additem(menu, option, "6", 0)
-				}
-			}
-			else
-			{
-			    if(g_JailDay%7 !=0 && g_JailDay%7 != 5 && g_JailDay%7 != 6)
-				{
-				    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FD_NEXT", FDCOST)
-				    menu_additem(menu, option, "9", 0)
-				}
-			}
+                if(g_JailDay%7 !=0 && g_JailDay%7 != 6)
+                {
+                    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FD", FDCOST)
+                    menu_additem(menu, option, "6", 0)
+                }
+            }
+            else
+            {
+                if(g_JailDay%7 !=0 && g_JailDay%7 != 5 && g_JailDay%7 != 6)
+                {
+                    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FD_NEXT", FDCOST)
+                    menu_additem(menu, option, "9", 0)
+                }
+            }
         }
         /*if (containi(Tallowed,"g") >= 0)
         {
@@ -5169,7 +5293,7 @@ public  cmd_simonmenu(id)
         
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_CLR")
             menu_additem(menu, option, "3", 0)    
-			
+            
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_SIMON_GAMES")
             menu_additem(menu, option, "4", 0)
         }
@@ -5190,10 +5314,10 @@ public  cmd_simonmenu(id)
         }
         //formatex(option, charsmax(option), "%L",LANG_SERVER, "UJBM_MENU_BIND",bindstr)
         //menu_additem(menu, option, "8", 0)
-		
+        
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         menu_additem(menu, option, "a", 0)
-		
+        
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_PUNISH")
         menu_additem(menu, option, "b", 0)
         
@@ -5247,7 +5371,7 @@ public  simon_choice(id, menu, item)
         case('9'): cmd_funmenu(id)
         case('a'): menu_players(id, CS_TEAM_T, id, 1, "paint_select", "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         case('b'): cmd_punish(id)
-		case('c'): cmd_simon_micr(id)
+        case('c'): cmd_simon_micr(id)
     }        
     return PLUGIN_HANDLED
 }
@@ -5369,21 +5493,22 @@ public  cmd_simongamesmenu(id)
 }
 public heal_t(id)
 {   if (g_Simon == id || (get_user_flags(id) & ADMIN_KICK) && g_Duel==0)
-	{
-		client_cmd(0,"spk fvox/medical_repaired")
-		static i, src[32]
-		get_user_name(id, src, charsmax(src))
-		if((id == g_Simon || (get_user_flags(id) & ADMIN_SLAY)) && g_GameMode == NormalDay)
-		for(i = 1; i <= g_MaxClients; i++)
-			if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_T && (!get_bit(g_PlayerWanted, i)))
-				set_user_health(i, 150)
-		client_print(0, print_chat, "%s a vindecat toti prizonierii pana la 150 HP!",src)
-		player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_HEAL")
-	}
+    {
+        client_cmd(0,"spk fvox/medical_repaired")
+        static i, src[32]
+        get_user_name(id, src, charsmax(src))
+        if((id == g_Simon || (get_user_flags(id) & ADMIN_SLAY)) && g_GameMode == NormalDay)
+        for(i = 1; i <= g_MaxClients; i++)
+            if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_T && (!get_bit(g_PlayerWanted, i)))
+                set_user_health(i, 150)
+        client_print(0, print_chat, "%s a vindecat toti prizonierii pana la 150 HP!",src)
+        player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_HEAL")
+    }
     return PLUGIN_CONTINUE
 }
 public random_t(id)
-{	if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
+{   
+    if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
     {
         static src[32]
         get_user_name(id, src, charsmax(src))
@@ -5400,7 +5525,7 @@ public random_t(id)
         player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_RANDOM_MSG", src, RandomName)
         client_cmd(0,"spk vox/bloop")
     }
-	return PLUGIN_CONTINUE
+    return PLUGIN_CONTINUE
 }
 public turn_glow_off (id)
 {
@@ -5960,56 +6085,56 @@ bool:check_model(id)
 
 public block_FITH_message(msg_id, msg_dest, entity)
 {
-	if(g_GameMode != ColaDay) return PLUGIN_CONTINUE;
-	if(get_msg_args() == 5)
-	{
-		if(get_msg_argtype(5) == ARG_STRING)
-		{
-			new value5[64];
-			get_msg_arg_string(5 ,value5 ,63);
-			if(equal(value5, "#Fire_in_the_hole"))
-			{
-				return PLUGIN_HANDLED;
-			}
-		}
-	}
-	else if(get_msg_args() == 6)
-	{
-		if(get_msg_argtype(6) == ARG_STRING)
-		{
-			new value6[64];
-			get_msg_arg_string(6 ,value6 ,63);
-			if(equal(value6 ,"#Fire_in_the_hole"))
-			{
-				return PLUGIN_HANDLED;
-			}
-		}
-	}
-	return PLUGIN_CONTINUE;
+    if(g_GameMode != ColaDay) return PLUGIN_CONTINUE;
+    if(get_msg_args() == 5)
+    {
+        if(get_msg_argtype(5) == ARG_STRING)
+        {
+            new value5[64];
+            get_msg_arg_string(5 ,value5 ,63);
+            if(equal(value5, "#Fire_in_the_hole"))
+            {
+                return PLUGIN_HANDLED;
+            }
+        }
+    }
+    else if(get_msg_args() == 6)
+    {
+        if(get_msg_argtype(6) == ARG_STRING)
+        {
+            new value6[64];
+            get_msg_arg_string(6 ,value6 ,63);
+            if(equal(value6 ,"#Fire_in_the_hole"))
+            {
+                return PLUGIN_HANDLED;
+            }
+        }
+    }
+    return PLUGIN_CONTINUE;
 }
 
 
 public block_FITH_audio(msg_id, msg_dest, entity)
 {
-	if(g_GameMode != ColaDay) return PLUGIN_CONTINUE
-	if(get_msg_args() == 3)
-	{
-		if(get_msg_argtype(2) == ARG_STRING)
-		{
-			new value2[64];
-			get_msg_arg_string(2 ,value2 ,63);
-			if(equal(value2 ,"%!MRAD_FIREINHOLE"))
-			{
-				return PLUGIN_HANDLED;
-			}
-		}
-	}
-	return PLUGIN_CONTINUE;
+    if(g_GameMode != ColaDay) return PLUGIN_CONTINUE
+    if(get_msg_args() == 3)
+    {
+        if(get_msg_argtype(2) == ARG_STRING)
+        {
+            new value2[64];
+            get_msg_arg_string(2 ,value2 ,63);
+            if(equal(value2 ,"%!MRAD_FIREINHOLE"))
+            {
+                return PLUGIN_HANDLED;
+            }
+        }
+    }
+    return PLUGIN_CONTINUE;
 }
 
 public Event_CurWeapon(id) 
 {     
-    new weaponID = read_data(2)    	
+    new weaponID = read_data(2)        
     if(g_GameMode == ColaDay)
     {
         if(weaponID != CSW_HEGRENADE)
@@ -6018,4 +6143,12 @@ public Event_CurWeapon(id)
         entity_set_string(id, EV_SZ_weaponmodel, COLA_P) 
     }
     return PLUGIN_CONTINUE 
+}
+
+public fw_player_scope(const iWpnid)
+{
+    new id = entity_get_edict(iWpnid, EV_ENT_owner)
+    if(!g_Scope && (id == g_DuelA || id == g_DuelB))
+        return HAM_SUPERCEDE;
+    return HAM_IGNORED;
 }
