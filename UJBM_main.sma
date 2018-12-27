@@ -466,6 +466,8 @@ public plugin_precache()
     precache_sound("jbextreme/simondead2.wav")
     precache_sound("jbextreme/opendoor3.wav")
     precache_sound("jbextreme/sparta1.wav")
+	precache_sound("jbextreme/hns.wav")
+	precache_sound("jbextreme/lina.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -3728,7 +3730,7 @@ public cmd_game_hns()
             client_cmd(Players[i], "impulse 100")
         }
     }
-    emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    emit_sound(0, CHAN_AUTO, "jbextreme/hns.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     new sz_msg[256];
     formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_HNS")
     client_print(0, print_center , sz_msg)
@@ -4016,7 +4018,7 @@ public  cmd_game_fire()
     static dst[32]
     get_user_name(g_Simon, dst, charsmax(dst))
     server_cmd("amx_fire %s",dst);
-    emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    emit_sound(0, CHAN_AUTO, "jbextreme/lina.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -5366,7 +5368,7 @@ public  cmd_simongamesmenu(id)
     return PLUGIN_HANDLED
 }
 public heal_t(id)
-{   if (g_Simon == id || (get_user_flags(id) & ADMIN_BAN) && g_Duel==0)
+{   if (g_Simon == id || (get_user_flags(id) & ADMIN_KICK) && g_Duel==0)
 	{
 		client_cmd(0,"spk fvox/medical_repaired")
 		static i, src[32]
