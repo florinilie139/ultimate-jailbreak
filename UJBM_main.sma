@@ -158,6 +158,20 @@ enum _:days{
     OneBullet         //16
 }
 
+enum _:lastrequests{
+    LrGame = 0,
+    LrMoney,
+    FreeGun,
+    DuelKnives,
+    Catea,
+    Grenada,
+    Ruleta,
+    Trivia,
+    Shot4Shot
+}
+
+new DuelWeapon;
+
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
@@ -177,40 +191,39 @@ new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999 }
 
 new const _Duel[][_duel] =
 {
-    { "m249",        CSW_M249,         "weapon_m249",         "M249",     "S-a selectat M249 Duel"  },
-    { "Grenades",     CSW_HEGRENADE,     "weapon_hegrenade", "HE",    "S-a selectat HE Duel"  },
-    { "Rulette",     33,             "weapon_deagle",     "Ruleta ruseasca",     "S-a selectat Ruleta ruseasca" },
-    { "Trivia",        34,                "weapon_knife",        "Trivia",     "S-a selectat Trivia Duel" },
+    { "m249",        CSW_M249,         "weapon_m249",        "M249",                "S-a selectat M249 Duel"        },
+    { "Grenades",    CSW_HEGRENADE,    "weapon_hegrenade",   "HE",                  "S-a selectat HE Duel"          },
+    { "Rulette",     33,               "weapon_deagle",      "Ruleta ruseasca",     "S-a selectat Ruleta ruseasca"  },
+    { "Trivia",      34,               "weapon_knife",       "Trivia",              "S-a selectat Trivia Duel"      },
     
     //{ "Grenades",     CSW_FLASHBANG,     "weapon_flashbang", "UJBM_MENU_LASTREQ_OPT5",     "UJBM_MENU_LASTREQ_SEL5"  }, //rpg!!!
-    ///rpg
     
-    { "Deagle",        CSW_DEAGLE,     "weapon_deagle",     "Deagle",     "S-a selectat Deagle Duel"  },
-    { "P228",         CSW_P228,         "weapon_p228",     "P228",     "S-a selectat P228 Duel"    },
-    { "Fiveseven",         CSW_FIVESEVEN,         "weapon_fiveseven",     "Fiveseven",     "S-a selectat Fiveseven Duel"    },
-    { "USP",         CSW_USP,         "weapon_usp",     "USP",     "S-a selectat USP Duel"    },
-    { "Glock",         CSW_GLOCK18,         "weapon_glock18",     "Glock",     "S-a selectat Glock Duel"    },
-    { "Elite",         CSW_ELITE,         "weapon_elite",     "Elite",     "S-a selectat Elite Duel"    },
+    { "Deagle",      CSW_DEAGLE,       "weapon_deagle",      "Deagle",              "S-a selectat Deagle Duel"      },
+    { "P228",        CSW_P228,         "weapon_p228",        "P228",                "S-a selectat P228 Duel"        },
+    { "Fiveseven",   CSW_FIVESEVEN,    "weapon_fiveseven",   "Fiveseven",           "S-a selectat Fiveseven Duel"   },
+    { "USP",         CSW_USP,          "weapon_usp",         "USP",                 "S-a selectat USP Duel"         },
+    { "Glock",       CSW_GLOCK18,      "weapon_glock18",     "Glock",               "S-a selectat Glock Duel"       },
+    { "Elite",       CSW_ELITE,        "weapon_elite",       "Elite",               "S-a selectat Elite Duel"       },
+     
+    { "XM1014",      CSW_XM1014,       "weapon_xm1014",      "XM1014",              "S-a selectat XM1014 Duel"      },
+    { "M3",          CSW_M3,           "weapon_m3",          "M3",                  "S-a selectat M3 Duel"          },
     
-    { "XM1014",         CSW_XM1014,         "weapon_xm1014",     "XM1014",     "S-a selectat XM1014 Duel"    },
-    { "M3",         CSW_M3,         "weapon_m3",     "M3",     "S-a selectat M3 Duel"    },
+    { "Mac10",       CSW_MAC10,        "weapon_mac10",       "Mac-10",              "S-a selectat Mac-10 Duel"      },
+    { "UMP45",       CSW_UMP45,        "weapon_ump45",       "UMP45",               "S-a selectat UMP45 Duel"       },
+    { "MP5Navy",     CSW_MP5NAVY,      "weapon_mp5navy",     "MP5",                 "S-a selectat MP5 Duel"         },
+    { "Tmp",         CSW_TMP,          "weapon_tmp",         "Tmp",                 "S-a selectat Tmp Duel"         },
+    { "P90",         CSW_P90,          "weapon_p90",         "P90",                 "S-a selectat P90 Duel"         },
+        
+    { "Galil",       CSW_GALIL,        "weapon_galil",       "Galil",               "S-a selectat Galil Duel"       },
+    { "Famas",       CSW_FAMAS,        "weapon_famas",       "Famas",               "S-a selectat Famas Duel"       },
+    { "M4A1",        CSW_M4A1,         "weapon_m4a1",        "M4A1",                "S-a selectat M4A1 Duel"        },
+    { "Ak47",        CSW_AK47,         "weapon_ak47",        "Ak47",                "S-a selectat Ak47 Duel"        },
     
-    { "Mac10",         CSW_MAC10,         "weapon_mac10",     "Mac-10",     "S-a selectat Mac-10 Duel"    },
-    { "UMP45",         CSW_UMP45,         "weapon_ump45",     "UMP45",     "S-a selectat UMP45 Duel"    },
-    { "MP5Navy",         CSW_MP5NAVY,         "weapon_mp5navy",     "MP5",     "S-a selectat MP5 Duel"    },
-    { "Tmp",         CSW_TMP,         "weapon_tmp",     "Tmp",     "S-a selectat Tmp Duel"    },
-    { "P90",         CSW_P90,         "weapon_p90",     "P90",     "S-a selectat P90 Duel"    },
-
-    { "Galil",         CSW_GALIL,         "weapon_galil",     "Galil",     "S-a selectat Galil Duel"    },
-    { "Famas",         CSW_FAMAS,         "weapon_famas",     "Famas",     "S-a selectat Famas Duel"    },
-    { "M4A1",         CSW_M4A1,         "weapon_m4a1",     "M4A1",     "S-a selectat M4A1 Duel"    },
-    { "Ak47",         CSW_AK47,        "weapon_ak47",     "Ak47",     "S-a selectat Ak47 Duel"    },
-    
-    { "G3sg1",         CSW_G3SG1,         "weapon_g3sg1",     "G3sg1",     "S-a selectat G3sg1 Duel"    },
-    { "Aug",         CSW_AUG,         "weapon_aug",     "Aug",     "S-a selectat Aug Duel"    },
-    { "Sg550",         CSW_SG550,         "weapon_sg550",     "Sg550",     "S-a selectat Sg550 Duel"    },
-    { "Awp",         CSW_AWP,         "weapon_awp",         "Awp",     "S-a selectat Awp Duel"  },
-    { "Scout",         CSW_SCOUT,         "weapon_scout",     "Scout",     "S-a selectat Scout Duel"    }
+    { "G3sg1",       CSW_G3SG1,        "weapon_g3sg1",       "G3sg1",               "S-a selectat G3sg1 Duel"       },
+    { "Aug",         CSW_AUG,          "weapon_aug",         "Aug",                 "S-a selectat Aug Duel"         },
+    { "Sg550",       CSW_SG550,        "weapon_sg550",       "Sg550",               "S-a selectat Sg550 Duel"       },
+    { "Awp",         CSW_AWP,          "weapon_awp",         "Awp",                 "S-a selectat Awp Duel"         },
+    { "Scout",       CSW_SCOUT,        "weapon_scout",       "Scout",               "S-a selectat Scout Duel"       }
 
 }
 // Reasons
@@ -1391,6 +1404,7 @@ public player_killed(victim, attacker, shouldgib)
                             g_DuelA = 0
                             g_DuelB = 0
                             g_Scope = 1
+                            DuelWeapon = 0
                             server_cmd("jb_unblock_weapons")
                         }
                     }
@@ -1561,6 +1575,8 @@ public round_end()
     }
     g_RoundEnd = 1
     g_Duel = 0
+    g_Scope = 1
+    DuelWeapon = 0
     g_Fonarik = 0
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    ClearSyncHud(0, g_HudSync[i][_hudsync])
@@ -2244,13 +2260,14 @@ public lastrequest_select(id, menu, item)
         menu_destroy(menu)
         return PLUGIN_HANDLED
     }
-    static i, dst[32], data[5], access, callback, option[64],nr, menu_s4s, menuname[32], num[5]
+    static i, dst[32], data[5], access, callback, option[64],nr
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     get_user_name(id, dst, charsmax(dst))
     nr = str_to_num(data)
+    g_Duel = nr
     switch(nr)
     {
-        case(1):
+        case(LrMoney):
         {
             client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")
             user_silentkill(id)
@@ -2259,7 +2276,7 @@ public lastrequest_select(id, menu, item)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SEL1", dst)
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
         }
-        case(2):
+        case(FreeGun):
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SEL2", dst)
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
@@ -2271,43 +2288,90 @@ public lastrequest_select(id, menu, item)
             set_task(120.0,"cmd_expire_time",TASK_ROUND)
             g_Countdown=120
             cmd_saytime()
-            g_Duel = nr
+            
         }
-        case(3):
+        case(DuelKnives):
         {
             menu_players(id, CS_TEAM_CT, 0, 1, "duel_knives", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
-            g_Duel = nr
         }
-        case(0):
+        case(LrGame):
         {
             cmd_lrgame(id)
         }
-        case(7):
+        case(Shot4Shot):
         {
             //server_cmd("bh_noslowdown 0")
-            
-            formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_S4S")
-            menu_s4s = menu_create(menuname, "shot4shot_select")
-            
-            for(i = 3; i < sizeof(_Duel); i++)
-            {
-                num_to_str(i + 4, num, charsmax(num))
-                formatex(option, charsmax(option), "%s", _Duel[i][_opt])
-                menu_additem(menu_s4s, option, num, 0)
-            }
-            menu_display(id, menu_s4s)
-            
-            g_Duel = nr
+            shoot4shootmenu(id)
         }
         default:
         {
             menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
-            g_Duel = nr
+            DuelWeapon = nr-Catea;
         }
     }
     menu_destroy(menu)
     return PLUGIN_HANDLED
 }
+
+public shoot4shootmenu(id)
+{
+    static i, menu_s4s, menuname[32], num[5]
+    formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_S4S")
+    menu_s4s = menu_create(menuname, "shot4shot_select")
+
+    for(i = 4; i < sizeof(_Duel); i++)
+    {
+        num_to_str(i, num, charsmax(num))
+        formatex(option, charsmax(option), "%s", _Duel[i][_opt])
+        menu_additem(menu_s4s, option, num, 0)
+    }
+    menu_display(id, menu_s4s)
+    return PLUGIN_CONTINUE
+}
+
+public shot4shot_select(id, menu, item)
+{
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback,nr
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    nr = str_to_num(data)
+    DuelWeapon = nr
+    switch(_Duel[nr][_csw])
+    {
+        case CSW_SCOUT, CSW_AWP, CSW_AUG, CSW_G3SG1, CSW_SG550:
+        {
+            scope_menu(id)
+        }
+        default:
+        {
+            menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
+        }
+        
+    }
+    menu_destroy(menu)
+    return PLUGIN_CONTINUE
+}
+
+public scope_menu(id)
+{
+    static  menu_scope, menuname[32], option[64]
+    
+    formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE")
+    menu_scope = menu_create(menuname, "scope_select")
+    
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE1")
+    menu_additem(menu, option, "1", 0)
+
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE0")
+    menu_additem(menu, option, "0", 0)
+    
+    menu_display(id, menu_scope)
+}
+
 public scope_select(id, menu, item)
 {
     if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
@@ -2327,41 +2391,10 @@ public scope_select(id, menu, item)
         g_Scope = 0
     }
     menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
+    menu_destroy(menu)
     return PLUGIN_CONTINUE
 }
-public shot4shot_select(id, menu, item)
-{
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
-    {
-        menu_destroy(menu)
-        return PLUGIN_HANDLED
-    }
-    static dst[32], data[5], access, callback, option[64],nr, menu_scope, menuname[32]
-    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
-    nr = str_to_num(data)
-    switch(_Duel[nr][_csw])
-    {
-        case CSW_SCOUT, CSW_AWP, CSW_AUG, CSW_G3SG1, CSW_SG550:
-        {
-            formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE")
-            menu_scope = menu_create(menuname, "scope_select")
-            
-            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE1")
-            menu_additem(menu, option, "1", 0)
-    
-            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE0")
-            menu_additem(menu, option, "0", 0)
-            
-            menu_display(id, menu_scope)
-        }
-        default:
-        {
-            menu_players(id, CS_TEAM_CT, 0, 1, "duel_guns", "%L", LANG_SERVER, "UJBM_MENU_DUEL")
-        }
-        
-    }
-    return PLUGIN_CONTINUE
-}
+
 public cmd_lrgame(id)
 {
     static menu, menuname[32], option[64]
@@ -3025,7 +3058,7 @@ public duel_guns(id, menu, item)
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
     
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel-4<0 || g_Duel-4>sizeof(_Duel)-1 || !is_user_alive(player) ||  !is_user_alive(id) || get_bit(g_PlayerWanted, id))
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel<Catea || g_Duel>Shot4Shot || !is_user_alive(player) ||  !is_user_alive(id) || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
         g_Duel = 0
@@ -3033,9 +3066,8 @@ public duel_guns(id, menu, item)
     }
     
     get_user_name(id, src, charsmax(src))
-    formatex(option, charsmax(option), "%s^n%L", _Duel[g_Duel - 4][_sel], LANG_SERVER, "UJBM_MENU_DUEL_SEL", src, dst)
-    if(g_Duel != 11)
-        emit_sound(0, CHAN_AUTO, "jbextreme/nm_goodbadugly.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    formatex(option, charsmax(option), "%s^n%L", _Duel[DuelWeapon][_sel], LANG_SERVER, "UJBM_MENU_DUEL_SEL", src, dst)
+    emit_sound(0, CHAN_AUTO, "jbextreme/nm_goodbadugly.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
     
@@ -3053,18 +3085,18 @@ public duel_guns(id, menu, item)
     set_user_gravity(player, 1.0)
     set_user_maxspeed(player, 250.0)
     
-    switch (_Duel[g_Duel - 4][_csw])
+    switch (_Duel[DuelWeapon][_csw])
     {
         case  CSW_M249:
         {
            
-            gun = give_item(g_DuelA, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 2000)
             cs_set_user_bpammo(g_DuelA,CSW_M249,0)
             set_user_health(g_DuelA, 2000)
             entity_set_int(g_DuelA, EV_INT_body, 6)
            
-            gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 2000)
             set_user_health(g_DuelB, 2000)
             cs_set_user_bpammo(g_DuelB,CSW_M249,0)
@@ -3073,13 +3105,13 @@ public duel_guns(id, menu, item)
         }
         case  CSW_FLASHBANG:
         {
-            gun = give_item(g_DuelA, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelA, 2000)
             entity_set_int(g_DuelA, EV_INT_body, 6)
             current_weapon_fl(g_DuelA)
             
-            gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelB, 2000)
             entity_set_int(g_DuelB, EV_INT_body, 6)
@@ -3089,9 +3121,9 @@ public duel_guns(id, menu, item)
         case 33:
         {
             if(random_num(1,2) == 1)
-                gun = give_item(g_DuelA, _Duel[g_Duel - 4][_entname])
+                gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
             else
-                gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
+                gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 6)
             RRturn = 1
             
@@ -3121,11 +3153,11 @@ public duel_guns(id, menu, item)
         default:
         {
             
-            gun = give_item(g_DuelA, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelA, 100)
                         
-            gun = give_item(g_DuelB, _Duel[g_Duel - 4][_entname])
+            gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
             cs_set_weapon_ammo(gun, 1)
             set_user_health(g_DuelB, 100)
             server_cmd("jb_block_weapons")
