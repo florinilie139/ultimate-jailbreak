@@ -2318,7 +2318,7 @@ public lastrequest_select(id, menu, item)
 
 public shoot4shootmenu(id)
 {
-    static i, menu_s4s, menuname[32], num[5]
+    static i, menu_s4s, menuname[32], num[5],  option[64]
     formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_S4S")
     menu_s4s = menu_create(menuname, "shot4shot_select")
 
@@ -2367,10 +2367,10 @@ public scope_menu(id)
     menu_scope = menu_create(menuname, "scope_select")
     
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE1")
-    menu_additem(menu, option, "1", 0)
+    menu_additem(menu_scope, option, "1", 0)
 
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SCOPE0")
-    menu_additem(menu, option, "0", 0)
+    menu_additem(menu_scope, option, "0", 0)
     
     menu_display(id, menu_scope)
 }
