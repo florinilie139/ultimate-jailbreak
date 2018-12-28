@@ -1047,11 +1047,11 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
         return HAM_SUPERCEDE
     switch(g_Duel)
     {
-        case(0):
+        case(LrGame):
         {
             return HAM_IGNORED
         }
-        case(2):
+        case(FreeGun):
         {
             if(attacker != g_PlayerLast || (bits & (1<<24)))
                 return HAM_SUPERCEDE
@@ -1059,7 +1059,7 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
         default:
         {
             if((victim == g_DuelA && attacker == g_DuelB) || (victim == g_DuelB && attacker == g_DuelA))
-                if(g_Duel> 3 && get_user_weapon(attacker) ==  _Duel[g_Duel - 4][_csw] || g_Duel == 3 && get_user_weapon(attacker)==CSW_KNIFE)
+                if(g_Duel != Ruleta && (g_Duel> DuelKnives && get_user_weapon(attacker) ==  _Duel[DuelWeapon][_csw] || g_Duel == DuelKnives && get_user_weapon(attacker)==CSW_KNIFE))
                     return HAM_IGNORED
             return HAM_SUPERCEDE
         }
@@ -1139,19 +1139,19 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
                     return HAM_IGNORED
                 }
             }
-            case(2):
+            case(FreeGun):
             {
                 if(attacker != g_PlayerLast)
                     return HAM_SUPERCEDE
             }
-            case(10, 11):
+            case(Trivia, Ruleta):
             {
                 return HAM_SUPERCEDE
             }
             default:
             {
                 if((victim == g_DuelA && attacker == g_DuelB) || (victim == g_DuelB && attacker == g_DuelA)){
-                    if(g_Duel==3)
+                    if(g_Duel==DuelKnives)
                     {
                         SetHamParamFloat(3, damage/2)
                         return HAM_OVERRIDE
@@ -1356,15 +1356,6 @@ public player_killed(victim, attacker, shouldgib)
                         { 
                             if(kteam == CS_TEAM_CT)
                             {
-                                /*g_CountKilled[attacker]++
-                                    if(g_CountKilled[attacker] == 5)
-                                    {
-                                    user_kill(attacker);
-                                    format(message, 200, "[Anti-Fk] %s a fost pedepsit",nameCT);
-                                    message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
-                                    write_string(message);
-                                    message_end();
-                                }*/
                                 if(get_bit(g_PlayerWanted,victim))
                                 {
                                     format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
@@ -1382,32 +1373,33 @@ public player_killed(victim, attacker, shouldgib)
                         }
                     }
                 }
+                case (2):
+                {
+                    
+                }
                 default:
                 {
-                    if(g_Duel != 2)
-                    {
-                        if(victim == g_DuelA || victim == g_DuelB){
-                            killedonlr = 1
-                            set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
-                            if(is_user_alive(attacker))
-                                set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
-                            if (kteam == CS_TEAM_T) 
-                            {
-                                set_user_health(attacker,100)
-                                strip_user_weapons(attacker)
-                                give_item(attacker,"weapon_knife")
-                                cmd_lastrequest(attacker)
-                            }
-                            if (kteam == CS_TEAM_CT)
-                                clear_bit(g_PlayerVoice, victim)
-                            g_Duel = 0
-                            g_DuelA = 0
-                            g_DuelB = 0
-                            g_Scope = 1
-                            DuelWeapon = 0
-                            server_cmd("jb_unblock_weapons")
+                    if(victim == g_DuelA || victim == g_DuelB){
+                        killedonlr = 1
+                        set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+                        if(is_user_alive(attacker))
+                            set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+                        if (kteam == CS_TEAM_T) 
+                        {
+                            set_user_health(attacker,100)
+                            strip_user_weapons(attacker)
+                            give_item(attacker,"weapon_knife")
+                            cmd_lastrequest(attacker)
                         }
-                    }
+                        if (kteam == CS_TEAM_CT)
+                            clear_bit(g_PlayerVoice, victim)
+                        g_Duel = 0
+                        g_DuelA = 0
+                        g_DuelB = 0
+                        g_Scope = 1
+                        DuelWeapon = 0
+                        server_cmd("jb_unblock_weapons")
+                    }                    
                 }
             }
             hud_status(0)
@@ -1490,7 +1482,7 @@ public voice_listening(receiver, sender, bool:listen)
 public Rulette (weaponid)
 {
     new id = get_pdata_cbase(weaponid, 41, 4) 
-    if (g_Duel > 3 && _Duel[g_Duel - 4][_csw] == 33 && ( g_DuelA==id || g_DuelB==id)){
+    if (g_Duel == Ruleta && ( g_DuelA==id || g_DuelB==id)){
         if(is_user_alive(id)  && (g_DuelA==id && RRturn == 1 || g_DuelB==id && RRturn == 2)){
             new RuletteRandom
             do{
@@ -1520,11 +1512,12 @@ public player_cmdstart(id, uc, seed)
     if(!is_user_alive(id))
         return FMRES_IGNORED
         
-    if(g_Duel > 3)
+    if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta)
     {
         if(g_DuelA != id && g_DuelB != id)
             return FMRES_IGNORED
-        if (_Duel[g_Duel - 4][_csw] != CSW_M249 && _Duel[g_Duel - 4][_csw]!=33)     cs_set_user_bpammo(id, _Duel[g_Duel - 4][_csw], 1)
+        if (_Duel[DuelWeapon][_csw] != CSW_M249 && _Duel[DuelWeapon][_csw]!=33)
+            cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
     }
     else
     {
@@ -1973,7 +1966,7 @@ public cmd_minmodels(id)
 
 public cmd_nosleep(id)
 {
-    if(!is_user_alive(id) || g_Duel >=2 || !is_not_game() || g_JailDay%7 == 6 || cs_get_user_team(id) == CS_TEAM_CT)
+    if(!is_user_alive(id) || g_Duel >=FreeGun || !is_not_game() || g_JailDay%7 == 6 || cs_get_user_team(id) == CS_TEAM_CT)
         return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }
@@ -2334,7 +2327,7 @@ public shoot4shootmenu(id)
 
 public shot4shot_select(id, menu, item)
 {
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel == 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -2377,7 +2370,7 @@ public scope_menu(id)
 
 public scope_select(id, menu, item)
 {
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel == 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -2385,7 +2378,7 @@ public scope_select(id, menu, item)
     static dst[32], data[5], access, callback,nr
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     nr = str_to_num(data)
-    if(nr)
+    if(nr == 1)
     {
         g_Scope = 1
     }
@@ -3023,7 +3016,7 @@ public duel_knives(id, menu, item)
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     player = str_to_num(data)
     
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel!=3 || !is_user_connected(player) || !is_user_alive(player) || get_bit(g_PlayerWanted, id))
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel!=DuelKnives || !is_user_connected(player) || !is_user_alive(player) || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
         g_Duel = 0
@@ -5801,7 +5794,7 @@ public current_weapon_fl(id)
 {
     if(!is_user_alive(id))
         return PLUGIN_CONTINUE
-    if (g_Duel > 3 && _Duel[g_Duel - 4][_csw] == CSW_FLASHBANG)
+    if (g_Duel > 3 && _Duel[DuelWeapon][_csw] == CSW_FLASHBANG)
     {
         set_pev(id, pev_viewmodel2, _RpgModels[1])
         set_pev(id, pev_weaponmodel2, _RpgModels[0])    
@@ -5839,7 +5832,7 @@ public rpg_pre(weapon)
 {
     if (!is_valid_ent(weapon)) return PLUGIN_CONTINUE
     new id = entity_get_edict( weapon, EV_ENT_owner )
-    if (g_Duel > 3 && _Duel[g_Duel - 4][_csw] == CSW_FLASHBANG )
+    if (g_Duel > 3 && _Duel[DuelWeapon][_csw] == CSW_FLASHBANG )
     {
         
         new  ent
@@ -5908,7 +5901,7 @@ public cmd_lastrequest1(id)
     g_Duel = 5    
     g_DuelA = id
     disarm_player(id)
-    new gun = give_item(id, _Duel[g_Duel - 4][_entname])
+    new gun = give_item(id, _Duel[DuelWeapon][_entname])
     cs_set_weapon_ammo(gun, 1)
     set_user_health(id, 2000)
     entity_set_int(id, EV_INT_body, 6)
@@ -6183,7 +6176,7 @@ public Event_CurWeapon(id)
 public fw_player_scope(const iWpnid)
 {
     new id = entity_get_edict(iWpnid, EV_ENT_owner)
-    if(!g_Scope && (id == g_DuelA || id == g_DuelB))
+    if(g_Scope == 0 && (id == g_DuelA || id == g_DuelB))
         return HAM_SUPERCEDE;
     return HAM_IGNORED;
 }
