@@ -2250,6 +2250,9 @@ public cmd_lastrequest(id)
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT7")
     menu_additem(menu, option, "7", 0)
     
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
+    menu_additem(menu, option, "8", 0)
+    
     menu_display(id, menu)
     return PLUGIN_CONTINUE
 }
