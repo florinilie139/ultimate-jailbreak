@@ -340,7 +340,7 @@ public cmd_trivia (id)
                         WinGameTrivia[0]++
                     else
                         WinGameTrivia[1]++
-                    if(WinGameTrivia[0] >= 5)
+                    if(WinGameTrivia[0] >= 3)
                     {
                         user_kill(DuelB)
                         DuelTrivia = 0;
@@ -348,7 +348,7 @@ public cmd_trivia (id)
                         DuelA = 0
                         DuelB = 0
                     }
-                    else if(WinGameTrivia[1] >= 5)
+                    else if(WinGameTrivia[1] >= 3)
                     {
                         user_kill(DuelA)
                         DuelTrivia = 0;
@@ -359,6 +359,7 @@ public cmd_trivia (id)
                     else
                     {
                         GameTimeTrivia = 0
+                        GameCurrentTrivia = 0
                         remove_task(222200);
                         set_task(5.0,"GameShowQuestion", 222200, "", 0, "", 0);
                     }
