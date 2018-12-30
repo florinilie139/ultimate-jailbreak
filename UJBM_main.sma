@@ -2330,6 +2330,7 @@ public shot4shot_select(id, menu, item)
     if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel == 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
+        g_Duel = 0
         return PLUGIN_HANDLED
     }
     static dst[32], data[5], access, callback,nr
@@ -2373,6 +2374,7 @@ public scope_select(id, menu, item)
     if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel == 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
     {
         menu_destroy(menu)
+        g_Duel = 0
         return PLUGIN_HANDLED
     }
     static dst[32], data[5], access, callback,nr
