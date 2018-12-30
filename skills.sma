@@ -177,7 +177,19 @@ public plugin_init ()
         set_task(120.0, "helps", _, _, _, "b")
     return PLUGIN_CONTINUE
 }
-
+public plugin_natives() 
+{ 
+    register_library("skills"); 
+    register_native ("get_disguise", "_get_disguise",0)
+} 
+public _get_disguise(iPlugin, iParams)
+{
+    new id = get_param(1);
+    if(g_IsDisguise[id]==1)
+	    return true
+	else
+	    return false
+}
 public _give_points (id,level,cid)
 {
     new ids[3],points[3]
@@ -926,10 +938,12 @@ public finish_picklocking(param[], id)
     set_pev(id, pev_flags, pev(id, pev_flags) & ~FL_FROZEN)
     if(random_num(0,3-g_PlayerSkill[id][LACATUS])==0)
     {
-        new iEnt
+        new iEnt, name[32]
+        get_user_name(id,name,31)
         iEnt = param[0]
         ExecuteHamB(Ham_Use,iEnt,0,0,1,1.0)
         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_DONE")
+        client_print(0,print_console,"%s a folosit skill-ul de lacatus.", name)
     }else{
         client_print(id, print_center, "%L", LANG_SERVER, "SKILLS_PICKLOCK_LOSE",3-(g_PlayerSkill[id][LACATUS]-1)/2)
     }
