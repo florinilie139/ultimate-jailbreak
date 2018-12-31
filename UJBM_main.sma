@@ -88,7 +88,6 @@ Jocuri: Slender man
     #define OFFSET_CSMONEY  140
  #endif
 
-const WPNS_SCOPE_BITSUM = (1<<CSW_SCOUT) | (1<<CSW_AUG) | (1<<CSW_SG550) | (1<<CSW_AWP) | (1<<CSW_G3SG1) | (1<<CSW_SG552)
 
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 enum _lastrequest { _knife, _deagle, _freeday, _weapon }
@@ -205,8 +204,8 @@ new const _Duel[][_duel] =
     { "Glock",       CSW_GLOCK18,      "weapon_glock18",     "Glock",               "S-a selectat Glock Duel"       },
     { "Elite",       CSW_ELITE,        "weapon_elite",       "Elite",               "S-a selectat Elite Duel"       },
      
-    { "XM1014",      CSW_XM1014,       "weapon_xm1014",      "XM1014",              "S-a selectat XM1014 Duel"      },
-    { "M3",          CSW_M3,           "weapon_m3",          "M3",                  "S-a selectat M3 Duel"          },
+    //{ "XM1014",      CSW_XM1014,       "weapon_xm1014",      "XM1014",              "S-a selectat XM1014 Duel"      },
+    //{ "M3",          CSW_M3,           "weapon_m3",          "M3",                  "S-a selectat M3 Duel"          },
     
     { "Mac10",       CSW_MAC10,        "weapon_mac10",       "Mac-10",              "S-a selectat Mac-10 Duel"      },
     { "UMP45",       CSW_UMP45,        "weapon_ump45",       "UMP45",               "S-a selectat UMP45 Duel"       },
@@ -221,6 +220,7 @@ new const _Duel[][_duel] =
     
     { "G3sg1",       CSW_G3SG1,        "weapon_g3sg1",       "G3sg1",               "S-a selectat G3sg1 Duel"       },
     { "Aug",         CSW_AUG,          "weapon_aug",         "Aug",                 "S-a selectat Aug Duel"         },
+    { "Sg552",       CSW_SG552,        "weapon_sg552",       "Sg552",               "S-a selectat Sg552 Duel"       },
     { "Sg550",       CSW_SG550,        "weapon_sg550",       "Sg550",               "S-a selectat Sg550 Duel"       },
     { "Awp",         CSW_AWP,          "weapon_awp",         "Awp",                 "S-a selectat Awp Duel"         },
     { "Scout",       CSW_SCOUT,        "weapon_scout",       "Scout",               "S-a selectat Scout Duel"       }
@@ -354,7 +354,7 @@ new g_IsFG
 new g_ResultVote[33]
 new g_DayTimer = 0
 
-new HamHook:Ham_SecondaryAttack[6]
+
 
 public plugin_init()
 {
@@ -472,18 +472,13 @@ public plugin_init()
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     
-    new iWpnid
-    for(new i, j; i < sizeof(_Duel); i++)
-    {
-        iWpnid = _Duel[i][_csw]
-        
-        if((1<<iWpnid) & WPNS_SCOPE_BITSUM)
-        {
-            Ham_SecondaryAttack[j] = RegisterHam(Ham_Weapon_SecondaryAttack, _Duel[i][_entname], "fw_player_scope", false)
-            DisableHamForward(Ham_SecondaryAttack[j])
-            j++;
-        }
-    }
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_awp",   "fw_player_scope" )
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_scout", "fw_player_scope" )
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_sg550", "fw_player_scope" )
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_g3sg1", "fw_player_scope" )
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_aug",   "fw_player_scope" )
+    RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_sg552", "fw_player_scope" )
+    
     
     return PLUGIN_CONTINUE
 }
@@ -2339,7 +2334,7 @@ public shot4shot_select(id, menu, item)
     DuelWeapon = nr
     switch(_Duel[nr][_csw])
     {
-        case CSW_SCOUT, CSW_AWP, CSW_AUG, CSW_G3SG1, CSW_SG550:
+        case CSW_SCOUT, CSW_AWP, CSW_AUG, CSW_G3SG1, CSW_SG550, CSW_SG552:
         {
             scope_menu(id)
         }
