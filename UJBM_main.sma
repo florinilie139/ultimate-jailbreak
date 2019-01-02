@@ -49,8 +49,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jbevils_craciun/jbevils_craciun.mdl"
-#define JBMODELSHORT "jbevils_craciun"
+#define JBMODELLOCATION "models/player/jbevils/jbevils.mdl"
+#define JBMODELSHORT "jbevils"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -174,7 +174,7 @@ new DuelWeapon;
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "jbdobs/police/hohoho.wav"} //sound police
+new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"} //sound police
 
 new SpriteExplosion
 
@@ -216,7 +216,7 @@ new const _Duel[][_duel] =
     { "Galil",       CSW_GALIL,        "weapon_galil",       "Galil",               "S-a selectat Galil Duel"       },
     { "Famas",       CSW_FAMAS,        "weapon_famas",       "Famas",               "S-a selectat Famas Duel"       },
     { "M4A1",        CSW_M4A1,         "weapon_m4a1",        "M4A1",                "S-a selectat M4A1 Duel"        },
-    { "Ak47",        CSW_AK47,         "weapon_ak47",        "Ak47",                "S-a selectat Ak47 Duel"        },
+    { "Ak47",        CSW_AK47,         "weapon_ak47",        "AK-47",                "S-a selectat AK-47 Duel"        },
     
     { "G3sg1",       CSW_G3SG1,        "weapon_g3sg1",       "G3sg1",               "S-a selectat G3sg1 Duel"       },
     { "Aug",         CSW_AUG,          "weapon_aug",         "Aug",                 "S-a selectat Aug Duel"         },
@@ -236,7 +236,7 @@ new const g_Reasons[][] =  {
     "UJBM_PRISONER_REASON_5",
     "UJBM_PRISONER_REASON_6",
     "UJBM_PRISONER_REASON_7",
-    "UJBM_PRISONER_REASON_8",
+    "UJBM_PRISONER_REASON_8",   
     "UJBM_PRISONER_REASON_9",
     "UJBM_PRISONER_REASON_10"
 }
@@ -5725,6 +5725,7 @@ public  cmd_punish_ct(id, menu, item)
     disarm_player(player)
     get_user_name(player, dst, charsmax(dst))
     get_user_name(id, src, charsmax(src))
+    set_bit(g_PlayerWanted, player)
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_PUNISH", src, dst,dst)    
     return PLUGIN_HANDLED
 }
