@@ -49,8 +49,10 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jbevils/jbevils.mdl"
-#define JBMODELSHORT "jbevils"
+#define JBMODELLOCATION "models/player/jblaleagane/jblaleagane.mdl"
+#define FIREDAYMODEL "models/player/ghostrider/ghostrider.mdl"
+#define FIREDAYSHORT "ghostrider"
+#define JBMODELSHORT "jblaleagane"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -439,7 +441,9 @@ public plugin_init()
     register_clcmd("say /listfd","cmd_listfd")
     
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
-    
+    register_event("DeathMsg", "Event_DeathMsg", "a")
+
+
     gp_GlowModels = register_cvar("jb_glowmodels", "0")
     gp_SimonSteps = register_cvar("jb_simonsteps", "1")
     gp_BoxMax = register_cvar("jb_boxmax", "4")
@@ -491,6 +495,7 @@ new COLA_V[] = "models/v_cola.mdl"
 public plugin_precache()
 {
     precache_model(JBMODELLOCATION)
+    precache_model(FIREDAYMODEL)
     precache_model(SPARTA_P)
     precache_model(SPARTA_V)
     precache_model(COLA_P)
@@ -507,7 +512,7 @@ public plugin_precache()
     //SpriteExplosion = precache_model("sprites/fexplo1.spr")     
     //m_iTrail = precache_model("sprites/smoke.spr")
     precache_sound("alien_alarm.wav")
-    precache_sound("jbextreme/nm_goodbadugly.wav")
+    precache_sound("jbextreme/mareduel.wav")
     precache_sound("jbextreme/rumble.wav")
     precache_sound("jbextreme/brass_bell_C.wav")
     //precache_sound("jbextreme/money.wav")
@@ -519,6 +524,7 @@ public plugin_precache()
     precache_sound("jbextreme/sparta1.wav")
     precache_sound("jbextreme/hns.wav")
     precache_sound("jbextreme/lina.wav")
+    precache_sound("jbextreme/fatality.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -1058,6 +1064,11 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
                     return HAM_IGNORED
             return HAM_SUPERCEDE
         }
+    }
+    if (g_GameMode == FireDay)
+    {
+        SetHamParamFloat(4, 1.0)
+        return HAM_OVERRIDE
     }
     return HAM_IGNORED
 }
@@ -3060,7 +3071,7 @@ public duel_guns(id, menu, item)
     
     get_user_name(id, src, charsmax(src))
     formatex(option, charsmax(option), "%s^n%L", _Duel[DuelWeapon][_sel], LANG_SERVER, "UJBM_MENU_DUEL_SEL", src, dst)
-    emit_sound(0, CHAN_AUTO, "jbextreme/nm_goodbadugly.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    emit_sound(0, CHAN_AUTO, "jbextreme/mareduel.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
     
@@ -4139,6 +4150,8 @@ public  cmd_game_fire()
         log_amx("no simon on fireday")
         return PLUGIN_HANDLED
     }
+    set_user_info(g_Simon, "model", FIREDAYSHORT)
+    g_GameWeapon[1] = CSW_KNIFE
     g_nogamerounds = 0
     g_BoxStarted = 0
     jail_open()
@@ -4186,6 +4199,7 @@ public  cmd_game_bugs()
     g_GameWeapon[1] = CSW_KNIFE
     server_cmd("jb_block_weapons")
     server_cmd("jb_block_teams")
+    server_cmd("bh_enabled 0")
     hud_status(0)
     new Players[32] 
     new playerCount, i 
@@ -6169,6 +6183,21 @@ public Event_CurWeapon(id)
         entity_set_string(id, EV_SZ_weaponmodel, COLA_P) 
     }
     return PLUGIN_CONTINUE 
+}
+
+public Event_DeathMsg()
+{
+    if (g_Duel == 0)
+        return PLUGIN_CONTINUE
+	new killer = read_data( 1 ); // first parameter (the killer !)
+	new victim = read_data( 2 ); // second parameter (the victim !)
+    new headshot = read_data( 3 ); // headshot parameter (if headshot will return true)
+    if((victim == g_DuelA && killer == g_DuelB) || (victim == g_DuelB && killer == g_DuelA))
+        if(headshot)
+        {
+            emit_sound(0, CHAN_AUTO, "jbextreme/fatality.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        }
+    return PLUGIN_CONTINUE
 }
 
 public fw_player_scope(const iWpnid)
