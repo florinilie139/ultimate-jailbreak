@@ -40,6 +40,7 @@ Jocuri: Slender man
 #define TASK_FD_TIMER      83458345
 #define TASK_RANDOM      1100
 
+#define m_LastHitGroup 75
 
 #define get_bit(%1,%2)         ( %1 &   1 << ( %2 & 31 ) )
 #define set_bit(%1,%2)         %1 |=  ( 1 << ( %2 & 31 ) )
@@ -441,8 +442,6 @@ public plugin_init()
     register_clcmd("say /listfd","cmd_listfd")
     
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
-    register_event("DeathMsg", "Event_DeathMsg", "a")
-
 
     gp_GlowModels = register_cvar("jb_glowmodels", "0")
     gp_SimonSteps = register_cvar("jb_simonsteps", "1")
@@ -1250,7 +1249,7 @@ public player_killed(victim, attacker, shouldgib)
     {
         cmd_voiceoff(victim)
     }
-
+    
     remove_all_fd()
 
     get_user_name(attacker,nameCT,31)
@@ -1378,6 +1377,10 @@ public player_killed(victim, attacker, shouldgib)
                             clear_bit(g_PlayerWanted, victim)
                         }
                     }
+                    if(get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
+                    {
+                        client_cmd(victim,"spk fvox/flatline.wav")
+                    }
                 }
                 case (2):
                 {
@@ -1386,6 +1389,8 @@ public player_killed(victim, attacker, shouldgib)
                 default:
                 {
                     if(victim == g_DuelA || victim == g_DuelB){
+                        if(get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
+                            client_cmd(0,"spk jbextreme/fatality.wav")
                         killedonlr = 1
                         set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
                         if(is_user_alive(attacker))
@@ -3377,9 +3382,12 @@ public client_infochanged(id)
 { 
     if (is_user_connected(id))
     {
+        if(g_GameMode == FireDay && id == g_Simon)
+            return PLUGIN_CONTINUE
         if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
             set_user_info(id, "model", JBMODELSHORT)
-    }     
+    }    
+    return PLUGIN_CONTINUE
 } 
 
 public cvar_result_func(id, const cvar[], const value[]) 
@@ -4150,7 +4158,6 @@ public  cmd_game_fire()
         log_amx("no simon on fireday")
         return PLUGIN_HANDLED
     }
-    set_user_info(g_Simon, "model", FIREDAYSHORT)
     g_GameWeapon[1] = CSW_KNIFE
     g_nogamerounds = 0
     g_BoxStarted = 0
@@ -4180,6 +4187,7 @@ public  cmd_game_fire()
     static dst[32]
     get_user_name(g_Simon, dst, charsmax(dst))
     server_cmd("amx_fire %s",dst);
+    set_user_info(g_Simon, "model", FIREDAYSHORT)
     emit_sound(0, CHAN_AUTO, "jbextreme/lina.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -6185,20 +6193,6 @@ public Event_CurWeapon(id)
     return PLUGIN_CONTINUE 
 }
 
-public Event_DeathMsg()
-{
-    if (g_Duel == 0)
-        return PLUGIN_CONTINUE
-	new killer = read_data( 1 ); // first parameter (the killer !)
-	new victim = read_data( 2 ); // second parameter (the victim !)
-    new headshot = read_data( 3 ); // headshot parameter (if headshot will return true)
-    if((victim == g_DuelA && killer == g_DuelB) || (victim == g_DuelB && killer == g_DuelA))
-        if(headshot)
-        {
-            emit_sound(0, CHAN_AUTO, "jbextreme/fatality.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-        }
-    return PLUGIN_CONTINUE
-}
 
 public fw_player_scope(const iWpnid)
 {
