@@ -126,6 +126,7 @@
 #include <csx>
 #include <fakemeta>
 #include <hamsandwich>
+#include <ujbm>
 
 // Plugin Info
 new const PLUGIN[]  = "AMX Super"
@@ -2900,10 +2901,12 @@ public admin_revive(id,level,cid)
             //fm_DispatchSpawn(players[a])
             ExecuteHamB(Ham_CS_RoundRespawn, players[a])
             set_task(0.1,"revivePl",0,ids,2)
+			
+            set_task(2.0,"revive2",players[a])
             
             if (get_pcvar_num(sv_sp) == 1)
             {
-                set_task(0.1, "protect", id)
+                set_task(2.0, "protect", id)
             }
         }
 
@@ -2932,12 +2935,13 @@ public admin_revive(id,level,cid)
         //fm_DispatchSpawn(player)
         ExecuteHamB(Ham_CS_RoundRespawn, player)
         set_task(0.1,"revivePl",0,ids,2)
-
+		
+		set_task(2.0,"revive2",player)
+		
         if (get_pcvar_num(sv_sp) == 1)
         {
-            set_task(0.1, "protect", id)
+            set_task(2.0, "protect", id)
         }
-
         get_user_name(player,name2,31)
         get_user_authid(player,authid2,34)
 
@@ -2957,7 +2961,13 @@ public admin_revive(id,level,cid)
     
     return PLUGIN_HANDLED
 }
-
+public revive2(player)
+{
+    new ids[3]
+	num_to_str(player,ids,2)
+	ExecuteHamB(Ham_CS_RoundRespawn, player)
+    set_task(0.1,"revivePl",0,ids,2)
+}
 public revivePl(ids[]) 
 { 
     new id = str_to_num(ids) 
@@ -4054,7 +4064,8 @@ public ignite_effects(skIndex[])   {
 
 public ignite_player(skIndex[])   {
     new kIndex = skIndex[0]
-    
+    new g_Gamemode = get_gamemode()
+    new g_Simon = get_simon()
     if (is_user_alive(kIndex) && onfire[kIndex] )    {
         new korigin[3]
         new players[32], inum = 0
@@ -4090,9 +4101,12 @@ public ignite_player(skIndex[])   {
                         spIndex[0] = players[i] 
                         new pName[32], kName[32]                
                         get_user_name(players[i],pName,31) 
-                        get_user_name(kIndex,kName,31) 
-                        emit_sound(players[i],CHAN_WEAPON ,"scientist/scream07.wav", 1.0, ATTN_NORM, 0, PITCH_HIGH) 
-                        client_print(0,3,"* [AMX] OH! NO! %s has caught %s on fire!",kName,pName) 
+                        get_user_name(kIndex,kName,31)               
+                        if(g_Simon == kIndex)
+                            emit_sound(0, CHAN_AUTO, "jbextreme/ghostrider.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                        else
+                            emit_sound(players[i],CHAN_WEAPON ,"scientist/scream07.wav", 1.0, ATTN_NORM, 0, PITCH_HIGH) 
+                        client_print(0,3,"[AMXX] %s i-a dat foc lui %s !",kName,pName) 
                         onfire[players[i]] = true
                         ignite_player(players[i]) 
                         ignite_effects(players[i])    
@@ -4103,8 +4117,11 @@ public ignite_player(skIndex[])   {
             pOrigin[0] = 0                
             korigin[0] = 0       
         } 
-        //Call Again in 2 seconds       
-        set_task(2.0, "ignite_player" , 0 , skIndex, 2)       
+        //Call Again in 2 seconds      
+        if(g_Gamemode == FireDay)
+            set_task(0.5, "ignite_player" , 0 , skIndex, 2)
+        else
+            set_task(2.0, "ignite_player" , 0 , skIndex, 2)       
     }    
     
     return PLUGIN_CONTINUE 
@@ -5732,6 +5749,8 @@ public plugin_precache()
     white = precache_model("sprites/white.spr")
     light = precache_model("sprites/lgtning.spr")
 
+    precache_sound("jbextreme/ghostrider.wav")
+    
     //Slay 2 & Quit Sounds
     precache_sound("ambience/thunder_clap.wav")
     precache_sound("weapons/headshot2.wav")
