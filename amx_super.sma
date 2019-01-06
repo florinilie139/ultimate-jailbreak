@@ -4117,11 +4117,8 @@ public ignite_player(skIndex[])   {
             pOrigin[0] = 0                
             korigin[0] = 0       
         } 
-        //Call Again in 2 seconds      
-        if(g_Gamemode == FireDay)
-            set_task(0.5, "ignite_player" , 0 , skIndex, 2)
-        else
-            set_task(2.0, "ignite_player" , 0 , skIndex, 2)       
+        //Call Again in 2 seconds     
+        set_task(2.0, "ignite_player" , 0 , skIndex, 2)       
     }    
     
     return PLUGIN_CONTINUE 
