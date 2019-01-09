@@ -136,6 +136,8 @@ new g_Info
 new FDnr
 new Tnr
 new Wnr
+new g_newChance
+new g_canTrivia
 //new g_CountKilled[33]
 
 enum _:days{
@@ -1392,6 +1394,7 @@ public player_killed(victim, attacker, shouldgib)
                         if(get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
                             client_cmd(0,"spk jbextreme/fatality.wav")
                         killedonlr = 1
+                        g_newChance = 1
                         set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
                         if(is_user_alive(attacker))
                             set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
@@ -1730,6 +1733,7 @@ public round_start()
 {
     FreedayTime = 1
     FreedayRemoved = 0
+    g_newChance = 1
     set_task(100.0,"FreedayTimeDone",TASK_FD_TIMER)
     gc_TalkMode = get_pcvar_num(gp_TalkMode)
     gc_VoiceBlock = get_pcvar_num(gp_VoiceBlock)
@@ -2251,8 +2255,16 @@ public cmd_lastrequest(id)
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT6")
     menu_additem(menu, option, "6", 0)
     
-    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT7")
-    menu_additem(menu, option, "7", 0)
+    if(g_newChance)
+    {
+        g_canTrivia = random_num(0,3)
+        g_newChance = 0
+    }
+    if(!g_canTrivia)
+    {
+        formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT7")
+        menu_additem(menu, option, "7", 0)
+    }
     
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
     menu_additem(menu, option, "8", 0)
@@ -3688,6 +3700,8 @@ public EndVote()
 public cmd_done_game_prepare ()
 {
     g_GamePrepare = 0;
+    if(g_GameMode == SpartaDay || g_GameMode == NightDay || g_GameMode == BugsDay)
+        client_cmd(0,"spk radio/com_go")
 }
 
 public cmd_expire_time()
@@ -4200,6 +4214,7 @@ public  cmd_game_bugs()
     g_Simon = 0
     g_nogamerounds = 0
     g_BoxStarted = 0
+    g_GamePrepare = 1
     jail_open()
     g_GameMode = BugsDay
     g_GamesAp[BugsDay]=true
@@ -4240,6 +4255,7 @@ public  cmd_game_bugs()
         }
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -4251,6 +4267,7 @@ public  cmd_game_nightcrawler()
     g_Simon = 0
     g_BoxStarted = 0
     g_nogamerounds = 0
+    g_GamePrepare = 1
     jail_open()
     g_GameMode = NightDay
     g_GamesAp[NightDay]=true
@@ -4305,6 +4322,7 @@ public  cmd_game_nightcrawler()
     }
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(5.0, "stop_sound")
+    set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
