@@ -2815,8 +2815,8 @@ public hud_status(task)
     for (i=0; i<playerCount; i++)
     {
         if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
-        if(cs_get_user_team(Players[i]) == CS_TEAM_T)
             CTnum++
+        if(cs_get_user_team(Players[i]) == CS_TEAM_T)
             Tnum++
     }
     Tnum--
