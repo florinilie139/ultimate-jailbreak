@@ -50,10 +50,10 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jblaleagane/jblaleagane.mdl"
+#define JBMODELLOCATION "models/player/jblaleagane1/jblaleagane1.mdl"
 #define FIREDAYMODEL "models/player/ghostrider/ghostrider.mdl"
 #define FIREDAYSHORT "ghostrider"
-#define JBMODELSHORT "jblaleagane"
+#define JBMODELSHORT "jblaleagane1"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -1394,7 +1394,6 @@ public player_killed(victim, attacker, shouldgib)
                         if(get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
                             client_cmd(0,"spk jbextreme/fatality.wav")
                         killedonlr = 1
-                        g_newChance = 1
                         set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
                         if(is_user_alive(attacker))
                             set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
@@ -2255,12 +2254,13 @@ public cmd_lastrequest(id)
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT6")
     menu_additem(menu, option, "6", 0)
     
+    
     if(g_newChance)
     {
-        g_canTrivia = random_num(0,3)
+        g_canTrivia = CTAlive/2
         g_newChance = 0
     }
-    if(!g_canTrivia)
+    if(g_canTrivia)
     {
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT7")
         menu_additem(menu, option, "7", 0)
@@ -2815,8 +2815,8 @@ public hud_status(task)
     for (i=0; i<playerCount; i++)
     {
         if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
-            CTnum++
         if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+            CTnum++
             Tnum++
     }
     Tnum--
@@ -3159,6 +3159,7 @@ public duel_guns(id, menu, item)
         case 34:
         {
             server_cmd("duel_trivia %d %d", g_DuelA, g_DuelB)
+            g_canTrivia--
         }
         case CSW_HEGRENADE:
         {
