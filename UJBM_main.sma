@@ -442,6 +442,7 @@ public plugin_init()
     register_clcmd("say_team /gunshop","gunsmenu")
     //register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
+    register_clcmd("say /unsimon", "cmd_unsimon", ADMIN_LEVEL_E, "- nu mai esti Simon");
     
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
 
@@ -809,7 +810,13 @@ public player_status(id)
         case(2):
         {
             if (!is_user_connected(player)) return PLUGIN_HANDLED
-            if (player == g_Simon) return PLUGIN_HANDLED
+            if (player == g_Simon) 
+            {
+                health = get_user_health(player)
+                get_user_name(player, name, charsmax(name))
+                player_hudmessage(id, 6, 0.5, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_STATUS", name, health)
+                return PLUGIN_HANDLED
+            }
             team = cs_get_user_team(player)
             if((team != CS_TEAM_T) && (team != CS_TEAM_CT))
                 return PLUGIN_HANDLED
@@ -5766,7 +5773,19 @@ public  cmd_punish_ct(id, menu, item)
     disarm_player(player)
     get_user_name(player, dst, charsmax(dst))
     get_user_name(id, src, charsmax(src))
+    set_user_info(player, "model", JBMODELSHORT)
+    new rez = random_num(1,2)
+    if( rez == 1 || rez == 2)
+    {
+        entity_set_int(player, EV_INT_body, 1+rez)
+    }
+    else
+    {
+        log_amx("Caugth rez to bee %d",rez)
+        entity_set_int(player, EV_INT_body, 2)
+    }
     set_bit(g_PlayerWanted, player)
+    entity_set_int(player, EV_INT_skin, 5)
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_SIMON_PUNISH", src, dst,dst)    
     return PLUGIN_HANDLED
 }
@@ -6219,4 +6238,25 @@ public fw_player_scope(const iWpnid)
     if(g_Scope == 0 && (id == g_DuelA || id == g_DuelB))
         return HAM_SUPERCEDE;
     return HAM_IGNORED;
+}
+
+public cmd_unsimon(id)
+{
+    if(get_user_flags(id) & ADMIN_LEVEL_E)
+    {
+        set_user_info(g_Simon, "model", JBMODELSHORT)
+        new rez = random_num(1,2)
+        if( rez == 1 || rez == 2)
+            {
+                entity_set_int(g_Simon, EV_INT_body, 3+rez)
+            }
+            else
+            {
+                log_amx("Caugth rez to be %d",rez)
+                entity_set_int(g_Simon, EV_INT_body, 4)
+            }
+        
+        g_Simon = 0
+        resetsimon()
+    }
 }
