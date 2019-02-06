@@ -171,6 +171,7 @@ enum _:lastrequests{
     Grenada,
     Ruleta,
     Trivia,
+    Reactie,
     Shot4Shot
 }
 
@@ -199,6 +200,7 @@ new const _Duel[][_duel] =
     { "Grenades",    CSW_HEGRENADE,    "weapon_hegrenade",   "HE",                  "S-a selectat HE Duel"          },
     { "Rulette",     33,               "weapon_deagle",      "Ruleta ruseasca",     "S-a selectat Ruleta ruseasca"  },
     { "Trivia",      34,               "weapon_knife",       "Trivia",              "S-a selectat Trivia Duel"      },
+    { "Reactie",      35,               "weapon_knife",       "Reactii",              "S-a selectat Duel de reactie"      },
     
     //{ "Grenades",     CSW_FLASHBANG,     "weapon_flashbang", "UJBM_MENU_LASTREQ_OPT5",     "UJBM_MENU_LASTREQ_SEL5"  }, //rpg!!!
     
@@ -309,6 +311,12 @@ new CTallowed[31]
 new Tallowed[31]
 new bindstr[33]
 new g_Scope
+new g_DuelReaction
+new g_DuelJumped[33]
+new g_DuelDucked[33]
+new g_DuelReactionStarted
+new g_Donated[33]
+new g_DamageDone[33]
 
 new gmsgBombDrop
 new ding_on = 1
@@ -443,9 +451,15 @@ public plugin_init()
     //register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     register_clcmd("say /unsimon", "cmd_unsimon", ADMIN_LEVEL_E, "- nu mai esti Simon");
+    register_clcmd("say","cmd_donate")
+    register_clcmd("say /sounds", "cmd_soundmenu")
+    register_clcmd("say /sunete", "cmd_soundmenu")
     
+    register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")	
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
 
+    register_cvar("amx_donate_max","16000")
+    
     gp_GlowModels = register_cvar("jb_glowmodels", "0")
     gp_SimonSteps = register_cvar("jb_simonsteps", "1")
     gp_BoxMax = register_cvar("jb_boxmax", "4")
@@ -485,6 +499,8 @@ public plugin_init()
     RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_aug",   "fw_player_scope" )
     RegisterHam( Ham_Weapon_SecondaryAttack, "weapon_sg552", "fw_player_scope" )
     
+    RegisterHam(Ham_Player_Jump, "player", "player_jump", 0)
+    RegisterHam(Ham_Player_Duck, "player", "player_duck", 0)
     
     return PLUGIN_CONTINUE
 }
@@ -527,6 +543,14 @@ public plugin_precache()
     precache_sound("jbextreme/hns.wav")
     precache_sound("jbextreme/lina.wav")
     precache_sound("jbextreme/fatality.wav")
+    precache_sound("jbextreme/jump_.wav")
+    precache_sound("jbextreme/duck_.wav")
+    precache_sound("jbextreme/duckjump_.wav")
+    precache_sound("jbextreme/start_.wav")
+    precache_sound("jbextreme/horn_.wav")
+    precache_sound("jbextreme/horn2_.wav")
+    precache_sound("jbextreme/voicestart_.wav")
+	precache_sound("jbextreme/kaching.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -1158,7 +1182,7 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
                 if(attacker != g_PlayerLast)
                     return HAM_SUPERCEDE
             }
-            case(Trivia, Ruleta):
+            case(Trivia, Ruleta, Reactie):
             {
                 return HAM_SUPERCEDE
             }
@@ -1417,6 +1441,7 @@ public player_killed(victim, attacker, shouldgib)
                         g_DuelA = 0
                         g_DuelB = 0
                         g_Scope = 1
+                        g_DuelReactionStarted = 0
                         DuelWeapon = 0
                         server_cmd("jb_unblock_weapons")
                     }                    
@@ -1532,7 +1557,7 @@ public player_cmdstart(id, uc, seed)
     if(!is_user_alive(id))
         return FMRES_IGNORED
         
-    if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta)
+    if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta && g_Duel != Reactie)
     {
         if(g_DuelA != id && g_DuelB != id)
             return FMRES_IGNORED
@@ -1589,6 +1614,7 @@ public round_end()
     g_RoundEnd = 1
     g_Duel = 0
     g_Scope = 1
+    g_DuelReactionStarted = 0
     DuelWeapon = 0
     g_Fonarik = 0
     //for(new i = 0; i < sizeof(g_HudSync); i++)
@@ -1604,11 +1630,11 @@ public round_end()
         }
     }
     g_PlayerLast = 0
-    
+    new i
     if(g_GameMode == GravityDay || g_GameMode == FunDay )//|| g_GameMode == 15)
         set_cvar_num("sv_gravity",800)
     new Players[32]     
-    new playerCount, i 
+    new playerCount
     get_players(Players, playerCount, "c") 
     for (i=0; i<playerCount; i++) 
     {
@@ -1644,6 +1670,60 @@ public round_end()
             message_end()
         }
     }
+	
+	new max = 0, maxT = 0, maxCT = 0, maxdmg = 0, maxdmgT = 0, maxdmgCT = 0
+	new name[32], name2[32]
+	switch(g_GameMode)
+	{
+		case AlienHiddenDay, BugsDay, SpartaDay, NightDay, ZombieDay, GravityDay, HnsDay:
+		{
+			for (i=0; i<playerCount; i++)
+				if(g_DamageDone[Players[i]] > maxdmg)
+				{
+					max = Players[i]
+					maxdmg = g_DamageDone[max]
+				}
+			if(maxdmg > 0)
+			{	
+				get_user_name(max, name, charsmax(name))
+				client_print(0, print_chat, "%s a facut cel mai mult damage ( %d ) in acest Day. A primit un bonus de bani si puncte.", name, g_DamageDone[max])
+				cs_set_user_money(max, cs_get_user_money(max) + 8000)
+				server_cmd("give_points %d 8", max)
+			}
+		}
+		case ColaDay, GunDay:
+		{
+			for (i=0; i<playerCount; i++)
+			{
+				if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+					if(g_DamageDone[Players[i]] > maxdmgT)
+					{
+						maxT = Players[i]
+						maxdmgT = g_DamageDone[maxT]
+					}
+				if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
+					if(g_DamageDone[Players[i]] > maxdmgCT)
+					{
+						maxCT = Players[i]
+						maxdmgCT = g_DamageDone[maxCT]
+					}
+			}
+			if(maxdmgCT > 0 && maxdmgT > 0)
+			{
+				get_user_name(maxT, name, charsmax(name))
+				get_user_name(maxCT, name2, charsmax(name2))
+				client_print(0, print_chat, "%s este Prizonierul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name, g_DamageDone[maxT])
+				cs_set_user_money(maxT, cs_get_user_money(maxT) + 8000)
+				server_cmd("give_points %d 8", maxT)
+				client_print(0, print_chat, "%s este Gardianul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name2, g_DamageDone[maxCT])
+				cs_set_user_money(maxCT, cs_get_user_money(maxCT) + 8000)
+				server_cmd("give_points %d 8", maxCT)
+			}
+		}
+	}
+	for (i=0; i<g_MaxClients; i++)
+        g_Donated[i] = 0
+		g_DamageDone[i] = 0
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
     show_dhudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
     g_Countdown = 0
@@ -2273,8 +2353,11 @@ public cmd_lastrequest(id)
         menu_additem(menu, option, "7", 0)
     }
     
-    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
-    menu_additem(menu, option, "8", 0)
+	//formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
+   //menu_additem(menu, option, "8", 0)
+	
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT9")
+    menu_additem(menu, option, "9", 0)
     
     menu_display(id, menu)
     return PLUGIN_CONTINUE
@@ -2345,7 +2428,7 @@ public shoot4shootmenu(id)
     formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_S4S")
     menu_s4s = menu_create(menuname, "shot4shot_select")
 
-    for(i = 4; i < sizeof(_Duel); i++)
+    for(i = 5; i < sizeof(_Duel); i++)
     {
         num_to_str(i, num, charsmax(num))
         formatex(option, charsmax(option), "%s", _Duel[i][_opt])
@@ -3168,8 +3251,13 @@ public duel_guns(id, menu, item)
             server_cmd("duel_trivia %d %d", g_DuelA, g_DuelB)
             g_canTrivia--
         }
-        case CSW_HEGRENADE:
+        case 35:
         {
+            client_print(0, print_chat, "In 3 secunde veti afla ce comanda trebuie sa faceti.")
+            set_task(3.0, "ReactionDuel")
+        }
+        case CSW_HEGRENADE:
+        {    
             give_item( g_DuelA, "weapon_hegrenade" );
             cs_set_user_bpammo(g_DuelA, CSW_HEGRENADE, 1)
             set_user_health(g_DuelA, 200)
@@ -5350,7 +5438,7 @@ bool:GameAllowed()
         return false    
     return true;
 }
-public  cmd_simonmenu(id)
+public cmd_simonmenu(id)
 {
     if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
     {
@@ -5425,19 +5513,7 @@ public  simon_choice(id, menu, item)
         case('2'): cmd_freeday(id)
         case('3'): na2team(id)
         case('4'): cmd_simongamesmenu(id)
-        case('5'): 
-        {
-            if(ding_on == 1)
-            {
-                emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                new name[32]
-                get_user_name(id, name, 31)
-                client_print(0, print_chat, "%s A DAT DING!!!",name)
-                ding_on = 0
-                set_task(5.0,"power_ding",5146)
-            }
-            cmd_simonmenu(id)
-        }        
+        case('5'): cmd_soundmenu(id)
         case('6'): heal_t(id)
         case('7'): random_t(id)
         case('8'): client_cmd(id,"bind v +simonvoice", bindstr)
@@ -6259,4 +6335,307 @@ public cmd_unsimon(id)
         g_Simon = 0
         resetsimon()
     }
+}
+
+public ReactionDuel()
+{    
+    g_DuelReaction = random_num(0, 2)
+    g_DuelJumped[g_DuelA] = 0
+    g_DuelJumped[g_DuelB] = 0
+    switch(g_DuelReaction)
+    {
+        case 0:
+        {
+            client_cmd(0,"spk jbextreme/jump_.wav")
+            client_print(0, print_chat, "[Duel] Primul care face comanda traieste: JUMP.")
+        }
+        case 1:
+        {
+            client_cmd(0,"spk jbextreme/duck_.wav")
+            client_print(0, print_chat, "[Duel] Primul care face comanda traieste: DUCK.")
+        }
+        case 2:
+        {
+            client_cmd(0,"spk jbextreme/duckjump_.wav")
+            client_print(0, print_chat, "[Duel] Primul care face comanda traieste: DUCK JUMP.")
+        }
+    }
+    g_DuelReactionStarted = 1
+}
+
+public player_jump(id)
+{
+    if(g_Duel == 0 || id != g_DuelA || id != g_DuelB)
+        return PLUGIN_CONTINUE
+    if(g_DuelReactionStarted == 0)
+        return PLUGIN_CONTINUE
+    new DuelA[32], DuelB[32]
+    get_user_name(g_DuelA, DuelA, charsmax(DuelA))
+    get_user_name(g_DuelB, DuelB, charsmax(DuelB))
+    g_DuelJumped[id] = 1
+    switch(g_DuelReaction)
+    {
+        case (0): 
+        {
+            if(id == g_DuelA)
+                {
+                    user_kill(g_DuelB)
+                    server_cmd("give_points %d 3", g_DuelA)
+                    client_print(0, print_chat, "%s a facut primul Jump si a castigat duelul.", DuelA)
+                }
+                if(id == g_DuelB)
+                {
+                    user_kill(g_DuelA)
+                    server_cmd("give_points %d 3", g_DuelB)
+                    client_print(0, print_chat, "%s a facut primul Jump si a castigat duelul.", DuelB)
+                }    
+        }
+        case (1):
+        {
+            if(id == g_DuelA)
+                {
+                    user_kill(g_DuelA)
+                    server_cmd("give_points %d 3", g_DuelB)
+                    client_print(0, print_chat, "%s a facut o comanda gresita si a pierdut duelul.", DuelA)
+                }
+            if(id == g_DuelB)
+                {
+                    user_kill(g_DuelB)
+                    server_cmd("give_points %d 3", g_DuelA)
+                    client_print(0, print_chat, "%s a facut o comanda gresita si a pierdut duelul.", DuelB)
+                }
+        }
+        case (2):
+        {
+            if(g_DuelDucked[id] == 1)
+                {
+                    if(id == g_DuelA)
+                    {
+                        user_kill(g_DuelB)
+                        server_cmd("give_points %d 3", g_DuelA)
+                        client_print(0, print_chat, "%s a facut primul Duck Jump si a castigat duelul.", DuelA)
+                    }
+                    if(id == g_DuelB)
+                    {
+                        user_kill(g_DuelA)
+                        server_cmd("give_points %d 3", g_DuelB)
+                        client_print(0, print_chat, "%s a facut primul Duck Jump si a castigat duelul.", DuelB)
+                    }    
+                }
+        }
+    }
+	return PLUGIN_CONTINUE
+}
+
+public player_duck(id)
+{
+    if(g_Duel == 0 || id != g_DuelA || id != g_DuelB)
+        return PLUGIN_CONTINUE
+    if(g_DuelReactionStarted == 0)
+        return PLUGIN_CONTINUE
+    new DuelA[32], DuelB[32]
+    get_user_name(g_DuelA, DuelA, charsmax(DuelA))
+    get_user_name(g_DuelB, DuelB, charsmax(DuelB))
+    g_DuelDucked[id] = 1
+    switch(g_DuelReaction)
+    {
+        case (0): 
+        {
+            if(id == g_DuelA)
+                {
+                    user_kill(g_DuelA)
+                    server_cmd("give_points %d 3", g_DuelB)
+                    client_print(0, print_chat, "%s a facut o comanda gresita si a pierdut duelul.", DuelA)
+                }
+            if(id == g_DuelB)
+                {
+                    user_kill(g_DuelB)
+                    server_cmd("give_points %d 3", g_DuelA)
+                    client_print(0, print_chat, "%s a facut o comanda gresita si a pierdut duelul.", DuelB)
+                }
+        }    
+        case (1):
+        {
+            if(id == g_DuelA)
+                {
+                    user_kill(g_DuelB)
+                    server_cmd("give_points %d 3", g_DuelA)
+                    client_print(0, print_chat, "%s a facut primul Duck si a castigat duelul.", DuelA)
+                }
+            if(id == g_DuelB)
+                {
+                    user_kill(g_DuelA)
+                    server_cmd("give_points %d 3", g_DuelB)
+                    client_print(0, print_chat, "%s a facut primul Duck si a castigat duelul.", DuelB)
+                }    
+        }
+        case (2):
+        {
+            if(g_DuelJumped[id] == 1)
+                {
+                    if(id == g_DuelA)
+                    {
+                        user_kill(g_DuelB)
+                        server_cmd("give_points %d 3", g_DuelA)
+                        client_print(0, print_chat, "%s a facut primul Duck Jump si a castigat duelul.", DuelA)
+                    }
+                    if(id == g_DuelB)
+                    {
+                        user_kill(g_DuelA)
+                        server_cmd("give_points %d 3", g_DuelB)
+                        client_print(0, print_chat, "%s a facut primul Duck Jump si a castigat duelul.", DuelB)
+                    }    
+                }
+        }
+    }
+	return PLUGIN_CONTINUE
+}
+
+stock str_explode(const string[], delimiter, output[][], output_size, output_len)
+{
+	new i, pos, len = strlen(string)
+	
+	do
+	{
+		pos += (copyc(output[i++], output_len, string[pos], delimiter) + 1)
+	}
+	while(pos < len && i < output_size)
+	
+	return i
+}
+
+public cmd_donate(id, level, cid)
+{
+    new sString[96]
+    read_args(sString, charsmax(sString))
+    remove_quotes(sString)
+    
+    new sOutput[4][16], userid, sName[32], iAmount
+    str_explode(sString, ' ', sOutput, 4, 15)
+    
+    new maxmoney = get_cvar_num("amx_donate_max")
+    
+    if(equali(sOutput[0], "/donate"))
+    {
+        userid = cmd_target(id, sOutput[1], CMDTARGET_NO_BOTS)
+        iAmount = str_to_num(sOutput[2])
+		
+        if(!is_user_alive(id))
+		{
+			client_print(id, print_chat, "Nu poti dona cand esti mort.")
+            return 0
+		}
+		if(!is_user_alive(userid))
+		{
+			client_print(id, print_chat, "Nu poti dona unui player care este mort.")
+            return 0
+		}
+		if(g_Donated[id] == 1)
+        {
+            client_print(id, print_chat, "Nu poti dona de mai multe ori in aceeasi runda.")
+            return 0
+        }
+        if(userid == id)
+        {
+            client_print(id, print_chat, "Nu iti poti dona bani tie.")
+            return 0
+        }
+        if(!strlen(sOutput[2]) || !iAmount || contain(sOutput[2], "-") != -1)
+        {
+            client_print(id, print_chat, "Nu ai introdus valoarea.")
+            return 0
+        }
+        if(cs_get_user_money(id) < iAmount)
+        {
+            client_print(id, print_chat, "Nu ai destui bani.")
+            return 0
+        }
+        if(iAmount > maxmoney)
+        {
+            client_print(id, print_chat, "Poti dona maxim $%s.", maxmoney)
+            return 0
+        }
+        
+        get_user_name(userid, sOutput[1], charsmax(sOutput[]))
+        get_user_name(id, sName, charsmax(sName))
+        cs_set_user_money(userid, iAmount+cs_get_user_money(userid), 0)
+        cs_set_user_money(id, cs_get_user_money(id)-iAmount, 0)
+		client_cmd(userid,"spk jbextreme/kaching.wav")
+        client_print(0, print_chat, "%s i-a donat lui %s suma de $%d.", sName, sOutput[1], iAmount)
+		
+        g_Donated[id] = 1
+        return 1
+    }
+    return 0;
+}
+
+public cmd_soundmenu(id)
+{
+    if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY)) 
+    {
+        static menu, menuname[32], option[64]
+        formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SOUNDMENU")
+        menu = menu_create(menuname, "cmd_soundmenu_choice")
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_DING")
+        menu_additem(menu, option, "1", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_START")
+        menu_additem(menu, option, "2", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_HORN")
+        menu_additem(menu, option, "3", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_HORN2")
+        menu_additem(menu, option, "4", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_DOVUS")
+        menu_additem(menu, option, "5", 0)
+        menu_display(id, menu)
+    }
+    return PLUGIN_HANDLED  
+}
+
+public  cmd_soundmenu_choice(id, menu, item)
+{
+    if(item == MENU_EXIT || !(id == g_Simon ||(get_user_flags(id) & ADMIN_SLAY)) )
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    menu_destroy(menu)
+    cmd_simonmenu(id)
+    get_user_name(id, dst, charsmax(dst))
+    if(ding_on == 1)
+    {
+        new name[32]
+        get_user_name(id, name, 31)
+        client_print(0, print_chat, "%s A DAT UN SUNET!!!",name)
+        ding_on = 0
+        set_task(5.0,"power_ding",5146)
+        switch(data[0])    
+        {        
+            case('1'): emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            case('2'): emit_sound(0, CHAN_AUTO, "jbextreme/start_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            case('3'): emit_sound(0, CHAN_AUTO, "jbextreme/horn_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            case('4'): emit_sound(0, CHAN_AUTO, "jbextreme/horn2_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            case('5'): emit_sound(0, CHAN_AUTO, "jbextreme/voicestart_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        }    
+    }
+    return PLUGIN_HANDLED
+}
+
+public on_damage(id)
+{
+	static damage, attacker
+	attacker = get_user_attacker(id)
+	damage = read_data(2)
+	switch(g_GameMode)
+	{
+		case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
+			if(cs_get_user_team(attacker) == CS_TEAM_T)
+				g_DamageDone[attacker] += damage
+		case ColaDay, GunDay:
+			g_DamageDone[attacker] += damage
+		case ZombieDay, GravityDay, HnsDay:
+			if(cs_get_user_team(attacker) == CS_TEAM_CT)
+				g_DamageDone[attacker] += damage
+	}
 }
