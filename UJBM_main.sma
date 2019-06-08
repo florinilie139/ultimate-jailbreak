@@ -455,7 +455,7 @@ public plugin_init()
     register_clcmd("say /sounds", "cmd_soundmenu")
     register_clcmd("say /sunete", "cmd_soundmenu")
     
-    register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")	
+    register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")    
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
 
     register_cvar("amx_donate_max","16000")
@@ -550,7 +550,7 @@ public plugin_precache()
     precache_sound("jbextreme/horn_.wav")
     precache_sound("jbextreme/horn2_.wav")
     precache_sound("jbextreme/voicestart_.wav")
-	precache_sound("jbextreme/kaching.wav")
+    precache_sound("jbextreme/kaching.wav")
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -1670,60 +1670,62 @@ public round_end()
             message_end()
         }
     }
-	
-	new max = 0, maxT = 0, maxCT = 0, maxdmg = 0, maxdmgT = 0, maxdmgCT = 0
-	new name[32], name2[32]
-	switch(g_GameMode)
-	{
-		case AlienHiddenDay, BugsDay, SpartaDay, NightDay, ZombieDay, GravityDay, HnsDay:
-		{
-			for (i=0; i<playerCount; i++)
-				if(g_DamageDone[Players[i]] > maxdmg)
-				{
-					max = Players[i]
-					maxdmg = g_DamageDone[max]
-				}
-			if(maxdmg > 0)
-			{	
-				get_user_name(max, name, charsmax(name))
-				client_print(0, print_chat, "%s a facut cel mai mult damage ( %d ) in acest Day. A primit un bonus de bani si puncte.", name, g_DamageDone[max])
-				cs_set_user_money(max, cs_get_user_money(max) + 8000)
-				server_cmd("give_points %d 8", max)
-			}
-		}
-		case ColaDay, GunDay:
-		{
-			for (i=0; i<playerCount; i++)
-			{
-				if(cs_get_user_team(Players[i]) == CS_TEAM_T)
-					if(g_DamageDone[Players[i]] > maxdmgT)
-					{
-						maxT = Players[i]
-						maxdmgT = g_DamageDone[maxT]
-					}
-				if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
-					if(g_DamageDone[Players[i]] > maxdmgCT)
-					{
-						maxCT = Players[i]
-						maxdmgCT = g_DamageDone[maxCT]
-					}
-			}
-			if(maxdmgCT > 0 && maxdmgT > 0)
-			{
-				get_user_name(maxT, name, charsmax(name))
-				get_user_name(maxCT, name2, charsmax(name2))
-				client_print(0, print_chat, "%s este Prizonierul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name, g_DamageDone[maxT])
-				cs_set_user_money(maxT, cs_get_user_money(maxT) + 8000)
-				server_cmd("give_points %d 8", maxT)
-				client_print(0, print_chat, "%s este Gardianul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name2, g_DamageDone[maxCT])
-				cs_set_user_money(maxCT, cs_get_user_money(maxCT) + 8000)
-				server_cmd("give_points %d 8", maxCT)
-			}
-		}
-	}
-	for (i=0; i<g_MaxClients; i++)
+    
+    new max = 0, maxT = 0, maxCT = 0, maxdmg = 0, maxdmgT = 0, maxdmgCT = 0
+    new name[32], name2[32]
+    switch(g_GameMode)
+    {
+        case AlienHiddenDay, BugsDay, SpartaDay, NightDay, ZombieDay, GravityDay, HnsDay:
+        {
+            for (i=0; i<playerCount; i++)
+                if(g_DamageDone[Players[i]] > maxdmg)
+                {
+                    max = Players[i]
+                    maxdmg = g_DamageDone[max]
+                }
+            if(maxdmg > 0)
+            {    
+                get_user_name(max, name, charsmax(name))
+                client_print(0, print_chat, "%s a facut cel mai mult damage ( %d ) in acest Day. A primit un bonus de bani si puncte.", name, g_DamageDone[max])
+                cs_set_user_money(max, cs_get_user_money(max) + 8000)
+                server_cmd("give_points %d 8", max)
+            }
+        }
+        case ColaDay, GunDay:
+        {
+            for (i=0; i<playerCount; i++)
+            {
+                if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+                    if(g_DamageDone[Players[i]] > maxdmgT)
+                    {
+                        maxT = Players[i]
+                        maxdmgT = g_DamageDone[maxT]
+                    }
+                if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
+                    if(g_DamageDone[Players[i]] > maxdmgCT)
+                    {
+                        maxCT = Players[i]
+                        maxdmgCT = g_DamageDone[maxCT]
+                    }
+            }
+            if(maxdmgCT > 0 && maxdmgT > 0)
+            {
+                get_user_name(maxT, name, charsmax(name))
+                get_user_name(maxCT, name2, charsmax(name2))
+                client_print(0, print_chat, "%s este Prizonierul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name, g_DamageDone[maxT])
+                cs_set_user_money(maxT, cs_get_user_money(maxT) + 8000)
+                server_cmd("give_points %d 8", maxT)
+                client_print(0, print_chat, "%s este Gardianul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name2, g_DamageDone[maxCT])
+                cs_set_user_money(maxCT, cs_get_user_money(maxCT) + 8000)
+                server_cmd("give_points %d 8", maxCT)
+            }
+        }
+    }
+    for (i=0; i<g_MaxClients; i++)
+    {
         g_Donated[i] = 0
-		g_DamageDone[i] = 0
+        g_DamageDone[i] = 0
+    }
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
     show_dhudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
     g_Countdown = 0
@@ -2353,9 +2355,9 @@ public cmd_lastrequest(id)
         menu_additem(menu, option, "7", 0)
     }
     
-	//formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
+    //formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
    //menu_additem(menu, option, "8", 0)
-	
+    
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT9")
     menu_additem(menu, option, "9", 0)
     
@@ -3797,7 +3799,12 @@ public cmd_done_game_prepare ()
 {
     g_GamePrepare = 0;
     if(g_GameMode == SpartaDay || g_GameMode == NightDay || g_GameMode == BugsDay)
+    {
         client_cmd(0,"spk radio/com_go")
+        client_print(0,print_chat,"Timpul de pregatire s-a terminat. ATACATI!")
+        player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
+    }
+    
 }
 
 public cmd_expire_time()
@@ -4141,6 +4148,7 @@ public  cmd_game_alien2()
     set_user_health(g_Simon, hp*playerCount)
     set_task(20.0, "give_items_alien", TASK_GIVEITEMS)
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    client_print(0,print_chat,"Alien-ul va ataca in 20 de secunde! Pregatiti-va!")
     set_lights("z")
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(2.5, "radar_alien", TASK_RADAR, _, _, "b")
@@ -4288,7 +4296,7 @@ public  cmd_game_fire()
         give_item(Players[i], "weapon_knife")
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
-       
+        set_user_health(Players[i], 400)
         fade_screen(Players[i],false)
         set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
 
@@ -4352,6 +4360,8 @@ public  cmd_game_bugs()
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -4419,6 +4429,8 @@ public  cmd_game_nightcrawler()
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(5.0, "stop_sound")
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -4465,6 +4477,8 @@ public cmd_game_sparta()
         }
     }
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -6383,7 +6397,7 @@ public player_jump(id)
                     server_cmd("give_points %d 3", g_DuelA)
                     client_print(0, print_chat, "%s a facut primul Jump si a castigat duelul.", DuelA)
                 }
-                if(id == g_DuelB)
+            if(id == g_DuelB)
                 {
                     user_kill(g_DuelA)
                     server_cmd("give_points %d 3", g_DuelB)
@@ -6424,7 +6438,7 @@ public player_jump(id)
                 }
         }
     }
-	return PLUGIN_CONTINUE
+    return PLUGIN_CONTINUE
 }
 
 public player_duck(id)
@@ -6488,20 +6502,20 @@ public player_duck(id)
                 }
         }
     }
-	return PLUGIN_CONTINUE
+    return PLUGIN_CONTINUE
 }
 
 stock str_explode(const string[], delimiter, output[][], output_size, output_len)
 {
-	new i, pos, len = strlen(string)
-	
-	do
-	{
-		pos += (copyc(output[i++], output_len, string[pos], delimiter) + 1)
-	}
-	while(pos < len && i < output_size)
-	
-	return i
+    new i, pos, len = strlen(string)
+    
+    do
+    {
+        pos += (copyc(output[i++], output_len, string[pos], delimiter) + 1)
+    }
+    while(pos < len && i < output_size)
+    
+    return i
 }
 
 public cmd_donate(id, level, cid)
@@ -6519,20 +6533,20 @@ public cmd_donate(id, level, cid)
     {
         userid = cmd_target(id, sOutput[1], CMDTARGET_NO_BOTS)
         iAmount = str_to_num(sOutput[2])
-		
+        
         if(!is_user_alive(id))
-		{
-			client_print(id, print_chat, "Nu poti dona cand esti mort.")
-            return 0
-		}
-		if(!is_user_alive(userid))
-		{
-			client_print(id, print_chat, "Nu poti dona unui player care este mort.")
-            return 0
-		}
-		if(g_Donated[id] == 1)
         {
-            client_print(id, print_chat, "Nu poti dona de mai multe ori in aceeasi runda.")
+            client_print(id, print_chat, "Nu poti dona cand esti mort.")
+            return 0
+        }
+        if(!is_user_alive(userid))
+        {
+            client_print(id, print_chat, "Nu poti dona unui player care este mort.")
+            return 0
+        }
+        if(g_Donated[id] == 2)
+        {
+            client_print(id, print_chat, "Poti dona de maxim 2 ori intr-o runda.")
             return 0
         }
         if(userid == id)
@@ -6560,10 +6574,10 @@ public cmd_donate(id, level, cid)
         get_user_name(id, sName, charsmax(sName))
         cs_set_user_money(userid, iAmount+cs_get_user_money(userid), 0)
         cs_set_user_money(id, cs_get_user_money(id)-iAmount, 0)
-		client_cmd(userid,"spk jbextreme/kaching.wav")
+        client_cmd(userid,"spk jbextreme/kaching.wav")
         client_print(0, print_chat, "%s i-a donat lui %s suma de $%d.", sName, sOutput[1], iAmount)
-		
-        g_Donated[id] = 1
+        
+        g_Donated[id] += 1
         return 1
     }
     return 0;
@@ -6624,18 +6638,18 @@ public  cmd_soundmenu_choice(id, menu, item)
 
 public on_damage(id)
 {
-	static damage, attacker
-	attacker = get_user_attacker(id)
-	damage = read_data(2)
-	switch(g_GameMode)
-	{
-		case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
-			if(cs_get_user_team(attacker) == CS_TEAM_T)
-				g_DamageDone[attacker] += damage
-		case ColaDay, GunDay:
-			g_DamageDone[attacker] += damage
-		case ZombieDay, GravityDay, HnsDay:
-			if(cs_get_user_team(attacker) == CS_TEAM_CT)
-				g_DamageDone[attacker] += damage
-	}
+    static damage, attacker
+    attacker = get_user_attacker(id)
+    damage = read_data(2)
+    switch(g_GameMode)
+    {
+        case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
+            if(cs_get_user_team(attacker) == CS_TEAM_T)
+                g_DamageDone[attacker] += damage
+        case ColaDay, GunDay:
+            g_DamageDone[attacker] += damage
+        case ZombieDay, GravityDay, HnsDay:
+            if(cs_get_user_team(attacker) == CS_TEAM_CT)
+                g_DamageDone[attacker] += damage
+    }
 }
