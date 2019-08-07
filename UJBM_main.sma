@@ -19,6 +19,10 @@ Jocuri: Slender man
 #define PLUGIN_CVAR    "Ultimate JailBreak Manager"
 #define SERVER_IP "93.119.25.96"
 
+#define USE_TOGGLE 3
+#define MAX_BACKWARD_UNITS    -150.0
+#define MAX_FORWARD_UNITS    200.0
+
 #define TASK_STATUS        2487000
 #define TASK_FREEDAY    2487100
 #define TASK_ROUND        2487200
@@ -95,6 +99,8 @@ Jocuri: Slender man
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 enum _lastrequest { _knife, _deagle, _freeday, _weapon }
 enum _duel { _name[16], _csw, _entname[32], _opt[32], _sel[32] }
+
+new g_iPlayerCamera[33], Float:g_camera_position[33];
 
 new FreedayTime
 new FreedayRemoved
@@ -192,7 +198,6 @@ new const _RemoveEntities[][] = {
 new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
 new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
 new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999 }
-
 
 new const _Duel[][_duel] =
 {
@@ -317,6 +322,7 @@ new g_DuelDucked[33]
 new g_DuelReactionStarted
 new g_Donated[33]
 new g_DamageDone[33]
+new g_BoxLastY[33]
 
 new gmsgBombDrop
 new ding_on = 1
@@ -391,7 +397,9 @@ public plugin_init()
     register_message(g_MsgStatusText, "msg_statustext")
     register_message(g_MsgStatusIcon, "msg_statusicon")
     register_message(g_MsgMOTD, "msg_motd")
-
+    
+    register_message(get_user_msgid("SayText"), "message_SayText")
+    
     register_message(get_user_msgid("TextMsg"), "block_FITH_message")
     register_message(get_user_msgid("SendAudio"), "block_FITH_audio")
 
@@ -403,6 +411,11 @@ public plugin_init()
     //RegisterHam(Ham_Weapon_Reload, "weapon_flashbang", "rpg_reload")
     //register_touch("rpg_missile", "worldspawn",    "rocket_touch")
     //register_touch("rpg_missile", "player",        "rocket_touch")
+    
+    register_clcmd("say /cam", "camera_menu")
+    register_clcmd("say_team /cam", "camera_menu")
+    register_forward(FM_SetView, "SetView") 
+    RegisterHam(Ham_Think, "trigger_camera", "Camera_Think")
     
     RegisterHam(Ham_Spawn, "player", "player_spawn", 1)
     RegisterHam(Ham_TakeDamage, "player", "player_damage")
@@ -543,6 +556,8 @@ public plugin_precache()
     precache_sound("jbextreme/hns.wav")
     precache_sound("jbextreme/lina.wav")
     precache_sound("jbextreme/fatality.wav")
+    precache_sound("jbextreme/dumn.wav")
+	precache_sound("jbextreme/skr3.wav")
     precache_sound("jbextreme/jump_.wav")
     precache_sound("jbextreme/duck_.wav")
     precache_sound("jbextreme/duckjump_.wav")
@@ -667,6 +682,8 @@ public client_putinserver(id)
     BuyTimes[id]=0
     first_join(id)
     //g_CountKilled[id] = 0
+    g_iPlayerCamera[id] = 0
+    g_camera_position[id] = -100.0;
 }
 public client_disconnect(id)
 {
@@ -688,6 +705,14 @@ public client_disconnect(id)
     /*if(Mata == id)
         cmd_moaremata();*/
     task_last()
+}
+
+public disconnect_camera(id)
+{
+    new iEnt = g_iPlayerCamera[id];
+    if(pev_valid(iEnt)) engfunc(EngFunc_RemoveEntity, iEnt);
+    g_iPlayerCamera[id] = 0;
+    g_camera_position[id] = -100.0;
 }
 public client_PostThink(id)
 {
@@ -1422,9 +1447,23 @@ public player_killed(victim, attacker, shouldgib)
                 default:
                 {
                     if(victim == g_DuelA || victim == g_DuelB){
-                        if(get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
-                            client_cmd(0,"spk jbextreme/fatality.wav")
-                        killedonlr = 1
+						new g_CustomSound = 0
+                        if(get_user_flags(attacker) & ADMIN_LEVEL_E)
+						{
+                            set_cvar_num("ers_enabled", 0)
+							client_cmd(0,"spk jbextreme/dumn.wav")
+							g_CustomSound = 1
+						}
+						if(equal(nameCT, "sKr3"))
+						{
+							set_cvar_num("ers_enabled", 0)
+							client_cmd(0,"spk jbextreme/skr3.wav")
+							g_CustomSound = 1
+						}
+
+						if(!g_CustomSound && get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
+                                client_cmd(0,"spk jbextreme/fatality.wav")
+                        killedonlr = 1    
                         set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
                         if(is_user_alive(attacker))
                             set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
@@ -1556,13 +1595,16 @@ public player_cmdstart(id, uc, seed)
 {
     if(!is_user_alive(id))
         return FMRES_IGNORED
-        
+	
     if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta && g_Duel != Reactie)
     {
         if(g_DuelA != id && g_DuelB != id)
             return FMRES_IGNORED
         if (_Duel[DuelWeapon][_csw] != CSW_M249 && _Duel[DuelWeapon][_csw]!=33)
-            cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
+            if(_Duel[DuelWeapon][_csw] == CSW_ELITE)
+                cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 2)
+            else
+                cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
     }
     else
     {
@@ -1725,6 +1767,7 @@ public round_end()
     {
         g_Donated[i] = 0
         g_DamageDone[i] = 0
+        g_BoxLastY[i] = 0
     }
     set_dhudmessage( random_num( 1, 255 ), random_num( 1, 255 ), random_num( 1, 255 ), -1.0, 0.71, 2, 6.0, 3.0, 0.1, 1.5 );
     show_dhudmessage( 0, "[ Ziua a luat sfarsit ]^n[ Toata lumea la somn ]");
@@ -1819,6 +1862,7 @@ public FreedayTimeDone()
 }
 public round_start()
 {
+	set_cvar_num("ers_enabled", 0)
     FreedayTime = 1
     FreedayRemoved = 0
     g_newChance = 1
@@ -2075,7 +2119,7 @@ public cmd_nosleep(id)
 }
 public cmd_adminchoosesimon(id)
 {
-    if (g_SimonAllowed == 1 && is_not_game() && (get_user_flags(id) & ADMIN_SLAY) && g_Simon==0)
+    if (g_SimonAllowed == 1 && g_GameMode == NormalDay && is_not_game() && (get_user_flags(id) & ADMIN_SLAY) && g_Simon==0)
     {
         static i, name[32], num[5], menu, menuname[32]
         formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SIMON")
@@ -2921,12 +2965,13 @@ public hud_status(task)
             player_hudmessage(Players[i], 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCY")
         else
             player_hudmessage(Players[i], 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCN")
-    }
-            
+    }      
     switch (g_GameMode)        
     {
         case Freeday:
         {
+            if(g_BoxStarted == 0)
+                box_last()
             n = 0
             formatex(wanted, charsmax(wanted), "%L", LANG_SERVER, "UJBM_PRISONER_WANTED")
             n = strlen(wanted)
@@ -3267,6 +3312,17 @@ public duel_guns(id, menu, item)
             give_item( g_DuelB, "weapon_hegrenade" );
             cs_set_user_bpammo(g_DuelB, CSW_HEGRENADE, 1)
             set_user_health(g_DuelB, 200)
+            server_cmd("jb_block_weapons")
+        }
+        case CSW_ELITE:
+        {
+            gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
+            cs_set_weapon_ammo(gun, 2)
+            set_user_health(g_DuelA, 100)
+                        
+            gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
+            cs_set_weapon_ammo(gun, 2)
+            set_user_health(g_DuelB, 100)
             server_cmd("jb_block_weapons")
         }
         default:
@@ -3895,6 +3951,7 @@ public cmd_pregame(
         strip_user_weapons(player)
         set_user_gravity(player, 1.0)
         set_user_maxspeed(player, 250.0)
+        set_user_health(player, 100)
         if(change==1 && cs_get_user_team(player) == CS_TEAM_CT && player!=g_Simon)
         {
             set_bit(g_BackToCT, player)
@@ -4402,7 +4459,7 @@ public  cmd_game_nightcrawler()
         { 
             set_user_maxspeed(Players[i], 400.0)            
             entity_set_int(Players[i], EV_INT_body, 7)
-            set_user_health(Players[i], 20)
+            set_user_health(Players[i], 21)
             give_item(Players[i], "item_assaultsuit")
             give_item(Players[i], "item_longjump")
             cs_set_user_nvg (Players[i],true);
@@ -5006,9 +5063,14 @@ public shop_choice_T(id, menu, item)
         {
             if (money >= FDCOST && !get_bit(g_PlayerWanted, id) && FreedayTime == 1)
             {
+			    if(get_bit(g_PlayerFreeday, id))
+				    client_print(id,print_chat,"Ai deja Freeday!")
+				else
+				{
                 cs_set_user_money (id, money - FDCOST, 0)
                 freeday_set(0, id, false)
                 BuyTimes[id]++
+				}
             }
             else
             {
@@ -6652,4 +6714,285 @@ public on_damage(id)
             if(cs_get_user_team(attacker) == CS_TEAM_CT)
                 g_DamageDone[attacker] += damage
     }
+}
+
+public camera_menu(id)
+{
+    if(!is_user_alive(id))
+    {
+        return 1;
+    }
+    
+    new menu = menu_create("Alege o optiune!", "cam_m_handler"), sText[48], bool:mode = (g_iPlayerCamera[id] > 0) ? true:false;
+    
+    formatex(sText, charsmax(sText), "%s \rCamera 3D!", (mode) ? "\dOpreste":"\yPorneste")
+    menu_additem(menu, sText)
+    
+    if(mode)
+    {
+        menu_additem(menu, "In fata! (Se poate apasa de mai multe ori)")
+        menu_additem(menu, "In spate! (Se poate apasa de mai multe ori)")
+    }
+    
+    menu_display(id, menu)
+    return 1;
+}
+
+public cam_m_handler(id, menu, item)
+{
+    if(item == MENU_EXIT)
+    {
+        menu_destroy(menu)
+        return 1;
+    }
+    
+    menu_destroy(menu);
+    
+    if(g_iPlayerCamera[id] > 0 && item == 0)
+    {
+        disconnect_camera(id)
+        engfunc(EngFunc_SetView, id, id);
+    }
+    else
+    {
+        switch( item )
+        {
+            case 0:
+            {
+                g_camera_position[id] = -150.0;
+                enable_camera(id)
+            }
+            case 1: if(g_camera_position[id] < MAX_FORWARD_UNITS) g_camera_position[id] += 50.0;
+            case 2: if(g_camera_position[id] > MAX_BACKWARD_UNITS) g_camera_position[id] -= 50.0;
+        }
+    }
+    
+    camera_menu(id)
+    return 1;
+}
+
+public enable_camera(id)
+{ 
+    if(!is_user_alive(id)) return;
+    
+    new iEnt = g_iPlayerCamera[id] 
+    if(!pev_valid(iEnt))
+    {
+        static iszTriggerCamera 
+        if( !iszTriggerCamera ) 
+        { 
+            iszTriggerCamera = engfunc(EngFunc_AllocString, "trigger_camera") 
+        } 
+        
+        iEnt = engfunc(EngFunc_CreateNamedEntity, iszTriggerCamera);
+        set_kvd(0, KV_ClassName, "trigger_camera") 
+        set_kvd(0, KV_fHandled, 0) 
+        set_kvd(0, KV_KeyName, "wait") 
+        set_kvd(0, KV_Value, "999999") 
+        dllfunc(DLLFunc_KeyValue, iEnt, 0) 
+    
+        set_pev(iEnt, pev_spawnflags, SF_CAMERA_PLAYER_TARGET|SF_CAMERA_PLAYER_POSITION) 
+        set_pev(iEnt, pev_flags, pev(iEnt, pev_flags) | FL_ALWAYSTHINK) 
+    
+        dllfunc(DLLFunc_Spawn, iEnt)
+    
+        g_iPlayerCamera[id] = iEnt;
+ //   }     
+        new Float:flMaxSpeed, iFlags = pev(id, pev_flags) 
+        pev(id, pev_maxspeed, flMaxSpeed)
+        
+        ExecuteHam(Ham_Use, iEnt, id, id, USE_TOGGLE, 1.0)
+        
+        set_pev(id, pev_flags, iFlags)
+        // depending on mod, you may have to send SetClientMaxspeed here. 
+        // engfunc(EngFunc_SetClientMaxspeed, id, flMaxSpeed) 
+        set_pev(id, pev_maxspeed, flMaxSpeed)
+    }
+}
+
+public SetView(id, iEnt) 
+{ 
+    if(is_user_alive(id))
+    {
+        new iCamera = g_iPlayerCamera[id] 
+        if( iCamera && iEnt != iCamera ) 
+        { 
+            new szClassName[16] 
+            pev(iEnt, pev_classname, szClassName, charsmax(szClassName)) 
+            if(!equal(szClassName, "trigger_camera")) // should let real cams enabled 
+            { 
+                engfunc(EngFunc_SetView, id, iCamera) // shouldn't be always needed 
+                return FMRES_SUPERCEDE 
+            } 
+        } 
+    } 
+    return FMRES_IGNORED 
+}
+
+get_cam_owner(iEnt) 
+{ 
+    new players[32], pnum;
+    get_players(players, pnum, "ch");
+    
+    for(new id, i; i < pnum; i++)
+    { 
+        id = players[i];
+        
+        if(g_iPlayerCamera[id] == iEnt)
+        {
+            return id;
+        }
+    }
+    
+    return 0;
+} 
+
+public Camera_Think(iEnt)
+{
+    static id;
+    if(!(id = get_cam_owner(iEnt))) return ;
+    
+    static Float:fVecPlayerOrigin[3], Float:fVecCameraOrigin[3], Float:fVecAngles[3], Float:fVec[3];
+    
+    pev(id, pev_origin, fVecPlayerOrigin) 
+    pev(id, pev_view_ofs, fVecAngles) 
+    fVecPlayerOrigin[2] += fVecAngles[2] 
+    
+    pev(id, pev_v_angle, fVecAngles) 
+    
+    angle_vector(fVecAngles, ANGLEVECTOR_FORWARD, fVec);
+    static Float:units; units = g_camera_position[id];
+    
+    //Move back/forward to see ourself
+    fVecCameraOrigin[0] = fVecPlayerOrigin[0] + (fVec[0] * units)
+    fVecCameraOrigin[1] = fVecPlayerOrigin[1] + (fVec[1] * units) 
+    fVecCameraOrigin[2] = fVecPlayerOrigin[2] + (fVec[2] * units) + 15.0
+    
+    static tr2; tr2 = create_tr2();
+    engfunc(EngFunc_TraceLine, fVecPlayerOrigin, fVecCameraOrigin, IGNORE_MONSTERS, id, tr2)
+    static Float:flFraction 
+    get_tr2(tr2, TR_flFraction, flFraction)
+    if( flFraction != 1.0 ) // adjust camera place if close to a wall 
+    {
+        flFraction *= units;
+        fVecCameraOrigin[0] = fVecPlayerOrigin[0] + (fVec[0] * flFraction);
+        fVecCameraOrigin[1] = fVecPlayerOrigin[1] + (fVec[1] * flFraction);
+        fVecCameraOrigin[2] = fVecPlayerOrigin[2] + (fVec[2] * flFraction);
+    }
+    
+    if(units > 0.0)
+    {
+        fVecAngles[0] *= fVecAngles[0] > 180.0 ? 1:-1
+        fVecAngles[1] += fVecAngles[1] > 180.0 ? -180.0:180.0
+    }
+    
+    set_pev(iEnt, pev_origin, fVecCameraOrigin); 
+    set_pev(iEnt, pev_angles, fVecAngles);
+    
+    free_tr2(tr2);
+}
+
+public message_SayText()
+{
+    if(g_BoxStarted == 1)
+    {
+        if (get_msg_args() > 4)
+            return PLUGIN_CONTINUE;
+    
+        static szBuffer[40];
+        get_msg_arg_string(2, szBuffer, 39)
+    
+        if (!equali(szBuffer, "#Cstrike_TitlesTXT_Game_teammate_attack"))
+            return PLUGIN_CONTINUE;
+    
+    }
+    return PLUGIN_HANDLED;
+}
+
+public box_last()
+{
+    if(g_GameMode != Freeday || g_BoxStarted == 1)
+        return PLUGIN_CONTINUE
+    new playerCount, i
+    new Players[32] 
+    new tero_nr = 0
+    new countY = 0
+    new wanted_nr = 0
+    get_players(Players, playerCount, "ac") 
+    for (i=0; i<playerCount; i++)
+        if(cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]))
+        {
+            if(!get_bit(g_PlayerWanted, Players[i]))
+                tero_nr++
+            else if(get_bit(g_PlayerWanted, Players[i]))
+                wanted_nr++
+        }    
+    if(wanted_nr == 0 && tero_nr == 2)
+    {
+        for (i=0; i<playerCount; i++)
+        {
+            if(cs_get_user_team(Players[i]) == CS_TEAM_T && is_user_alive(Players[i]) && g_BoxLastY[Players[i]] == 0)
+                box_last_menu(Players[i])
+            if(g_BoxLastY[Players[i]] == 1)
+                countY += 1
+        }
+        if(countY == 2 && g_BoxStarted == 0)
+        {
+            for(i = 1; i <= g_MaxClients; i++)
+                if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_T)
+                    set_user_health(i, 100)
+            set_cvar_num("mp_tkpunish", 0)
+            set_cvar_num("mp_friendlyfire", 1)
+            g_BoxStarted = 1
+            player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_BOX_START")
+            emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            client_print(0, print_chat, "Ultimi 2 prizonieri au fost de acord sa faca box!")
+        }
+    }
+    return PLUGIN_HANDLED
+}
+
+public box_last_menu(id)
+{
+    if(g_GameMode == Freeday && g_BoxStarted != 1)
+    {
+        static menu, menuname[32], option[64]
+        formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_BOXLAST")
+        menu = menu_create(menuname, "box_last_menu_choice")
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_BOXLAST_Y")
+        menu_additem(menu, option, "1", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_BOXLAST_N")
+        menu_additem(menu, option, "2", 0)
+        menu_display(id, menu)
+    }
+    return PLUGIN_HANDLED 
+}
+
+public box_last_menu_choice(id, menu, item)
+{
+    if(item == MENU_EXIT || g_GameMode != Freeday || g_BoxStarted == 1)
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    menu_destroy(menu)
+    get_user_name(id, dst, charsmax(dst))
+    switch(data[0])    
+    {
+        case('1'): 
+        {
+            g_BoxLastY[id] = 1
+            box_last()
+            client_print(0, print_chat, "Prizonierul %s este de acord sa faca box!", dst)
+        }
+        case('2'): 
+        {
+            client_print(0, print_chat, "Prizonierul %s nu a fost de acord sa faca box!", dst)
+            player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_BOXLAST_N", dst)
+            g_BoxLastY[id] = 2
+        }
+    }
+    return PLUGIN_HANDLED
 }
