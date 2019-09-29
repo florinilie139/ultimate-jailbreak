@@ -467,6 +467,8 @@ public plugin_init()
     register_clcmd("say","cmd_donate")
     register_clcmd("say /sounds", "cmd_soundmenu")
     register_clcmd("say /sunete", "cmd_soundmenu")
+    register_clcmd("say /reactii", "cmd_reactionsmenu")
+    register_clcmd("say /reactie", "cmd_reactionsmenu")
     
     register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")    
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
@@ -551,20 +553,34 @@ public plugin_precache()
     precache_sound("debris/metal2.wav")
     precache_sound("items/gunpickup2.wav")
     precache_sound("jbextreme/simondead2.wav")
+    precache_sound("jbextreme/oof.wav")
     precache_sound("jbextreme/opendoor3.wav")
     precache_sound("jbextreme/sparta1.wav")
     precache_sound("jbextreme/hns.wav")
     precache_sound("jbextreme/lina.wav")
     precache_sound("jbextreme/fatality.wav")
+	precache_sound("jbextreme/cata2.wav")
+	precache_sound("jbextreme/riki2.wav")
     precache_sound("jbextreme/dumn.wav")
-	precache_sound("jbextreme/skr3.wav")
+    precache_sound("jbextreme/dumnezeu.wav")
+    precache_sound("jbextreme/reedick.wav")
+    precache_sound("jbextreme/skre.wav")
+    precache_sound("jbextreme/dope2.wav")
+    precache_sound("jbextreme/gaby2.wav")
+    precache_sound("jbextreme/alexel2.wav")
+    precache_sound("jbextreme/cornel2.wav")
+	precache_sound("jbextreme/twist.wav")
     precache_sound("jbextreme/jump_.wav")
     precache_sound("jbextreme/duck_.wav")
     precache_sound("jbextreme/duckjump_.wav")
+    precache_sound("jbextreme/jump_last.wav")
+    precache_sound("jbextreme/duck_last.wav")
+    precache_sound("jbextreme/duckjump_last.wav")
     precache_sound("jbextreme/start_.wav")
     precache_sound("jbextreme/horn_.wav")
     precache_sound("jbextreme/horn2_.wav")
     precache_sound("jbextreme/voicestart_.wav")
+	precache_sound("jbextreme/dingdingding.wav")
     precache_sound("jbextreme/kaching.wav")
 
     g_CellManagers = TrieCreate()
@@ -1392,7 +1408,12 @@ public player_killed(victim, attacker, shouldgib)
                 server_cmd("painttero %d", g_Simon)
                 g_Simon = 0
                 resetsimon()
-                emit_sound(0, CHAN_AUTO, "jbextreme/simondead2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                new lmao
+                lmao = random_num(0,1)
+                if(lmao)
+                    emit_sound(0, CHAN_AUTO, "jbextreme/simondead2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                else
+                    emit_sound(0, CHAN_AUTO, "jbextreme/oof.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
                 //ClearSyncHud(0, g_HudSync[2][_hudsync])
                 //player_hudmessage(0, 2, 5.0, _, "%L", LANG_SERVER, "UJBM_SIMON_KILLED")
             }    
@@ -1447,21 +1468,75 @@ public player_killed(victim, attacker, shouldgib)
                 default:
                 {
                     if(victim == g_DuelA || victim == g_DuelB){
-						new g_CustomSound = 0
-                        if(get_user_flags(attacker) & ADMIN_LEVEL_E)
-						{
-                            set_cvar_num("ers_enabled", 0)
-							client_cmd(0,"spk jbextreme/dumn.wav")
-							g_CustomSound = 1
-						}
-						if(equal(nameCT, "sKr3"))
-						{
-							set_cvar_num("ers_enabled", 0)
-							client_cmd(0,"spk jbextreme/skr3.wav")
-							g_CustomSound = 1
-						}
-
-						if(!g_CustomSound && get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
+                        new g_CustomSound = 0
+                        if(g_Duel != Trivia && g_Duel != Ruleta)
+                        {
+                            if(equal(nameCT, "Dumnezeu"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+								new rand_sound = random_num(0,1)
+								if (rand_sound)
+                                    emit_sound(0, CHAN_AUTO, "jbextreme/dumnezeu.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+								else
+						            emit_sound(0, CHAN_AUTO, "jbextreme/dumn.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1	
+                            }
+                            if(equal(nameCT, "Reedick"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/reedick.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }	
+                            if(equal(nameCT, "SteelShot"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/skre.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+                            if(equal(nameCT, "DOPE"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/dope2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+                            if(equal(nameCT, "Gaby."))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/gaby2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+                            if(equal(nameCT, "ALeXeL."))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/alexel2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+                            if(equal(nameCT, "Cornel."))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/cornel2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+							if(equal(nameCT, "CataLynHD"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/cata2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+							if(equal(nameCT, "Riki"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/riki2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+							if(equal(nameCT, "Tw1sT ;x"))
+                            {
+                                set_cvar_num("ers_enabled", 0)
+                                emit_sound(0, CHAN_AUTO, "jbextreme/twist.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                g_CustomSound = 1
+                            }
+                        }
+                        if(!g_CustomSound && get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
                                 client_cmd(0,"spk jbextreme/fatality.wav")
                         killedonlr = 1    
                         set_user_rendering(victim, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
@@ -1595,16 +1670,13 @@ public player_cmdstart(id, uc, seed)
 {
     if(!is_user_alive(id))
         return FMRES_IGNORED
-	
+    
     if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta && g_Duel != Reactie)
     {
         if(g_DuelA != id && g_DuelB != id)
             return FMRES_IGNORED
         if (_Duel[DuelWeapon][_csw] != CSW_M249 && _Duel[DuelWeapon][_csw]!=33)
-            if(_Duel[DuelWeapon][_csw] == CSW_ELITE)
-                cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 2)
-            else
-                cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
+            cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
     }
     else
     {
@@ -1862,7 +1934,7 @@ public FreedayTimeDone()
 }
 public round_start()
 {
-	set_cvar_num("ers_enabled", 0)
+    set_cvar_num("ers_enabled", 1)
     FreedayTime = 1
     FreedayRemoved = 0
     g_newChance = 1
@@ -3314,17 +3386,6 @@ public duel_guns(id, menu, item)
             set_user_health(g_DuelB, 200)
             server_cmd("jb_block_weapons")
         }
-        case CSW_ELITE:
-        {
-            gun = give_item(g_DuelA, _Duel[DuelWeapon][_entname])
-            cs_set_weapon_ammo(gun, 2)
-            set_user_health(g_DuelA, 100)
-                        
-            gun = give_item(g_DuelB, _Duel[DuelWeapon][_entname])
-            cs_set_weapon_ammo(gun, 2)
-            set_user_health(g_DuelB, 100)
-            server_cmd("jb_block_weapons")
-        }
         default:
         {
             
@@ -4459,7 +4520,7 @@ public  cmd_game_nightcrawler()
         { 
             set_user_maxspeed(Players[i], 400.0)            
             entity_set_int(Players[i], EV_INT_body, 7)
-            set_user_health(Players[i], 21)
+            set_user_health(Players[i], 30)
             give_item(Players[i], "item_assaultsuit")
             give_item(Players[i], "item_longjump")
             cs_set_user_nvg (Players[i],true);
@@ -5063,14 +5124,14 @@ public shop_choice_T(id, menu, item)
         {
             if (money >= FDCOST && !get_bit(g_PlayerWanted, id) && FreedayTime == 1)
             {
-			    if(get_bit(g_PlayerFreeday, id))
-				    client_print(id,print_chat,"Ai deja Freeday!")
-				else
-				{
+                if(get_bit(g_PlayerFreeday, id))
+                    client_print(id,print_chat,"Ai deja Freeday!")
+                else
+                {
                 cs_set_user_money (id, money - FDCOST, 0)
                 freeday_set(0, id, false)
                 BuyTimes[id]++
-				}
+                }
             }
             else
             {
@@ -5172,7 +5233,8 @@ public shop_choice_CT(id, menu, item)
             if (money >= HPCOST) 
             {
                 cs_set_user_money (id, money - HPCOST, 0)
-                set_user_health(id, 150)
+                if((g_GameMode == NormalDay || g_GameMode == Freeday) && g_Duel==0)
+                    set_user_health(id, 150)
                 BuyTimes[id]++
             }
             else
@@ -6662,6 +6724,8 @@ public cmd_soundmenu(id)
         menu_additem(menu, option, "4", 0)
         formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_DOVUS")
         menu_additem(menu, option, "5", 0)
+		formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_MOFO")
+        menu_additem(menu, option, "6", 0)
         menu_display(id, menu)
     }
     return PLUGIN_HANDLED  
@@ -6693,6 +6757,7 @@ public  cmd_soundmenu_choice(id, menu, item)
             case('3'): emit_sound(0, CHAN_AUTO, "jbextreme/horn_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             case('4'): emit_sound(0, CHAN_AUTO, "jbextreme/horn2_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             case('5'): emit_sound(0, CHAN_AUTO, "jbextreme/voicestart_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+			case('6'): emit_sound(0, CHAN_AUTO, "jbextreme/dingdingding.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         }    
     }
     return PLUGIN_HANDLED
@@ -6994,5 +7059,56 @@ public box_last_menu_choice(id, menu, item)
             g_BoxLastY[id] = 2
         }
     }
+    return PLUGIN_HANDLED
+}
+
+public cmd_reactionsmenu(id)
+{
+    if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY)) 
+    {
+        static menu, menuname[32], option[64]
+        formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_REACTIONSMENU")
+        menu = menu_create(menuname, "cmd_reactionsmenu_choice")
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_DUCK")
+        menu_additem(menu, option, "1", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_JUMP")
+        menu_additem(menu, option, "2", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_DUCKJUMP")
+        menu_additem(menu, option, "3", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_DUCK_LAST")
+        menu_additem(menu, option, "4", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_JUMP_LAST")
+        menu_additem(menu, option, "5", 0)
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_REACTIONSMENU_DUCKJUMP_LAST")
+        menu_additem(menu, option, "6", 0) 
+        menu_display(id, menu)
+    }
+    return PLUGIN_HANDLED  
+}
+
+public  cmd_reactionsmenu_choice(id, menu, item)
+{
+    if(item == MENU_EXIT || !(id == g_Simon ||(get_user_flags(id) & ADMIN_SLAY)) )
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
+    static dst[32], data[5], access, callback
+    menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
+    menu_destroy(menu)
+    cmd_reactionsmenu(id)
+    get_user_name(id, dst, charsmax(dst))
+    new name[32]
+    get_user_name(id, name, 31)
+    client_print(0, print_chat, "%s A DAT O REACTIE!!!",name)
+    switch(data[0])    
+    {        
+        case('1'): emit_sound(0, CHAN_AUTO, "jbextreme/duck_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        case('2'): emit_sound(0, CHAN_AUTO, "jbextreme/jump_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        case('3'): emit_sound(0, CHAN_AUTO, "jbextreme/duckjump_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        case('4'): emit_sound(0, CHAN_AUTO, "jbextreme/duck_last.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        case('5'): emit_sound(0, CHAN_AUTO, "jbextreme/jump_last.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        case('6'): emit_sound(0, CHAN_AUTO, "jbextreme/duckjump_last.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    }    
     return PLUGIN_HANDLED
 }
