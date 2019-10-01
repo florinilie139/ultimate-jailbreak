@@ -99,6 +99,9 @@ Jocuri: Slender man
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 enum _lastrequest { _knife, _deagle, _freeday, _weapon }
 enum _duel { _name[16], _csw, _entname[32], _opt[32], _sel[32] }
+enum _:_lrsong { _name[100], _song[100], };
+new Songs[100][_lrsong];
+new MaxVip = 0;
 
 new g_iPlayerCamera[33], Float:g_camera_position[33];
 
@@ -559,17 +562,6 @@ public plugin_precache()
     precache_sound("jbextreme/hns.wav")
     precache_sound("jbextreme/lina.wav")
     precache_sound("jbextreme/fatality.wav")
-	precache_sound("jbextreme/cata2.wav")
-	precache_sound("jbextreme/riki2.wav")
-    precache_sound("jbextreme/dumn.wav")
-    precache_sound("jbextreme/dumnezeu.wav")
-    precache_sound("jbextreme/reedick.wav")
-    precache_sound("jbextreme/skre.wav")
-    precache_sound("jbextreme/dope2.wav")
-    precache_sound("jbextreme/gaby2.wav")
-    precache_sound("jbextreme/alexel2.wav")
-    precache_sound("jbextreme/cornel2.wav")
-	precache_sound("jbextreme/twist.wav")
     precache_sound("jbextreme/jump_.wav")
     precache_sound("jbextreme/duck_.wav")
     precache_sound("jbextreme/duckjump_.wav")
@@ -580,8 +572,13 @@ public plugin_precache()
     precache_sound("jbextreme/horn_.wav")
     precache_sound("jbextreme/horn2_.wav")
     precache_sound("jbextreme/voicestart_.wav")
-	precache_sound("jbextreme/dingdingding.wav")
+    precache_sound("jbextreme/dingdingding.wav")
     precache_sound("jbextreme/kaching.wav")
+	
+	
+	load_songs()
+	for(new j = 0; j < MaxVip; j++)
+		precache_sound(Songs[j][_song])
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -1471,69 +1468,14 @@ public player_killed(victim, attacker, shouldgib)
                         new g_CustomSound = 0
                         if(g_Duel != Trivia && g_Duel != Ruleta)
                         {
-                            if(equal(nameCT, "Dumnezeu"))
+                            for(new i = 0; i < MaxVip; i++)
                             {
-                                set_cvar_num("ers_enabled", 0)
-								new rand_sound = random_num(0,1)
-								if (rand_sound)
-                                    emit_sound(0, CHAN_AUTO, "jbextreme/dumnezeu.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-								else
-						            emit_sound(0, CHAN_AUTO, "jbextreme/dumn.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1	
-                            }
-                            if(equal(nameCT, "Reedick"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/reedick.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }	
-                            if(equal(nameCT, "SteelShot"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/skre.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-                            if(equal(nameCT, "DOPE"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/dope2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-                            if(equal(nameCT, "Gaby."))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/gaby2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-                            if(equal(nameCT, "ALeXeL."))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/alexel2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-                            if(equal(nameCT, "Cornel."))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/cornel2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-							if(equal(nameCT, "CataLynHD"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/cata2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-							if(equal(nameCT, "Riki"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/riki2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
-                            }
-							if(equal(nameCT, "Tw1sT ;x"))
-                            {
-                                set_cvar_num("ers_enabled", 0)
-                                emit_sound(0, CHAN_AUTO, "jbextreme/twist.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                g_CustomSound = 1
+                                if(equal(nameCT, Songs[i][_name]))
+                                {
+                                    set_cvar_num("ers_enabled", 0)
+                                    emit_sound(0, CHAN_AUTO, Songs[i][_song], 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                    g_CustomSound = 1    
+                                }
                             }
                         }
                         if(!g_CustomSound && get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
@@ -6724,7 +6666,7 @@ public cmd_soundmenu(id)
         menu_additem(menu, option, "4", 0)
         formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_DOVUS")
         menu_additem(menu, option, "5", 0)
-		formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_MOFO")
+        formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SOUNDMENU_MOFO")
         menu_additem(menu, option, "6", 0)
         menu_display(id, menu)
     }
@@ -6757,7 +6699,7 @@ public  cmd_soundmenu_choice(id, menu, item)
             case('3'): emit_sound(0, CHAN_AUTO, "jbextreme/horn_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             case('4'): emit_sound(0, CHAN_AUTO, "jbextreme/horn2_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             case('5'): emit_sound(0, CHAN_AUTO, "jbextreme/voicestart_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-			case('6'): emit_sound(0, CHAN_AUTO, "jbextreme/dingdingding.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            case('6'): emit_sound(0, CHAN_AUTO, "jbextreme/dingdingding.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         }    
     }
     return PLUGIN_HANDLED
@@ -7111,4 +7053,28 @@ public  cmd_reactionsmenu_choice(id, menu, item)
         case('6'): emit_sound(0, CHAN_AUTO, "jbextreme/duckjump_last.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     }    
     return PLUGIN_HANDLED
+}
+public load_songs()
+{
+    new file[250]
+    new data[250], len, line = 0, i = 1
+    get_configsdir(file, 249)
+    format(file, 249, "%s/melodii.ini", file)
+    if(file_exists(file))
+    {
+        while((line = read_file(file , line , data , 249 , len)) != 0)
+        {
+            if ((data[0] == ';') || equal(data, "")) continue;
+            parse(data, Songs[i][_name], 99, Songs[i][_song], 99);
+            i++;
+            if(i==100)
+            {
+                log_amx("Nu se pot incarca mai mult de 100")
+            }
+        }
+        log_amx("%d Vip cu melodie au fost incarcati", i)
+        MaxVip = i;
+    }
+    else
+        log_amx("fisierul %s nu exista", file)
 }
