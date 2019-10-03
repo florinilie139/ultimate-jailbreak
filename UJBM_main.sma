@@ -253,7 +253,18 @@ new const g_Reasons[][] =  {
     "UJBM_PRISONER_REASON_7",
     "UJBM_PRISONER_REASON_8",   
     "UJBM_PRISONER_REASON_9",
-    "UJBM_PRISONER_REASON_10"
+	"UJBM_PRISONER_REASON_10",
+	"UJBM_PRISONER_REASON_11",
+    "UJBM_PRISONER_REASON_12",
+	"UJBM_PRISONER_REASON_13",
+	"UJBM_PRISONER_REASON_14",
+	"UJBM_PRISONER_REASON_15",
+	"UJBM_PRISONER_REASON_16",
+	"UJBM_PRISONER_REASON_17",
+	"UJBM_PRISONER_REASON_18",
+	"UJBM_PRISONER_REASON_19",
+	"UJBM_PRISONER_REASON_20"
+	
 }
 
 // HudSync: 0=ttinfo / 1=info / 2=simon / 3=ctinfo / 4=player / 5=day / 6=center / 7=help / 8=timer
@@ -464,7 +475,7 @@ public plugin_init()
     register_clcmd("say /gunshop","gunsmenu")
     register_clcmd("say /choosesimon","cmd_adminchoosesimon")
     register_clcmd("say_team /gunshop","gunsmenu")
-    //register_clcmd("say /motiv","cmd_motiv")
+    register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     register_clcmd("say /unsimon", "cmd_unsimon", ADMIN_LEVEL_E, "- nu mai esti Simon");
     register_clcmd("say","cmd_donate")
@@ -574,11 +585,11 @@ public plugin_precache()
     precache_sound("jbextreme/voicestart_.wav")
     precache_sound("jbextreme/dingdingding.wav")
     precache_sound("jbextreme/kaching.wav")
-	
-	
-	load_songs()
-	for(new j = 0; j < MaxVip; j++)
-		precache_sound(Songs[j][_song])
+    
+    
+    load_songs()
+    for(new j = 1; j < MaxVip; j++)
+        precache_sound(Songs[j][_song])
 
     g_CellManagers = TrieCreate()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
@@ -991,8 +1002,8 @@ public player_spawn(id)
             }
             g_PlayerLast = 0
             BoxPartener[id] = 0
-            //g_PlayerReason[id] = random_num(1, 10)
-            //player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
+            g_PlayerReason[id] = random_num(1, 20)
+            player_hudmessage(id, 8, 60.0, {255, 0, 255}, "%L %L", LANG_SERVER, "UJBM_PRISONER_REASON",LANG_SERVER, g_Reasons[g_PlayerReason[id]])
             client_infochanged(id)
             set_user_info(id, "model", JBMODELSHORT)
             if( rez == 1 || rez == 2)
@@ -1468,13 +1479,14 @@ public player_killed(victim, attacker, shouldgib)
                         new g_CustomSound = 0
                         if(g_Duel != Trivia && g_Duel != Ruleta)
                         {
-                            for(new i = 0; i < MaxVip; i++)
+                            for(new i = 1; i < MaxVip; i++)
                             {
                                 if(equal(nameCT, Songs[i][_name]))
                                 {
                                     set_cvar_num("ers_enabled", 0)
                                     emit_sound(0, CHAN_AUTO, Songs[i][_song], 1.0, ATTN_NORM, 0, PITCH_NORM)
-                                    g_CustomSound = 1    
+                                    g_CustomSound = 1
+                                    break
                                 }
                             }
                         }
@@ -5522,7 +5534,8 @@ public cmd_simonmenu(id)
 {
     if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
     {
-        static menu, menuname[32], option[64]
+        client_cmd(id,"spk buttons/blip1.wav")
+		static menu, menuname[32], option[64]
         formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU")
         menu = menu_create(menuname, "simon_choice")
         formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_OPEN")
@@ -5546,6 +5559,8 @@ public cmd_simonmenu(id)
             menu_additem(menu, option, "6", 0)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_RANDOM")
             menu_additem(menu, option, "7", 0)
+			formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_REACTIONS")
+            menu_additem(menu, option, "d", 0)
         }
         
         else if(g_GameMode == FunDay)
@@ -5601,6 +5616,7 @@ public  simon_choice(id, menu, item)
         case('a'): menu_players(id, CS_TEAM_T, id, 1, "paint_select", "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         case('b'): cmd_punish(id)
         case('c'): cmd_simon_micr(id)
+		case('d'): cmd_reactionsmenu(id)
     }        
     return PLUGIN_HANDLED
 }
@@ -6710,17 +6726,18 @@ public on_damage(id)
     static damage, attacker
     attacker = get_user_attacker(id)
     damage = read_data(2)
-    switch(g_GameMode)
-    {
-        case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
-            if(cs_get_user_team(attacker) == CS_TEAM_T)
+    if (is_user_connected(attacker))
+        switch(g_GameMode)
+        {
+            case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
+                if(cs_get_user_team(attacker) == CS_TEAM_T)
+                    g_DamageDone[attacker] += damage
+            case ColaDay, GunDay:
                 g_DamageDone[attacker] += damage
-        case ColaDay, GunDay:
-            g_DamageDone[attacker] += damage
-        case ZombieDay, GravityDay, HnsDay:
-            if(cs_get_user_team(attacker) == CS_TEAM_CT)
-                g_DamageDone[attacker] += damage
-    }
+            case ZombieDay, GravityDay, HnsDay:
+                if(cs_get_user_team(attacker) == CS_TEAM_CT)
+                    g_DamageDone[attacker] += damage
+        }
 }
 
 public camera_menu(id)
@@ -6953,7 +6970,8 @@ public box_last()
             g_BoxStarted = 1
             player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_BOX_START")
             emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-            client_print(0, print_chat, "Ultimi 2 prizonieri au fost de acord sa faca box!")
+            client_print(0, print_chat, "Ultimii 2 prizonieri au fost de acord sa faca box!")
+            remove_task(TASK_ROUND)
         }
     }
     return PLUGIN_HANDLED
@@ -6970,7 +6988,7 @@ public box_last_menu(id)
         menu_additem(menu, option, "1", 0)
         formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_BOXLAST_N")
         menu_additem(menu, option, "2", 0)
-        menu_display(id, menu)
+        menu_display(id, menu)    
     }
     return PLUGIN_HANDLED 
 }
