@@ -12,6 +12,7 @@ Jocuri: Slender man
 #include <fun>
 #include <cstrike>
 #include <vip_base>
+#include <colorchat>
 
 #define PLUGIN_NAME    "[UJBM] Main"
 #define PLUGIN_AUTHOR    "Mister X"
@@ -54,10 +55,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jblaleagane1/jblaleagane1.mdl"
-#define FIREDAYMODEL "models/player/ghostrider/ghostrider.mdl"
-#define FIREDAYSHORT "ghostrider"
-#define JBMODELSHORT "jblaleagane1"
+#define JBMODELLOCATION "models/player/jblaleagane2/jblaleagane2.mdl"
+#define JBMODELSHORT "jblaleagane2"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -66,7 +65,7 @@ Jocuri: Slender man
 #define m_fNextHudTextArgsGameTime    198
 
 #define FLASHCOST    3500
-#define HECOST    4000
+#define HECOST    4000	
 #define SMOKECOST    3000
 #define SHIELDCOST    16000
 #define FDCOST    16000
@@ -156,19 +155,22 @@ enum _:days{
     NormalDay,        //1
     ZombieDay,        //2
     HnsDay,           //3
-    AlienDay,         //13
-    AlienHiddenDay,   //4
-    GunDay,           //5
-    ColaDay,          //6
-    GravityDay,       //7
-    FireDay,          //8
-    BugsDay,          //9
-    NightDay,         //10
-    SpartaDay,        //11
-    FunDay,           //12
-    //AscunseleaDay,  //14
-    //PrinseleaDay,   //15
-    OneBullet         //16
+    AlienDay,         //4
+    AlienHiddenDay,   //5
+    GunDay,           //6
+    ColaDay,          //7
+    GravityDay,       //8
+    FireDay,          //9
+    BugsDay,          //10
+    NightDay,         //11
+    SpartaDay,        //12
+    SpiderManDay,     //13
+    StarWarsDay,      //14
+    RipperDay,        //15
+    FunDay,           //16
+    //AscunseleaDay,  //17
+    //PrinseleaDay,   //18
+    OneBullet         //19
 }
 
 enum _:lastrequests{
@@ -180,7 +182,8 @@ enum _:lastrequests{
     Grenada,
     Ruleta,
     Trivia,
-    Reactie,
+    HeadShot,
+    //Reactie,
     Shot4Shot
 }
 
@@ -198,9 +201,14 @@ new const _RemoveEntities[][] = {
     "hostage_entity", "info_vip_start", "func_vip_safetyzone", "func_escapezone"
 }
 
-new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3" }
-new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3 }
-new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999 }
+new g_HsOnly = 0
+new HsOnlyWeapon = 0
+new const _HsOnlyWeapons [][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_ak47", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas" }
+new const _HsOnlyWeaponsCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_AK47, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS }
+
+new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas" }
+new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS }
+new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999}
 
 new const _Duel[][_duel] =
 {
@@ -208,7 +216,8 @@ new const _Duel[][_duel] =
     { "Grenades",    CSW_HEGRENADE,    "weapon_hegrenade",   "HE",                  "S-a selectat HE Duel"          },
     { "Rulette",     33,               "weapon_deagle",      "Ruleta ruseasca",     "S-a selectat Ruleta ruseasca"  },
     { "Trivia",      34,               "weapon_knife",       "Trivia",              "S-a selectat Trivia Duel"      },
-    { "Reactie",      35,               "weapon_knife",       "Reactii",              "S-a selectat Duel de reactie"      },
+    //{ "Reactie",      35,               "weapon_knife",       "Reactii",              "S-a selectat Duel de reactie"      },
+    { "HeadShot",      36,               "weapon_knife",       "HeadShot Only",              "S-a selectat Duel HS Only"      },
     
     //{ "Grenades",     CSW_FLASHBANG,     "weapon_flashbang", "UJBM_MENU_LASTREQ_OPT5",     "UJBM_MENU_LASTREQ_SEL5"  }, //rpg!!!
     
@@ -253,18 +262,18 @@ new const g_Reasons[][] =  {
     "UJBM_PRISONER_REASON_7",
     "UJBM_PRISONER_REASON_8",   
     "UJBM_PRISONER_REASON_9",
-	"UJBM_PRISONER_REASON_10",
-	"UJBM_PRISONER_REASON_11",
+    "UJBM_PRISONER_REASON_10",
+    "UJBM_PRISONER_REASON_11",
     "UJBM_PRISONER_REASON_12",
-	"UJBM_PRISONER_REASON_13",
-	"UJBM_PRISONER_REASON_14",
-	"UJBM_PRISONER_REASON_15",
-	"UJBM_PRISONER_REASON_16",
-	"UJBM_PRISONER_REASON_17",
-	"UJBM_PRISONER_REASON_18",
-	"UJBM_PRISONER_REASON_19",
-	"UJBM_PRISONER_REASON_20"
-	
+    "UJBM_PRISONER_REASON_13",
+    "UJBM_PRISONER_REASON_14",
+    "UJBM_PRISONER_REASON_15",
+    "UJBM_PRISONER_REASON_16",
+    "UJBM_PRISONER_REASON_17",
+    "UJBM_PRISONER_REASON_18",
+    "UJBM_PRISONER_REASON_19",
+    "UJBM_PRISONER_REASON_20"
+    
 }
 
 // HudSync: 0=ttinfo / 1=info / 2=simon / 3=ctinfo / 4=player / 5=day / 6=center / 7=help / 8=timer
@@ -483,9 +492,12 @@ public plugin_init()
     register_clcmd("say /sunete", "cmd_soundmenu")
     register_clcmd("say /reactii", "cmd_reactionsmenu")
     register_clcmd("say /reactie", "cmd_reactionsmenu")
+    register_clcmd("say /flip", "chat_flip")
+    register_clcmd("say /roll", "chat_roll")
     
     register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")    
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
+    register_logevent("JoinTeam", 3, "1=joined team")
 
     register_cvar("amx_donate_max","16000")
     
@@ -542,7 +554,6 @@ new COLA_V[] = "models/v_cola.mdl"
 public plugin_precache()
 {
     precache_model(JBMODELLOCATION)
-    precache_model(FIREDAYMODEL)
     precache_model(SPARTA_P)
     precache_model(SPARTA_V)
     precache_model(COLA_P)
@@ -1123,6 +1134,9 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
         remove_task(TASK_INVISIBLE+attacker)
         set_task(3.1, "task_inviz",TASK_INVISIBLE + attacker, _, _, "b");
     }
+    if (g_GameMode == GunDay && g_HsOnly)
+        if(get_pdata_int(victim, m_LastHitGroup, 5) != HIT_HEAD)
+            return HAM_SUPERCEDE
     if(cs_get_user_team(attacker) == CS_TEAM_SPECTATOR || cs_get_user_team(victim) == CS_TEAM_SPECTATOR)
         return HAM_SUPERCEDE
     if((cs_get_user_team(victim)==cs_get_user_team(attacker) || victim==attacker) && (bits & (1<<24))) 
@@ -1141,8 +1155,12 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
         default:
         {
             if((victim == g_DuelA && attacker == g_DuelB) || (victim == g_DuelB && attacker == g_DuelA))
-                if(g_Duel != Ruleta && (g_Duel> DuelKnives && get_user_weapon(attacker) ==  _Duel[DuelWeapon][_csw] || g_Duel == DuelKnives && get_user_weapon(attacker)==CSW_KNIFE))
+            {
+                if(g_Duel != Ruleta && (g_Duel> DuelKnives && get_user_weapon(attacker) == _Duel[DuelWeapon][_csw] || g_Duel == DuelKnives && get_user_weapon(attacker)==CSW_KNIFE))
                     return HAM_IGNORED
+                if(g_Duel == HeadShot && get_user_weapon(attacker) == HsOnlyWeapon && get_pdata_int(victim, m_LastHitGroup, 5) == HIT_HEAD)
+                    return HAM_IGNORED               
+            }        
             return HAM_SUPERCEDE
         }
     }
@@ -1231,7 +1249,7 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
                 if(attacker != g_PlayerLast)
                     return HAM_SUPERCEDE
             }
-            case(Trivia, Ruleta, Reactie):
+            case(Trivia, Ruleta):
             {
                 return HAM_SUPERCEDE
             }
@@ -1320,7 +1338,7 @@ public task_last()
 public player_killed(victim, attacker, shouldgib)
 {
     static CsTeams:vteam, CsTeams:kteam
-    new nameCT[32],nameT[32],message[200]
+    new nameCT[32],nameT[32]
     if(!(0 < attacker <= g_MaxClients) || !is_user_connected(attacker))
         kteam = CS_TEAM_UNASSIGNED
     else
@@ -1438,10 +1456,7 @@ public player_killed(victim, attacker, shouldgib)
                                 set_bit(g_PlayerWanted, attacker)
                                 entity_set_int(attacker, EV_INT_skin, 5)
                                 
-                                format(message, 200,"^x04[JB]^x01Prizonierul ^x03%s^x01 a devenit rebel",nameCT)
-                                message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
-                                write_string(message);
-                                message_end();
+                                ColorChat(0, RED, "^x01 Prizonierul^x03 %s^x01 a devenit^x03 rebel^x01!", nameCT) 
                             }
                         }
                         case(CS_TEAM_T):
@@ -1450,15 +1465,12 @@ public player_killed(victim, attacker, shouldgib)
                             {
                                 if(get_bit(g_PlayerWanted,victim))
                                 {
-                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat rebelul ^x03%s",nameCT,nameT)
+                                    ColorChat(0, NORMAL, "Gardianul^x03 %s^x01 a omorat rebelul^x03 %s^x01!", nameCT, nameT) 
                                 }
                                 else if(get_bit(g_PlayerFreeday,victim))
                                 {
-                                    format(message, 200,"^x04[JB]^x01Gardianul ^x03%s^x01 a omorat prizonierul cu freeday ^x03%s",nameCT,nameT)
+                                    ColorChat(0, BLUE, "^x01 Gardianul^x03 %s^x01 a omorat prizonierul cu Freeday^x04 %s^x01!", nameCT, nameT) 
                                 }
-                                message_begin(MSG_BROADCAST, g_iMsgSayText, {0,0,0});
-                                write_string(message);
-                                message_end();
                             }
                             clear_bit(g_PlayerRevolt, victim)
                             clear_bit(g_PlayerWanted, victim)
@@ -1484,7 +1496,7 @@ public player_killed(victim, attacker, shouldgib)
                                 if(equal(nameCT, Songs[i][_name]))
                                 {
                                     set_cvar_num("ers_enabled", 0)
-                                    emit_sound(0, CHAN_AUTO, Songs[i][_song], 1.0, ATTN_NORM, 0, PITCH_NORM)
+                                    client_cmd(0,"spk %s", Songs[i][_song])
                                     g_CustomSound = 1
                                     break
                                 }
@@ -1573,7 +1585,7 @@ public voice_listening(receiver, sender, bool:listen)
     listen = true
     if(g_SimonTalking && (sender != g_Simon))
         listen = false
-    else
+    else    
     {
         static CsTeams:steam
         steam = cs_get_user_team(sender)
@@ -1625,12 +1637,14 @@ public player_cmdstart(id, uc, seed)
     if(!is_user_alive(id))
         return FMRES_IGNORED
     
-    if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta && g_Duel != Reactie)
+    if(g_Duel > 3 && g_Duel != Trivia && g_Duel != Ruleta)
     {
         if(g_DuelA != id && g_DuelB != id)
             return FMRES_IGNORED
-        if (_Duel[DuelWeapon][_csw] != CSW_M249 && _Duel[DuelWeapon][_csw]!=33)
+        if (_Duel[DuelWeapon][_csw] != CSW_M249 && _Duel[DuelWeapon][_csw]!=33 && _Duel[DuelWeapon][_csw]!=36)
             cs_set_user_bpammo(id, _Duel[DuelWeapon][_csw], 1)
+        if(g_Duel == HeadShot)
+            cs_set_user_bpammo(id, HsOnlyWeapon, 1)
     }
     else
     {
@@ -1684,6 +1698,8 @@ public round_end()
     g_Scope = 1
     g_DuelReactionStarted = 0
     DuelWeapon = 0
+    HsOnlyWeapon = 0
+    g_HsOnly = 0
     g_Fonarik = 0
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    ClearSyncHud(0, g_HudSync[i][_hudsync])
@@ -1754,7 +1770,7 @@ public round_end()
             if(maxdmg > 0)
             {    
                 get_user_name(max, name, charsmax(name))
-                client_print(0, print_chat, "%s a facut cel mai mult damage ( %d ) in acest Day. A primit un bonus de bani si puncte.", name, g_DamageDone[max])
+                ColorChat(0, TEAM_COLOR, "^x03%s^x01 a facut cel mai mult damage (^x04 %d^x01 ) in acest Day. A primit un bonus de^x04 bani^x01 si^x04 puncte^x01.", name, g_DamageDone[max])
                 cs_set_user_money(max, cs_get_user_money(max) + 8000)
                 server_cmd("give_points %d 8", max)
             }
@@ -1780,10 +1796,10 @@ public round_end()
             {
                 get_user_name(maxT, name, charsmax(name))
                 get_user_name(maxCT, name2, charsmax(name2))
-                client_print(0, print_chat, "%s este Prizonierul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name, g_DamageDone[maxT])
+                ColorChat(0, RED, "^x03%s^x01 este Prizonierul care a facut cel mai mult damage (^x04 %d^x01 ). A primit un bonus de^x04 bani^x01 si^x04 puncte^x01.", name, g_DamageDone[maxT])
                 cs_set_user_money(maxT, cs_get_user_money(maxT) + 8000)
                 server_cmd("give_points %d 8", maxT)
-                client_print(0, print_chat, "%s este Gardianul care a facut cel mai mult damage ( %d ). A primit un bonus de bani si puncte.", name2, g_DamageDone[maxCT])
+                ColorChat(0, BLUE, "^x03%s^x01 este Gardianul care a facut cel mai mult damage (^x04 %d^x01 ). A primit un bonus de^x04 bani^x01 si^x04 puncte^x01.", name2, g_DamageDone[maxCT])
                 cs_set_user_money(maxCT, cs_get_user_money(maxCT) + 8000)
                 server_cmd("give_points %d 8", maxCT)
             }
@@ -1862,7 +1878,7 @@ public remove_all_fd()
                 if (get_pcvar_num (gp_ShowColor) == 1 ) show_color(Players[i])    
             }
         }
-        client_print(0, print_chat, "Toti prizonierii care aveau FD trebuie sa se prezinte la comenzi.")
+        ColorChat(0, RED, "^x01 Toti prizonierii care aveau^x04 FD^x01 trebuie sa se prezinte la^x03 comenzi^x01.")
         emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         set_dhudmessage(0, 255, 0, -1.0, 0.35, 0, 6.0, 15.0)
         show_dhudmessage(0, "%L", LANG_SERVER, "UJBM_STATUS_ENDFREEDAY")
@@ -1878,11 +1894,11 @@ public FreedayTimeDone()
     {
         case 1, 2, 3, 4:
         {
-            client_print(0, print_chat, "De acum se poate primi/cumpara FD doar pentru runda urmatoare.")
+            ColorChat(0, RED, "^x01 De acum se poate primi/cumpara^x04 FD^x01 doar pentru^x03 runda urmatoare^x01.")
         }
         case 5:
         {
-            client_print(0, print_chat, "De acum nu se mai poate primi/cumpara FD. Daca un gardian va da FD pentru ziua urmatoare il veti primi automat luni.")
+            ColorChat(0, RED, "^x01 De acum nu se mai poate primi/cumpara^x04 FD^x01. Daca un gardian va da^x04 FD^x01 pentru ziua urmatoare il veti primi automat^x03 luni^x01.")
         }
     }
 }
@@ -1916,7 +1932,11 @@ public round_start()
     {
         case 1: Day = "Luni"
         case 2: Day = "Marti"
-        case 3: Day = "Miercuri"
+        case 3: {
+            Day = "Miercurea Speciala"
+            g_GamePrepare = 1;
+            set_task(1.0,"CheckVoteDay",TASK_ROUND)
+            }
         case 4: Day = "Joi"
         case 5: Day = "Vineri"
         case 6: {
@@ -2063,7 +2083,7 @@ public cmd_open(id)
         jail_open()
         new name[32]
         get_user_name(id, name, 31)
-        client_print(0, print_chat, "%s A DESCHIS USA!!!",name)
+        ColorChat(0, BLUE, "^x03%s^x01 A DESCHIS^x04 USA^x01!!!", name)
         emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     }
     return PLUGIN_HANDLED
@@ -2095,7 +2115,7 @@ public cmd_box(id)
                 g_BoxStarted = 1
                 player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_BOX_START")
                 emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                client_print(0, print_chat, "%s A ACTIVAT BOX!!!",dst)
+                ColorChat(0, BLUE, "^x03%s^x01 A ACTIVAT^x04 BOX^x01!!!", dst)
                 client_print(0, print_console, "%s A ACTIVAT BOX!!!", dst)
                 log_amx("%s A ACTIVAT BOX", dst)
             }
@@ -2106,7 +2126,7 @@ public cmd_box(id)
                 set_cvar_num("mp_friendlyfire", 0)
                 g_BoxStarted = 0
                 player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_BOX_STOP")
-                client_print(0, print_chat, "%s A DEZACTIVAT BOX!!!",dst)
+                ColorChat(0, BLUE, "^x03%s^x01 A DEZACTIVAT^x04 BOX^x01!!!", dst)
                 client_print(0, print_console, "%s A DEZACTIVAT BOX!!!", dst)
                 log_amx("%s A DEZACTIVAT BOX", dst)
             }
@@ -2189,10 +2209,9 @@ public admin_select_simon(id, menu, item)
     
     client_print(0, print_console, "%s l-a ales ca Simon pe %s", dst, simonname)
     log_amx("%s l-a ales ca Simon pe %s", dst, simonname)
-    client_print(0, print_chat, "%s l-a ales ca Simon pe %s", dst, simonname)
+    ColorChat(0, BLUE, "^x03%s^x01 l-a ales ca^x04 Simon^x01 pe^x03 %s^x01!", dst, simonname)
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_CHOOSE_SIMON", dst, simonname)
     client_cmd(0,"spk vox/dadeda")
-    
     cmd_simon(player)
     
     return PLUGIN_HANDLED
@@ -2231,7 +2250,7 @@ public removefd_select(id, menu, item)
             entity_set_int(player, EV_INT_body, 0)
         
         }
-        client_print(0, print_chat, "%s i-a scos FD-ul lui %s", src, dst)
+        ColorChat(0, RED, "^x03%s^x01 i-a scos^x04 FD-ul^x01 lui^x03 %s^x01!", src, dst)
         client_print(0, print_console, "%s i-a scos FD-ul lui %s", src, dst)
     }
     menu_destroy(menu)
@@ -2304,7 +2323,7 @@ public freeday_choice(id, menu, item)
                 g_Simon = 0
                 get_user_name(id, dst, charsmax(dst))
                 client_print(0, print_console, "%s a dat FD All", dst)
-                client_print(0, print_chat, "%s a dat FD All", dst)
+                ColorChat(0, BLUE, "^x03%s^x01 a dat^x04 FD All^x01!", dst)
                 server_print("JBE Client %i a dat FD All", id)
                 g_GameMode = Freeday
                 emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -2425,8 +2444,8 @@ public cmd_lastrequest(id)
         menu_additem(menu, option, "7", 0)
     }
     
-    //formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
-   //menu_additem(menu, option, "8", 0)
+    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT8")
+    menu_additem(menu, option, "8", 0)
     
     formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_OPT9")
     menu_additem(menu, option, "9", 0)
@@ -2453,7 +2472,7 @@ public lastrequest_select(id, menu, item)
             client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")
             user_silentkill(id)
             cs_set_user_money(id,cs_get_user_money(id)+16000,1)
-            client_print(0,print_chat,"%s a selectat 16000$!", dst)
+            ColorChat(0, RED, "^x03%s^x01 a selectat^x04 16000$^x01!", dst)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_LASTREQ_SEL1", dst)
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, option)
         }
@@ -3103,7 +3122,10 @@ public hud_status(task)
         }
         case GunDay:
         {
-            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_GUNDAY")
+            if(g_HsOnly)
+                player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_GUNDAY_HS")
+            else
+                player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_GUNDAY")
         }
         case ColaDay:
         {
@@ -3158,8 +3180,7 @@ public paint_select(id, menu, item)
     server_cmd("painttero %d",player)
     menu_destroy(menu)
     get_user_name(id, src, charsmax(src))
-    client_print(0,print_chat,"%s A SETAT LUI %s PAINT!",src,dst)
-    
+    ColorChat(0, BLUE, "^x03%s^x01 A SETAT LUI^x03 %s^x01 PAINT!", src, dst)
     return PLUGIN_HANDLED
 }
 public freeday_select(id, menu, item)
@@ -3329,6 +3350,21 @@ public duel_guns(id, menu, item)
             client_print(0, print_chat, "In 3 secunde veti afla ce comanda trebuie sa faceti.")
             set_task(3.0, "ReactionDuel")
         }
+        case 36:
+        {
+            new i = random_num(0, sizeof(_HsOnlyWeapons) - 1)
+            HsOnlyWeapon = _HsOnlyWeaponsCSW[i]
+            
+            gun = give_item(g_DuelA, _HsOnlyWeapons[i])
+            cs_set_weapon_ammo(gun, 1)
+            set_user_health(g_DuelA, 100)
+            
+            gun = give_item(g_DuelB, _HsOnlyWeapons[i])
+            cs_set_weapon_ammo(gun, 1)
+            set_user_health(g_DuelB, 100)
+            
+            server_cmd("jb_block_weapons")
+        }
         case CSW_HEGRENADE:
         {    
             give_item( g_DuelA, "weapon_hegrenade" );
@@ -3430,7 +3466,7 @@ stock freeday_set(id, player,bool:next)
         else if(g_GameMode == NormalDay)
         {
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_HASFREEDAY", dst)
-            client_print(0,print_chat,"%s si-a cumparat FD",dst)
+            ColorChat(0, RED, "^x03%s^x01 si-a cumparat^x04 FD^x01!", dst)
         }
     }
     if(next == true)
@@ -3563,8 +3599,6 @@ public client_infochanged(id)
 { 
     if (is_user_connected(id))
     {
-        if(g_GameMode == FireDay && id == g_Simon)
-            return PLUGIN_CONTINUE
         if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
             set_user_info(id, "model", JBMODELSHORT)
     }    
@@ -3787,68 +3821,77 @@ public EndVote()
         {
             case(AlienHiddenDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 ALIEN DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
                 cmd_game_alien2()
             }
             case(ZombieDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ZOMBIE DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 ZOMBIE DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY!!!")
                 cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
             case(HnsDay): 
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE HNS DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 HNS DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE HNS DAY!!!")
                 cmd_pregame("cmd_game_hns", 2, 0, 60.0)
             }
             case(AlienDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 ALIEN DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
                 cmd_game_alien2() //de scos
             }
             case(GunDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE GUN DAY!!!")
-                log_amx("IN ACEASTA SAMBATA ESTE GUNDAY!!!")
+                g_HsOnly = random_num(0, 1)
+                if(g_HsOnly)
+                {
+                    ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 GUN DAY HeadShot Only^x01!!!")
+                    log_amx("IN ACEASTA SAMBATA ESTE GUNDAY HS ONLY!!!")
+                }
+                else
+                {
+                    ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 GUN DAY^x01!!!")
+                    log_amx("IN ACEASTA SAMBATA ESTE GUNDAY!!!")
+                }
                 cmd_pregame("cmd_game_gunday", 1, 0, 30.0)
             }
             case(SpartaDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 SPARTA DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
                 cmd_game_sparta()
             }
             case(GravityDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE GRAVITY DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 GRAVITY DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY!!!")
                 set_cvar_num("sv_gravity",250)
                 cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
             }
             case(FireDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE FIRE DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 FIRE DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY!!!")
                 cmd_pregame("cmd_game_fire", 2, 1, 30.0)
             }
             case(BugsDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE BUGs DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 BUGS DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE BUGs DAY!!!")
                 cmd_game_bugs()
             }
             case(NightDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE NIGHTCRAWLER!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 NIGHTCRAWLER DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE NIGHTCRAWLER!!!")
                 cmd_game_nightcrawler()
             }
             case(ColaDay):
             {
-                client_print(0, print_chat, "IN ACEASTA SAMBATA ESTE COLADAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 COLA DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE COLADAY!!!")
                 cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
             }
@@ -3872,7 +3915,7 @@ public cmd_done_game_prepare ()
     if(g_GameMode == SpartaDay || g_GameMode == NightDay || g_GameMode == BugsDay)
     {
         client_cmd(0,"spk radio/com_go")
-        client_print(0,print_chat,"Timpul de pregatire s-a terminat. ATACATI!")
+        ColorChat(0, BLUE, "^x03 Timpul de pregatire s-a terminat.^x04 ATACATI^x01!")
         player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
     }
     
@@ -4259,7 +4302,10 @@ public cmd_game_gunday()
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     jail_open()
     new sz_msg[256];
-    formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_GUNDAY")
+    if(g_HsOnly)
+        formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_GUNDAY_HS")
+    else
+        formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_GUNDAY")
     client_print(0, print_center , sz_msg)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -4358,8 +4404,8 @@ public  cmd_game_fire()
     server_cmd("jb_block_weapons")
     server_cmd("jb_block_teams")
     server_cmd("sleep_enabled 0")
-    hud_status(0)
-    new Players[32] 
+    hud_status(0)    
+    new Players[32]
     new playerCount, i 
     get_players(Players, playerCount, "ac")
     for (i=0; i<playerCount; i++) 
@@ -4377,7 +4423,7 @@ public  cmd_game_fire()
     static dst[32]
     get_user_name(g_Simon, dst, charsmax(dst))
     server_cmd("amx_fire %s",dst);
-    set_user_info(g_Simon, "model", FIREDAYSHORT)
+    entity_set_int(g_Simon, EV_INT_body, 9)
     emit_sound(0, CHAN_AUTO, "jbextreme/lina.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -4432,7 +4478,7 @@ public  cmd_game_bugs()
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
-    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -4501,7 +4547,7 @@ public  cmd_game_nightcrawler()
     emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
     set_task(5.0, "stop_sound")
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
-    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -4549,7 +4595,7 @@ public cmd_game_sparta()
         }
     }
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
-    client_print(0,print_chat,"Aveti Godmode 20 de secunde pentru a va pregati!")
+    ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
@@ -5079,7 +5125,7 @@ public shop_choice_T(id, menu, item)
             if (money >= FDCOST && !get_bit(g_PlayerWanted, id) && FreedayTime == 1)
             {
                 if(get_bit(g_PlayerFreeday, id))
-                    client_print(id,print_chat,"Ai deja Freeday!")
+                    ColorChat(id, GREEN, "Ai deja FreeDay!")
                 else
                 {
                 cs_set_user_money (id, money - FDCOST, 0)
@@ -5100,7 +5146,7 @@ public shop_choice_T(id, menu, item)
                 cs_set_user_money (id, money - FDCOST, 0)
                 set_bit(g_PlayerNextFreeday, id)
                 player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PRISONER_HASFREEDAY_NEXT", dst)
-                client_print(0,print_chat,"%s si-a cumparat FD urmatoarea runda", dst)
+                ColorChat(0, RED, "^x03%s^x01 si-a cumparat^x04 FD^x01 urmatoarea runda!", dst)
                 BuyTimes[id]++
             }
             else
@@ -5467,7 +5513,7 @@ public cmd_simon_micr_choice(id,menu, item)
                     continue
                 set_bit(g_PlayerVoice, i)
             }
-            client_print(0, print_chat, "%s a activat Vocea pentru toti prizonierii!!!",src)
+            ColorChat(0, BLUE, "^x03%s^x01 a activat^x04 Vocea^x01 pentru toti prizonierii!!!", src)
             player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_VOICEENABLED_ALL")
             client_cmd(0,"spk fvox/voice_on")
         }
@@ -5479,7 +5525,7 @@ public cmd_simon_micr_choice(id,menu, item)
                     continue
                 clear_bit(g_PlayerVoice, i)
             }
-            client_print(0, print_chat, "%s a dezactivat Vocea pentru toti prizonierii!!!",src)
+            ColorChat(0, BLUE, "^x03%s^x01 a dezactivat^x04 Vocea^x01 pentru toti prizonierii!!!", src)
             player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_VOICEDISABLED_ALL")
             client_cmd(0,"spk fvox/voice_off")
         }
@@ -5492,7 +5538,7 @@ public  na2team(id) {
     {
         static src[32]
         get_user_name(id, src, charsmax(src))
-        client_print(0, print_chat, "%s a colorat prizonierii in 2 echipe!", src)
+        ColorChat(0, BLUE, "^x03%s^x01 a colorat prizonierii in^x04 2 echipe^x01!", src)
         player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_COLOR", src)
         client_cmd(0,"spk vox/doop")
         new playerCount, i 
@@ -5535,7 +5581,7 @@ public cmd_simonmenu(id)
     if (g_Simon == id || (get_user_flags(id) & ADMIN_SLAY))
     {
         client_cmd(id,"spk buttons/blip1.wav")
-		static menu, menuname[32], option[64]
+        static menu, menuname[32], option[64]
         formatex(menuname, charsmax(menuname), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU")
         menu = menu_create(menuname, "simon_choice")
         formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_OPEN")
@@ -5559,7 +5605,7 @@ public cmd_simonmenu(id)
             menu_additem(menu, option, "6", 0)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_RANDOM")
             menu_additem(menu, option, "7", 0)
-			formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_REACTIONS")
+            formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_REACTIONS")
             menu_additem(menu, option, "d", 0)
         }
         
@@ -5601,7 +5647,7 @@ public  simon_choice(id, menu, item)
             jail_open()
             new name[32]
             get_user_name(id, name, 31)
-            client_print(0, print_chat, "%s A DESCHIS USA!!!",name)
+            ColorChat(0, BLUE, "^x03%s^x01 A DESCHIS^x04 USA^x01!!!", name)
             emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
             cmd_simonmenu(id)
         }
@@ -5616,7 +5662,7 @@ public  simon_choice(id, menu, item)
         case('a'): menu_players(id, CS_TEAM_T, id, 1, "paint_select", "%L", LANG_SERVER, "UJBM_MENU_PAINT")
         case('b'): cmd_punish(id)
         case('c'): cmd_simon_micr(id)
-		case('d'): cmd_reactionsmenu(id)
+        case('d'): cmd_reactionsmenu(id)
     }        
     return PLUGIN_HANDLED
 }
@@ -5746,7 +5792,7 @@ public heal_t(id)
         for(i = 1; i <= g_MaxClients; i++)
             if(is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_T && (!get_bit(g_PlayerWanted, i)))
                 set_user_health(i, 150)
-        client_print(0, print_chat, "%s a vindecat toti prizonierii pana la 150 HP!",src)
+        ColorChat(0, BLUE, "^x03%s^x01 a vindecat toti prizonierii pana la^x04 150 HP^x01!", src)
         player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_HEAL")
     }
     return PLUGIN_CONTINUE
@@ -5766,7 +5812,7 @@ public random_t(id)
         get_user_name(RandomNr, RandomName, 31)
         set_user_rendering(RandomNr, kRenderFxGlowShell, 225, 165, 0, kRenderNormal, 25)
         set_task(10.0,"turn_glow_off",TASK_RANDOM+RandomNr)
-        client_print(0, print_chat, "%s a ales la nimereala prizonierul %s",src,RandomName)
+        ColorChat(0, BLUE, "^x03%s^x01 a ales la nimereala prizonierul^x04 %s^x01!", src, RandomName)
         player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_RANDOM_MSG", src, RandomName)
         client_cmd(0,"spk vox/bloop")
     }
@@ -6657,8 +6703,7 @@ public cmd_donate(id, level, cid)
         cs_set_user_money(userid, iAmount+cs_get_user_money(userid), 0)
         cs_set_user_money(id, cs_get_user_money(id)-iAmount, 0)
         client_cmd(userid,"spk jbextreme/kaching.wav")
-        client_print(0, print_chat, "%s i-a donat lui %s suma de $%d.", sName, sOutput[1], iAmount)
-        
+        ColorChat(0, RED, "^x03%s^x01 i-a donat lui^x03 %s^x01 suma de^x04 $%d^x01.", sName, sOutput[1], iAmount)      
         g_Donated[id] += 1
         return 1
     }
@@ -6705,7 +6750,7 @@ public  cmd_soundmenu_choice(id, menu, item)
     {
         new name[32]
         get_user_name(id, name, 31)
-        client_print(0, print_chat, "%s A DAT UN SUNET!!!",name)
+        ColorChat(0, BLUE, "^x03%s^x01 A DAT UN^x04 SUNET^x01!!!", name)
         ding_on = 0
         set_task(5.0,"power_ding",5146)
         switch(data[0])    
@@ -6970,7 +7015,7 @@ public box_last()
             g_BoxStarted = 1
             player_hudmessage(0, 1, 3.0, _, "%L", LANG_SERVER, "UJBM_GUARD_BOX_START")
             emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-            client_print(0, print_chat, "Ultimii 2 prizonieri au fost de acord sa faca box!")
+            ColorChat(0, RED, "^x01 Ultimii 2 prizonieri^x03 au fost de acord^x04 sa faca box^x01!")
             remove_task(TASK_ROUND)
         }
     }
@@ -7010,11 +7055,11 @@ public box_last_menu_choice(id, menu, item)
         {
             g_BoxLastY[id] = 1
             box_last()
-            client_print(0, print_chat, "Prizonierul %s este de acord sa faca box!", dst)
+            ColorChat(0, RED, "^x01 Prizonierul^x03 %s^x01 este de acord sa faca^x04 box^x01!", dst)
         }
         case('2'): 
         {
-            client_print(0, print_chat, "Prizonierul %s nu a fost de acord sa faca box!", dst)
+            ColorChat(0, RED, "^x01 Prizonierul^x03 %s^x01 nu este de acord sa faca^x04 box^x01!", dst)
             player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_BOXLAST_N", dst)
             g_BoxLastY[id] = 2
         }
@@ -7060,7 +7105,7 @@ public  cmd_reactionsmenu_choice(id, menu, item)
     get_user_name(id, dst, charsmax(dst))
     new name[32]
     get_user_name(id, name, 31)
-    client_print(0, print_chat, "%s A DAT O REACTIE!!!",name)
+    ColorChat(0, BLUE, "^x03%s^x01 A DAT O^x04 REACTIE^x01!!!", name)
     switch(data[0])    
     {        
         case('1'): emit_sound(0, CHAN_AUTO, "jbextreme/duck_.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -7095,4 +7140,64 @@ public load_songs()
     }
     else
         log_amx("fisierul %s nu exista", file)
+}
+
+public chat_flip(id)
+{
+    if(!is_user_alive(id))
+    {
+        ColorChat(id, RED, "Nu poti folosi aceasta comanda cand esti mort!")
+        return PLUGIN_HANDLED
+    }
+    new flip, src[32]
+    get_user_name(id, src, charsmax(src))
+    flip = random_num(1,2)
+    if (flip == 1)
+    {
+        ColorChat(0, TEAM_COLOR, "^x03%s^x01 a dat cu banul:^x04 CAP", src)
+        client_print(0,print_console,"%s a dat cu banul: CAP",src)
+    }
+    else
+    {    
+        ColorChat(0, TEAM_COLOR, "^x03%s^x01 a dat cu banul:^x04 PAJURA", src)
+        client_print(0,print_console,"%s a dat cu banul: PAJURA",src)
+    }    
+    return PLUGIN_CONTINUE
+}
+
+public chat_roll(id)
+{
+    if(!is_user_alive(id))
+    {
+        ColorChat(id, RED, "Nu poti folosi aceasta comanda cand esti mort!")
+        return PLUGIN_HANDLED
+    }
+    new roll, src[32]
+    get_user_name(id, src, charsmax(src))
+    roll = random_num(0,100)
+    ColorChat(0, TEAM_COLOR, "^x03%s^x01 a ales un numar la nimereala:^x04 %d", src, roll)
+    client_print(0,print_console,"%s a ales un numar la nimereala: %d", src, roll)
+    return PLUGIN_CONTINUE
+}
+
+public JoinTeam() {
+    new loguser[80], name[32]
+    read_logargv(0, loguser, 79)
+    parse_loguser(loguser, name, 31)
+
+    new id = get_user_index(name)
+
+    if(is_user_bot(id))    
+        return
+        
+    new temp[2]
+
+    read_logargv(2, temp, 1)
+    switch(temp[0])
+    {
+        case 'T' :
+            ColorChat(0, RED, "^x03%s^x01 a intrat in echipa^x03 Prizonierilor^x01!", name)
+        case 'C' :
+            ColorChat(0, BLUE, "^x03%s^x01 a intrat in echipa^x03 Gardienilor^x01!", name)
+    }
 }
