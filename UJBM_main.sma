@@ -166,13 +166,14 @@ enum _:days{
     SpartaDay,        //12
     SpiderManDay,     //13
     CowboyDay,        //14
-    FreezeTagDay,     //15
-    StarWarsDay,      //16
-    RipperDay,        //17
-    FunDay,           //18
-    //AscunseleaDay,  //19
-    //PrinseleaDay,   //20
-    OneBullet         //21
+    SpartaTeroDay,    //15
+    FreezeTagDay,     //16
+    StarWarsDay,      //17
+    RipperDay,        //18
+    FunDay,           //19
+    //AscunseleaDay,  //20
+    //PrinseleaDay,   //21
+    OneBullet         //22
 }
 
 enum _:lastrequests{
@@ -494,6 +495,7 @@ public plugin_init()
     register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     register_clcmd("say /unsimon", "cmd_unsimon", ADMIN_LEVEL_E, "- nu mai esti Simon");
+    register_clcmd("say /longjump", "cmd_longjump", ADMIN_LEVEL_E);
     register_clcmd("say","cmd_donate")
     register_clcmd("say /sounds", "cmd_soundmenu")
     register_clcmd("say /sunete", "cmd_soundmenu")
@@ -1737,8 +1739,7 @@ public round_end()
     }
     g_PlayerLast = 0
     new i
-    if(g_GameMode == GravityDay || g_GameMode == FunDay )//|| g_GameMode == 15)
-        set_cvar_num("sv_gravity",800)
+    set_cvar_num("sv_gravity",800)
     new Players[32]     
     new playerCount
     get_players(Players, playerCount, "c") 
@@ -1781,7 +1782,7 @@ public round_end()
     new name[32], name2[32]
     switch(g_GameMode)
     {
-        case AlienHiddenDay, BugsDay, SpartaDay, NightDay, ZombieDay, GravityDay, HnsDay:
+        case AlienHiddenDay, BugsDay, SpartaDay, SpartaTeroDay, NightDay, ZombieDay, GravityDay, HnsDay:
         {
             for (i=0; i<playerCount; i++)
                 if(g_DamageDone[Players[i]] > maxdmg)
@@ -3175,6 +3176,10 @@ public hud_status(task)
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_SPARTA")
         }
+        case SpartaTeroDay:
+        {
+            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_SPARTA")
+        }
         case FunDay:
         {
             get_user_name(g_Simon, name, charsmax(name))
@@ -3768,6 +3773,7 @@ public StartVote(id){
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_SPARTA")
         menu_additem(menu, option, "11", 0)
     }
+    
     //if (containi(allowed,"n") >= 0 && bool:g_GamesAp[OneBullet]==false)
     //{
     //    formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_ONEBULLET")
@@ -3890,6 +3896,12 @@ public EndVote()
                 ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 SPARTA DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
                 cmd_game_sparta()
+            }
+            case(SpartaTeroDay):
+            {
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 REVERSE SPARTA DAY^x01!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE REVERSE SPARTA DAY!!!")
+                cmd_pregame("cmd_game_sparta_tero", 1, 0, 30.0)
             }
             case(SpiderManDay):
             {
@@ -4136,10 +4148,9 @@ public cmd_game_zombie()
 
 public cmd_game_spider()
 {
+    set_cvar_num("sv_gravity",600)
     g_GameMode = SpiderManDay
     g_GamesAp[SpiderManDay]=true
-    g_GamePrepare = 0
-    g_DoNotAttack = 1;
     g_Simon = 0;
     g_GameWeapon[1] = CSW_KNIFE
     g_GameWeapon[0] = CSW_KNIFE
@@ -4720,6 +4731,57 @@ public cmd_game_sparta()
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
+    set_task(300.0,"cmd_expire_time",TASK_ROUND)
+    g_Countdown=300
+    cmd_saytime()
+    return PLUGIN_HANDLED
+}
+
+public cmd_game_sparta_tero()
+{
+    emit_sound(0, CHAN_AUTO, "jbextreme/sparta1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    g_GameMode = SpartaTeroDay
+    g_GamesAp[SpartaTeroDay]=true
+    g_GamePrepare = 0
+    g_Simon = 0
+    g_BoxStarted = 0
+    g_nogamerounds = 0
+    jail_open()
+	g_DoNotAttack = 1;
+    g_GameWeapon[0] = CSW_KNIFE
+    hud_status(0)
+    new j = 0
+    server_cmd("jb_block_weapons")
+    server_cmd("sleep_enabled 0")
+    new Players[32] 
+    new playerCount, i 
+    get_players(Players, playerCount, "ac") 
+    for (i=0; i<playerCount; i++) 
+    {
+        set_user_gravity(Players[i], 1.0)
+        if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
+        {
+            set_user_maxspeed(Players[i], 250.0)   
+			strip_user_weapons(Players[i])
+            j = random_num(0, sizeof(_WeaponsFree) - 1)
+            give_item(Players[i], _WeaponsFree[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            set_user_health(Players[i], 100)
+        }
+        if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+        {
+            fade_screen(Players[i],false)
+            set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
+            set_user_maxspeed(Players[i], 350.0)   
+            entity_set_int(Players[i], EV_INT_body, 8)
+            disarm_player(Players[i])
+            give_item(Players[i], "weapon_shield")
+            entity_set_string(Players[i], EV_SZ_viewmodel, SPARTA_V)  
+            entity_set_string(Players[i], EV_SZ_weaponmodel, SPARTA_P) 
+            set_user_health(Players[i], 200)
+        }
+    }
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -5880,6 +5942,11 @@ public  cmd_simongamesmenu(id)
                 formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_COWBOY")
                 menu_additem(menu, option, "18", 0)
             }
+            if (containi(allowed,"l") >= 0  && bool:g_GamesAp[SpartaTeroDay]==false)
+            {    
+                formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_SPARTA_TERO")
+                menu_additem(menu, option, "19", 0)
+            }
             /*if (containi(allowed,"h") >= 0  && g_GamesAp[8]==false)
             {    
                 formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_PRINSELEA")
@@ -6087,6 +6154,12 @@ public  simon_gameschoice(id, menu, item)
             client_print(0, print_console, "%s gives cowboy day", dst)
             log_amx("%s gives cowboy day", dst)
             cmd_pregame("cmd_game_cowboy", 1, 0, 30.0)
+        }
+        case(19):
+        {
+            client_print(0, print_console, "%s gives reverse sparta day", dst)
+            log_amx("%s gives reverse sparta day", dst)
+            cmd_pregame("cmd_game_sparta_tero", 1, 0, 30.0)
         }
         case(100):
         {
@@ -6924,7 +6997,7 @@ public on_damage(id)
                     g_DamageDone[attacker] += damage
             case ColaDay, GunDay, SpiderManDay, CowboyDay:
                 g_DamageDone[attacker] += damage
-            case ZombieDay, GravityDay, HnsDay:
+            case ZombieDay, GravityDay, HnsDay, SpartaTeroDay:
                 if(cs_get_user_team(attacker) == CS_TEAM_CT)
                     g_DamageDone[attacker] += damage
         }
