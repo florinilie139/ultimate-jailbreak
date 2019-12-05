@@ -495,7 +495,6 @@ public plugin_init()
     register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
     register_clcmd("say /unsimon", "cmd_unsimon", ADMIN_LEVEL_E, "- nu mai esti Simon");
-    register_clcmd("say /longjump", "cmd_longjump", ADMIN_LEVEL_E);
     register_clcmd("say","cmd_donate")
     register_clcmd("say /sounds", "cmd_soundmenu")
     register_clcmd("say /sunete", "cmd_soundmenu")
@@ -503,6 +502,7 @@ public plugin_init()
     register_clcmd("say /reactie", "cmd_reactionsmenu")
     register_clcmd("say /flip", "chat_flip")
     register_clcmd("say /roll", "chat_roll")
+    register_clcmd("say /tryshield", "cmd_incercare")
     
     register_event("Damage", "on_damage", "b", "2!0", "3=0", "4!0")    
     register_event("CurWeapon", "Event_CurWeapon", "be","1=1")
@@ -4747,8 +4747,6 @@ public cmd_game_sparta_tero()
     g_BoxStarted = 0
     g_nogamerounds = 0
     jail_open()
-	g_DoNotAttack = 1;
-    g_GameWeapon[0] = CSW_KNIFE
     hud_status(0)
     new j = 0
     server_cmd("jb_block_weapons")
@@ -4762,7 +4760,7 @@ public cmd_game_sparta_tero()
         if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
         {
             set_user_maxspeed(Players[i], 250.0)   
-			strip_user_weapons(Players[i])
+            strip_user_weapons(Players[i])
             j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
             cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
@@ -4772,10 +4770,10 @@ public cmd_game_sparta_tero()
         {
             fade_screen(Players[i],false)
             set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
-            set_user_maxspeed(Players[i], 350.0)   
+            set_user_maxspeed(Players[i], 350.0)
             entity_set_int(Players[i], EV_INT_body, 8)
             disarm_player(Players[i])
-            give_item(Players[i], "weapon_shield")
+            Give_Item(Players[i], 0)
             entity_set_string(Players[i], EV_SZ_viewmodel, SPARTA_V)  
             entity_set_string(Players[i], EV_SZ_weaponmodel, SPARTA_P) 
             set_user_health(Players[i], 200)
@@ -5757,7 +5755,7 @@ public  na2team(id) {
 }
 bool:GameAllowed()
 {
-    if (!is_not_game() || g_JailDay%7!=6 && g_JailDay>0 || killed == 1)
+    if (!is_not_game() || g_JailDay%7!= 3 || g_JailDay%7!=6 && g_JailDay>0 || killed == 1)
         return false    
     return true;
 }
@@ -7473,4 +7471,17 @@ glowhat(id) {
     set_pev(g_HatEnt[id], pev_renderamt,    0.0)
     fm_set_entity_visibility(g_HatEnt[id], 1)
     return
+}
+
+public cmd_incercare(id)
+{    
+    if(get_user_flags(id) & ADMIN_LEVEL_E)
+    {
+        set_user_maxspeed(id, 350.0)
+        entity_set_int(id, EV_INT_body, 8)
+        disarm_player(id)
+        Give_Item(id, 0)
+        entity_set_string(id, EV_SZ_viewmodel, SPARTA_V)  
+        entity_set_string(id, EV_SZ_weaponmodel, SPARTA_P) 
+    }
 }
