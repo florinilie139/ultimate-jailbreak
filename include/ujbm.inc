@@ -15,19 +15,25 @@ enum _:days{
     NormalDay,        //1
     ZombieDay,        //2
     HnsDay,           //3
-    AlienDay,         //13
-    AlienHiddenDay,   //4
-    GunDay,           //5
-    ColaDay,          //6
-    GravityDay,       //7
-    FireDay,          //8
-    BugsDay,          //9
-    NightDay,         //10
-    SpartaDay,        //11
-    FunDay,           //12
-    //AscunseleaDay,  //14
-    //PrinseleaDay,   //15
-    OneBullet         //16
+    AlienDay,         //4
+    AlienHiddenDay,   //5
+    GunDay,           //6
+    ColaDay,          //7
+    GravityDay,       //8
+    FireDay,          //9
+    BugsDay,          //10
+    NightDay,         //11
+    SpartaDay,        //12
+    SpiderManDay,     //13
+    CowboyDay,        //14
+    SpartaTeroDay,    //15
+    FreezeTagDay,     //16
+    StarWarsDay,      //17
+    RipperDay,        //18
+    FunDay,           //19
+    //AscunseleaDay,  //20
+    //PrinseleaDay,   //21
+    OneBullet         //22
 }
 
 
