@@ -28,12 +28,15 @@ enum _:days{
     CowboyDay,        //14
     SpartaTeroDay,    //15
     FreezeTagDay,     //16
-    StarWarsDay,      //17
-    RipperDay,        //18
-    FunDay,           //19
-    //AscunseleaDay,  //20
-    //PrinseleaDay,   //21
-    OneBullet         //22
+    ZombieTeroDay,    //17
+    ScoutDay,         //18
+    BoxDay,           //19
+    StarWarsDay,      //20
+    RipperDay,        //21
+    FunDay,           //22
+    //AscunseleaDay,  //23
+    //PrinseleaDay,   //24
+    OneBullet         //25
 }
 
 
