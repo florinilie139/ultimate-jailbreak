@@ -55,8 +55,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jblaleagane3/jblaleagane3.mdl"
-#define JBMODELSHORT "jblaleagane3"
+#define JBMODELLOCATION "models/player/jbllg_xmas/jbllg_xmas.mdl"
+#define JBMODELSHORT "jbllg_xmas"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -146,6 +146,7 @@ new Tnr
 new Wnr
 new g_newChance
 new g_canTrivia
+new g_WasBoxDay
 //new g_CountKilled[33]
 
 enum _:days{
@@ -168,12 +169,15 @@ enum _:days{
     CowboyDay,        //14
     SpartaTeroDay,    //15
     FreezeTagDay,     //16
-    StarWarsDay,      //17
-    RipperDay,        //18
-    FunDay,           //19
-    //AscunseleaDay,  //20
-    //PrinseleaDay,   //21
-    OneBullet         //22
+    ZombieTeroDay,    //17
+    ScoutDay,         //18
+    BoxDay,           //19
+    StarWarsDay,      //20
+    RipperDay,        //21
+    FunDay,           //22
+    //AscunseleaDay,  //23
+    //PrinseleaDay,   //24
+    OneBullet         //25
 }
 
 enum _:lastrequests{
@@ -195,7 +199,13 @@ new DuelWeapon;
 // Precache
 new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_rpg.mdl", "models/rpgrocket.mdl" }
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
-new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"} //sound police
+
+//sunete craciun
+new const _PoliceSounds[][] = { "jbextreme/hohojb.wav", "jbextreme/mcjb.wav", "jbextreme/hohohomcjb.wav"}
+
+//sunete david
+//new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"}
+
 
 new SpriteExplosion
 
@@ -538,7 +548,7 @@ public plugin_init()
     gmsgSetFOV = get_user_msgid( "SetFOV" )
     g_iMsgSayText = get_user_msgid("SayText");
     set_task(320.0, "help_trollface", _, _, _, "b")
-    set_task(100.0, "play_sound_police", _, _, _, "b") //secunde police sound
+    set_task(50.0, "play_sound_police", _, _, _, "b") //secunde police sound
     setup_buttons()
     g_PlayerLastVoiceSetting = 0
     
@@ -559,6 +569,7 @@ new SPARTA_P[] = "models/shield/p_sparta.mdl"
 new SPARTA_V[] = "models/shield/v_sparta.mdl"
 new COLA_P[] = "models/p_cola.mdl"
 new COLA_V[] = "models/v_cola.mdl"
+
 
 public plugin_precache()
 {
@@ -608,7 +619,7 @@ public plugin_precache()
     precache_sound("jbextreme/kaching.wav")
     precache_sound("jbextreme/spider.wav")
     precache_sound("jbextreme/cowboy.wav")
-    
+    precache_sound("jbextreme/boxwin.wav")
     
     load_songs()
     for(new j = 1; j < MaxVip; j++)
@@ -749,6 +760,7 @@ public client_disconnect(id)
         g_DuelB = 0
         server_cmd("jb_unblock_weapons")
     }
+    hud_status(0)
     /*if(Mata == id)
         cmd_moaremata();*/
     task_last()
@@ -1197,8 +1209,18 @@ public  player_attack(victim, attacker, Float:damage, Float:direction[3], traceh
     if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker)
         return HAM_IGNORED
     vteam = cs_get_user_team(victim)
-    ateam = cs_get_user_team(attacker)    
-    if(g_RoundEnd || g_GamePrepare == 1 || (g_GameMode == NormalDay && g_JailDay%7 == 6) || (g_GameMode == NormalDay && g_JailDay%7 == 3) || cs_get_user_team(attacker) == CS_TEAM_SPECTATOR || cs_get_user_team(victim) == CS_TEAM_SPECTATOR)
+    ateam = cs_get_user_team(attacker)   
+    if(g_GameMode == BoxDay && !g_GamePrepare)
+    {
+        if(vteam == CS_TEAM_CT || ateam == CS_TEAM_CT)
+            return HAM_SUPERCEDE
+        if(ateam == CS_TEAM_T && ateam == vteam && get_user_weapon(attacker) == CSW_KNIFE)
+        {
+            SetHamParamFloat(3, damage/2)
+            return HAM_OVERRIDE
+        }
+    }
+    if(g_RoundEnd || g_GamePrepare == 1 || (g_GameMode == NormalDay && g_JailDay%7 == 6 && !g_WasBoxDay) || (g_GameMode == NormalDay && g_JailDay%7 == 3 && !g_WasBoxDay) || cs_get_user_team(attacker) == CS_TEAM_SPECTATOR || cs_get_user_team(victim) == CS_TEAM_SPECTATOR)
         return HAM_SUPERCEDE
     if(!is_not_game()){
         if(g_FriendlyFire == 0 && ateam == vteam)
@@ -1385,6 +1407,16 @@ public player_killed(victim, attacker, shouldgib)
             if (vteam == CS_TEAM_T && kteam == CS_TEAM_CT)
                 give_item(attacker, "ammo_buckshot")
         }
+        case ZombieTeroDay:
+        {
+            if (vteam == CS_TEAM_CT && kteam == CS_TEAM_T)
+            {
+                give_item(attacker, "ammo_buckshot")
+                give_item(attacker, "ammo_buckshot")
+                give_item(attacker, "ammo_buckshot")
+                give_item(attacker, "ammo_buckshot")
+            }
+        }
         case AlienDay:
         {
             if (victim == g_Simon && kteam == CS_TEAM_T)
@@ -1443,7 +1475,7 @@ public player_killed(victim, attacker, shouldgib)
                 else 
                     cs_set_user_money(attacker, cs_get_user_money(attacker) + 500)
             }
-            else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T){
+            else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T && g_GameMode != BoxDay){
                 BoxPartener[attacker] = 0
                 BoxPartener[victim] = 0
                 cs_set_user_money(attacker, cs_get_user_money(attacker) + 2800)
@@ -1723,6 +1755,7 @@ public round_end()
     g_DuelReactionStarted = 0
     DuelWeapon = 0
     HsOnlyWeapon = 0
+    g_WasBoxDay = 0
     g_HsOnly = 0
     g_Fonarik = 0
     //for(new i = 0; i < sizeof(g_HudSync); i++)
@@ -1782,7 +1815,7 @@ public round_end()
     new name[32], name2[32]
     switch(g_GameMode)
     {
-        case AlienHiddenDay, BugsDay, SpartaDay, SpartaTeroDay, NightDay, ZombieDay, GravityDay, HnsDay:
+        case AlienHiddenDay, BugsDay, SpartaDay, SpartaTeroDay, NightDay, ZombieDay, ZombieTeroDay, GravityDay, HnsDay:
         {
             for (i=0; i<playerCount; i++)
                 if(g_DamageDone[Players[i]] > maxdmg)
@@ -1798,7 +1831,7 @@ public round_end()
                 server_cmd("give_points %d 8", max)
             }
         }
-        case ColaDay, GunDay, SpiderManDay, CowboyDay:
+        case ColaDay, GunDay, SpiderManDay, CowboyDay, ScoutDay:
         {
             for (i=0; i<playerCount; i++)
             {
@@ -2479,7 +2512,7 @@ public cmd_lastrequest(id)
 }
 public lastrequest_select(id, menu, item)
 {
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id))
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id) || g_RoundEnd)
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -3012,7 +3045,7 @@ stock show_count()
 public hud_status(task)
 {
     static i, n
-    new name[32], szStatus[64], wanted[512], fdlist[512], playerCount, Players[32], Tnum = 0, CTnum = 0, ok = 0 
+    new name[32], szStatus[64], wanted[512], fdlist[512], playerCount, Players[32], Tnum = 0, CTnum = 0, ok = 0, Talive = 0
     if(g_RoundStarted < gp_RetryTime)
         g_RoundStarted++
     show_count()
@@ -3022,7 +3055,17 @@ public hud_status(task)
         if(cs_get_user_team(Players[i]) == CS_TEAM_CT)
             CTnum++
         if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+        {    
             Tnum++
+            if(is_user_alive(Players[i]))
+                Talive++
+        }
+    }
+    if(g_GameMode == BoxDay && Talive == 1)
+    {
+        g_GameMode = NormalDay
+        emit_sound(0, CHAN_AUTO, "jbextreme/boxwin.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        g_WasBoxDay = 1
     }
     Tnum--
     CTnum++
@@ -3120,6 +3163,10 @@ public hud_status(task)
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_ZOMBIEDAY")
         }
+        case ZombieTeroDay:
+        {
+            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_ZOMBIETERODAY")
+        }
         case HnsDay:
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_HNS")
@@ -3179,6 +3226,14 @@ public hud_status(task)
         case SpartaTeroDay:
         {
             player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_SPARTA")
+        }
+        case ScoutDay:
+        {
+            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_SCOUTS")
+        }
+        case BoxDay:
+        {
+            player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_BOX")
         }
         case FunDay:
         {
@@ -3806,7 +3861,7 @@ public EndVote()
     {
         remove_task(TASK_DAYTIMER);
         new bigger = 0;
-        bigger = random_num(ZombieDay,CowboyDay);
+        bigger = random_num(ZombieDay,ScoutDay);
         
         //for( new i=1; i<12; i++ )
         //{
@@ -3864,6 +3919,16 @@ public EndVote()
                 log_amx("IN ACEASTA SAMBATA ESTE ZOMBIE DAY!!!")
                 cmd_pregame("cmd_game_zombie",1, 0, 30.0)
             }
+            case(ZombieTeroDay):
+            {
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 REVERSE ZOMBIE DAY^x01!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE REVERSE ZOMBIE DAY!!!")
+                cmd_pregame("cmd_game_zombie_tero",2, 0, 30.0)
+            }
+            case(FreezeTagDay):
+            {
+                EndVote()
+            }
             case(HnsDay): 
             {
                 ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 HNS DAY^x01!!!")
@@ -3872,9 +3937,7 @@ public EndVote()
             }
             case(AlienDay):
             {
-                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 ALIEN DAY^x01!!!")
-                log_amx("IN ACEASTA SAMBATA ESTE ALIEN DAY!!!")
-                cmd_game_alien2() //de scos
+                EndVote()
             }
             case(GunDay):
             {
@@ -3897,11 +3960,18 @@ public EndVote()
                 log_amx("IN ACEASTA SAMBATA ESTE SPARTA DAY!!!")
                 cmd_game_sparta()
             }
+            case(ScoutDay):
+            {
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 SCOUT DAY^x01!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE SCOUT DAY!!!")
+                cmd_game_scouts()
+            }
             case(SpartaTeroDay):
             {
-                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 REVERSE SPARTA DAY^x01!!!")
-                log_amx("IN ACEASTA SAMBATA ESTE REVERSE SPARTA DAY!!!")
-                cmd_pregame("cmd_game_sparta_tero", 1, 0, 30.0)
+                EndVote()
+                //ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 REVERSE SPARTA DAY^x01!!!")
+                //log_amx("IN ACEASTA SAMBATA ESTE REVERSE SPARTA DAY!!!")
+                //cmd_pregame("cmd_game_sparta_tero", 1, 0, 30.0)
             }
             case(SpiderManDay):
             {
@@ -3947,6 +4017,12 @@ public EndVote()
                 log_amx("IN ACEASTA SAMBATA ESTE COLADAY!!!")
                 cmd_pregame("cmd_game_coladay", 1, 0, 30.0)
             }
+            case(BoxDay):
+            {
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 BOX DAY^x01!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE BOX DAY!!!")
+                cmd_game_box()
+            }
             case(OneBullet):
             {
                 client_print(0, print_chat, "server gives onebullet")
@@ -3961,12 +4037,15 @@ public EndVote()
         }
     }
 }
-public cmd_done_game_prepare ()
+public cmd_done_game_prepare()
 {
     g_GamePrepare = 0;
-    if(g_GameMode == SpartaDay || g_GameMode == NightDay || g_GameMode == BugsDay || g_GameMode == SpiderManDay)
+    if(g_GameMode == SpartaDay || g_GameMode == NightDay || g_GameMode == BugsDay || g_GameMode == SpiderManDay || g_GameMode == ScoutDay || g_GameMode == BoxDay)
     {
-        client_cmd(0,"spk radio/com_go")
+        if(g_GameMode == BoxDay)
+            emit_sound(0, CHAN_AUTO, "jbextreme/rumble.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        else
+            client_cmd(0,"spk radio/com_go")
         ColorChat(0, BLUE, "^x03 Timpul de pregatire s-a terminat.^x04 ATACATI^x01!")
         player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
     }
@@ -4003,11 +4082,11 @@ public cmd_expire_time()
                         user_kill(Players[i],1)
             }
             break*/
-        case AlienDayT,GunDay, CowboyDay:
+        case AlienDayT, GunDay, CowboyDay, ScoutDay, BoxDay, ZombieDay:
             for (i=0; i<playerCount && g_RoundEnd==0; i++) 
                 if (cs_get_user_team(Players[i]) == CS_TEAM_T)
                     user_kill(Players[i],1)
-        case HnsDay,AlienDay,AlienHiddenDay,GravityDay,BugsDay,NightDay: //,PrinseleaDay
+        case HnsDay,AlienDay,AlienHiddenDay,GravityDay,BugsDay,NightDay, ZombieTeroDay: //,PrinseleaDay
             for (i=0; i<playerCount && g_RoundEnd==0; i++)
             {
                 if (cs_get_user_team(Players[i]) == CS_TEAM_CT && !get_bit(g_BackToCT, Players[i]))
@@ -4024,7 +4103,7 @@ public cmd_expire_time()
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     new sz_msg[256];
-    if(g_GameMode==ZombieDay || g_GameMode == ZombieDayT)
+    if(g_GameMode==ZombieDay || g_GameMode == ZombieDayT || g_GameMode == ZombieTeroDay)
         formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_NUKED")
     else
         formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_EXPIRE")
@@ -4079,6 +4158,7 @@ public cmd_pregame(
     cmd_saytime()
     return PLUGIN_CONTINUE
 }
+
 public cmd_game_zombie()
 {
     jail_open()
@@ -4146,6 +4226,67 @@ public cmd_game_zombie()
     return PLUGIN_CONTINUE
 }
 
+public cmd_game_zombie_tero()
+{
+    jail_open()
+    g_GamePrepare = 0
+    g_GameMode = ZombieTeroDay
+    g_GamesAp[ZombieTeroDay]=true
+    g_BoxStarted = 0
+    g_DoNotAttack = 1;
+    g_GameWeapon[0] = CSW_M3
+    g_GameWeapon[1] = CSW_KNIFE
+    g_Simon = 0
+    g_nogamerounds = 0
+    new Players[32] 
+    new playerCount, i 
+    get_players(Players, playerCount, "ac") 
+    for (i=0; i<playerCount; i++) 
+    {
+        strip_user_weapons(Players[i])
+        give_item(Players[i], "weapon_knife")
+        set_user_gravity(Players[i], 1.0)
+        if ( cs_get_user_team(Players[i]) == CS_TEAM_T)
+        {
+            give_item(Players[i], "weapon_m3")
+            give_item(Players[i], "weapon_hegrenade")
+            give_item(Players[i], "weapon_flashbang")
+            for(new bs = 0;bs<15; bs++)
+                give_item(Players[i], "ammo_buckshot")
+            set_user_health(Players[i], 100)
+            set_user_maxspeed(Players[i], 250.0)
+            set_bit(g_Fonarik, Players[i])
+            client_cmd(Players[i], "impulse 100")
+            player_glow(Players[i], g_Colors[2])
+        }
+        else if (cs_get_user_team(Players[i]) == CS_TEAM_CT)
+        {
+            set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
+            fade_screen(Players[i],false)
+            set_user_maxspeed(Players[i], 350.0)
+            set_user_health(Players[i], 2500)
+            give_item(Players[i], "item_assaultsuit")
+            cs_set_user_nvg (Players[i],true);
+            entity_set_int(Players[i], EV_INT_body, 6)
+            message_begin( MSG_ONE, gmsgSetFOV, _, Players[i] )
+            write_byte( 170  )
+            message_end()
+        }
+    }
+    emit_sound(0, CHAN_AUTO, "ambience/the_horror2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    new effect = get_pcvar_num (gp_Effects)
+    if (effect > 0)
+    {
+        set_lights("b")
+        if (effect > 1) fog(true)
+    }
+    player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM")
+    set_task(300.0,"cmd_expire_time",TASK_ROUND)
+    g_Countdown=300
+    cmd_saytime()
+    return PLUGIN_CONTINUE
+}
+
 public cmd_game_spider()
 {
     set_cvar_num("sv_gravity",600)
@@ -4185,6 +4326,47 @@ public cmd_game_spider()
         }
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/spider.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
+    set_task(300.0,"cmd_expire_time",TASK_ROUND)
+    g_Countdown=300
+    cmd_saytime()
+    return PLUGIN_CONTINUE
+}
+
+public cmd_game_scouts()
+{
+    emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    set_cvar_num("sv_gravity",250)
+    g_GameMode = ScoutDay
+    g_GamesAp[ScoutDay]=true
+    g_Simon = 0;
+    g_GameWeapon[1] = CSW_SCOUT
+    g_GameWeapon[0] = CSW_SCOUT
+    g_BoxStarted = 0
+    g_nogamerounds = 0
+    g_GamePrepare = 1;
+    g_DoNotAttack = 1;
+    server_cmd("bh_enabled 0")
+    server_cmd("jb_block_weapons")
+    server_cmd("sleep_enabled 0")
+    jail_open()
+    hud_status(0)
+    new Players[32]
+    new playerCount, i
+    get_players(Players, playerCount, "ac") 
+    for (i=0; i<playerCount; i++)
+    {
+        give_item(Players[i], "weapon_scout")
+        cs_set_user_bpammo(Players[i], CSW_SCOUT, 999)
+        set_user_health(Players[i], 1)
+        if (cs_get_user_team(Players[i]) == CS_TEAM_CT)
+        {
+            set_user_health(Players[i], 250)
+        }
+        
+    }
     set_task(20.0, "cmd_done_game_prepare",TASK_SAFETIME)
     ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 20 de secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
@@ -4688,6 +4870,7 @@ public  cmd_game_nightcrawler()
     cmd_saytime()
     return PLUGIN_HANDLED
 }
+
 public cmd_game_sparta()
 {
     emit_sound(0, CHAN_AUTO, "jbextreme/sparta1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -4746,6 +4929,8 @@ public cmd_game_sparta_tero()
     g_Simon = 0
     g_BoxStarted = 0
     g_nogamerounds = 0
+    g_DoNotAttack = 2
+    g_GameWeapon[0] = CSW_KNIFE
     jail_open()
     hud_status(0)
     new j = 0
@@ -4780,6 +4965,41 @@ public cmd_game_sparta_tero()
         }
     }
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
+    set_task(300.0,"cmd_expire_time",TASK_ROUND)
+    g_Countdown=300
+    cmd_saytime()
+    return PLUGIN_HANDLED
+}
+
+public cmd_game_box()
+{
+    g_Simon = 0
+    g_GamePrepare = 1
+    g_BoxStarted = 0
+    g_nogamerounds = 0
+    jail_open()
+    g_GameMode = BoxDay
+    g_GamesAp[BoxDay]=true
+    server_cmd("jb_block_weapons")
+    server_cmd("sleep_enabled 0")
+    server_cmd("bh_enabled 0")
+    set_cvar_num("mp_tkpunish", 0)
+    set_cvar_num("mp_friendlyfire", 1)
+    hud_status(0)
+    new Players[32] 
+    new playerCount, i 
+    get_players(Players, playerCount, "ac")
+    for (i=0; i<playerCount; i++)
+        if (cs_get_user_team(Players[i]) == CS_TEAM_T)   
+        {
+            set_user_gravity(Players[i], 1.0)
+            set_user_maxspeed(Players[i], 250.0)
+            set_user_health(Players[i], 100)
+            disarm_player(Players[i])
+        }
+    set_task(10.0, "cmd_done_game_prepare",TASK_SAFETIME)
+    ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 10 secunde pentru a va pregati!")
+    player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
     cmd_saytime()
@@ -5945,6 +6165,21 @@ public  cmd_simongamesmenu(id)
                 formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_SPARTA_TERO")
                 menu_additem(menu, option, "19", 0)
             }
+            if (containi(allowed,"b") >= 0  && bool:g_GamesAp[ZombieTeroDay]==false)
+            {    
+                formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_ZMTERO")
+                menu_additem(menu, option, "20", 0)
+            }
+            if (containi(allowed,"n") >= 0  && bool:g_GamesAp[ScoutDay]==false)
+            {    
+                formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_SCOUTS")
+                menu_additem(menu, option, "21", 0)
+            }
+            if (containi(allowed,"n") >= 0  && bool:g_GamesAp[BoxDay]==false)
+            {    
+                formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_BOX")
+                menu_additem(menu, option, "22", 0)
+            }
             /*if (containi(allowed,"h") >= 0  && g_GamesAp[8]==false)
             {    
                 formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SIMONMENU_SIMON_PRINSELEA")
@@ -6158,6 +6393,24 @@ public  simon_gameschoice(id, menu, item)
             client_print(0, print_console, "%s gives reverse sparta day", dst)
             log_amx("%s gives reverse sparta day", dst)
             cmd_pregame("cmd_game_sparta_tero", 1, 0, 30.0)
+        }
+        case(20):
+        {
+            client_print(0, print_console, "%s A DAT REVERSE ZOMBIE DAY", dst)
+            log_amx("%s A DAT REVERSE ZOMBIE DAY", dst)
+            cmd_pregame("cmd_game_zombie_tero",2, 0,30.0)
+        }
+        case(21):
+        {
+            client_print(0, print_console, "%s A DAT SCOUT DAY", dst)
+            log_amx("%s A DAT SCOUT DAY", dst)
+            cmd_game_scouts()
+        }
+        case(22):
+        {
+            client_print(0, print_console, "%s A DAT BOX DAY", dst)
+            log_amx("%s A DAT BOX DAY", dst)
+            cmd_game_box()
         }
         case(100):
         {
@@ -6665,7 +6918,6 @@ public Event_CurWeapon(id)
     return PLUGIN_CONTINUE 
 }
 
-
 public fw_player_scope(const iWpnid)
 {
     new id = entity_get_edict(iWpnid, EV_ENT_owner)
@@ -6990,10 +7242,10 @@ public on_damage(id)
     if (is_user_connected(attacker))
         switch(g_GameMode)
         {
-            case AlienHiddenDay, BugsDay, SpartaDay, NightDay:
+            case AlienHiddenDay, BugsDay, SpartaDay, NightDay, ZombieTeroDay:
                 if(cs_get_user_team(attacker) == CS_TEAM_T)
                     g_DamageDone[attacker] += damage
-            case ColaDay, GunDay, SpiderManDay, CowboyDay:
+            case ColaDay, GunDay, SpiderManDay, CowboyDay, ScoutDay:
                 g_DamageDone[attacker] += damage
             case ZombieDay, GravityDay, HnsDay, SpartaTeroDay:
                 if(cs_get_user_team(attacker) == CS_TEAM_CT)
@@ -7179,7 +7431,7 @@ public Camera_Think(iEnt)
 
 public message_SayText()
 {
-    if(g_BoxStarted == 1)
+    if(g_BoxStarted == 1 || g_GameMode == BoxDay)
     {
         if (get_msg_args() > 4)
             return PLUGIN_CONTINUE;
