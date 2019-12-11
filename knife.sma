@@ -15,6 +15,7 @@
 #define CROWBARCOST    16000
 
 new const _FistModels[][] = { "models/p_bknuckles.mdl", "models/v_pumni.mdl"}
+new const _BoxModels[][] = { "models/p_boxx.mdl", "models/v_boxx.mdl"}
 new const _CrowbarModels[][] = { "models/p_crowbar.mdl", "models/v_crowbar.mdl" , "models/w_crowbar.mdl" }
 new const _FistSounds[][] = { "weapons/cbar_hitbod2.wav", "weapons/cbar_hitbod1.wav", "weapons/bullet_hit1.wav", "weapons/bullet_hit2.wav" }
 new const _ClawsModels[] = "models/v_hands.mdl"
@@ -131,6 +132,8 @@ public plugin_precache ()
     static i
     for(i = 0; i < sizeof(_FistModels); i++)
         precache_model(_FistModels[i])
+	for(i = 0; i < sizeof(_BoxModels); i++)
+		precache_model(_BoxModels[i])
     for(i = 0; i < sizeof(_CrowbarModels); i++)
         precache_model(_CrowbarModels[i])
     for(i = 0; i < sizeof(_FistSounds); i++)
@@ -245,18 +248,14 @@ public player_damage(victim, ent, attacker, Float:damage, bits){
     if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker || gp_MultiDMG==0)
         return HAM_IGNORED
     g_Duel = get_duel()
-    if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && (cs_get_user_team(victim) != cs_get_user_team(attacker))) 
+	if((g_GameMode == 4 || g_GameMode == 5) && cs_get_user_team(attacker) == CS_TEAM_T)
+	    return HAM_IGNORED
+	if(g_GameMode == 8 || g_GameMode == 13 || g_GameMode == 17 || g_GameMode == 18 || g_GameMode == 19)
+	    return HAM_IGNORED
+    if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)!=cs_get_user_team(attacker) && (((g_GameMode == 12 || g_GameMode == 10) && cs_get_user_team(attacker)==CS_TEAM_CT) || (g_GameMode == 15 && cs_get_user_team(attacker)==CS_TEAM_T) || (g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != -1 && g_GameMode != 2 && g_GameMode != 12 && g_GameMode!=10 && g_GameMode!=7))))
     {
-        if((g_GameMode == FunDay || g_GameMode == NightDay) && cs_get_user_team(attacker)==CS_TEAM_CT)
-        {
-            SetHamParamFloat(4, damage * gc_CrowbarMul)
-            return HAM_OVERRIDE
-        }
-        else if(g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != ZombieDayT && g_GameMode != ZombieDay && g_GameMode != FunDay && g_GameMode!=NightDay && g_GameMode!= GravityDay)))
-        {
-            SetHamParamFloat(4, damage * gc_CrowbarMul)
-            return HAM_OVERRIDE
-        }
+        SetHamParamFloat(4, damage * gc_CrowbarMul)
+        return HAM_OVERRIDE
     }
     return HAM_IGNORED
 }
@@ -304,7 +303,12 @@ public current_weapon(id)
         return PLUGIN_CONTINUE
     g_Simon = get_simon()
     g_GameMode = get_gamemode()
-    if(g_HasCrowbar[id]!=0 && (g_GameMode == 4 || g_GameMode == 5) && id == g_Simon || (g_GameMode == -2 ||  g_GameMode == 2) && cs_get_user_team(id) == CS_TEAM_T || (g_GameMode == -1 || g_GameMode == 11) && cs_get_user_team(id) == CS_TEAM_CT)
+	if(g_GameMode == 19 && cs_get_user_team(id) == CS_TEAM_T)
+    {
+		set_pev(id, pev_viewmodel2, _BoxModels[1])
+        set_pev(id, pev_weaponmodel2, _BoxModels[0])
+	}
+	else if(g_HasCrowbar[id]!=0 && (g_GameMode == 4 || g_GameMode == 5) && id == g_Simon || (g_GameMode == -2 ||  g_GameMode == 2) && cs_get_user_team(id) == CS_TEAM_T || (g_GameMode == -1 || g_GameMode == 11 || g_GameMode == 17) && cs_get_user_team(id) == CS_TEAM_CT)
     {
         set_pev(id, pev_viewmodel2, _ClawsModels)
         set_pev(id, pev_weaponmodel2, _FistModels[0])
@@ -319,8 +323,8 @@ public current_weapon(id)
         set_pev(id, pev_viewmodel2, _CrowbarModels[1])
         set_pev(id, pev_weaponmodel2, _CrowbarModels[0])
     }
-    else
-    {
+	else
+	{
         set_pev(id, pev_viewmodel2, _FistModels[1])
         set_pev(id, pev_weaponmodel2, _FistModels[0])
     }
