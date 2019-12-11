@@ -1475,11 +1475,16 @@ public player_killed(victim, attacker, shouldgib)
                 else 
                     cs_set_user_money(attacker, cs_get_user_money(attacker) + 500)
             }
-            else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T && g_GameMode != BoxDay){
-                BoxPartener[attacker] = 0
-                BoxPartener[victim] = 0
-                cs_set_user_money(attacker, cs_get_user_money(attacker) + 2800)
-                set_user_health(attacker, 100)    
+            else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T){
+                if(g_GameMode == BoxDay)
+                    set_user_health(attacker, get_user_health(attacker) + 50)
+                else
+                {
+                    BoxPartener[attacker] = 0
+                    BoxPartener[victim] = 0
+                    cs_set_user_money(attacker, cs_get_user_money(attacker) + 2800)
+                    set_user_health(attacker, 100)    
+                }
             }
             if(g_Simon == victim)
             {
@@ -3861,7 +3866,7 @@ public EndVote()
     {
         remove_task(TASK_DAYTIMER);
         new bigger = 0;
-        bigger = random_num(ZombieDay,ScoutDay);
+        bigger = random_num(ZombieDay,BoxDay);
         
         //for( new i=1; i<12; i++ )
         //{
