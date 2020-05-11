@@ -37,6 +37,10 @@ public plugin_init()
 	
 }
 
+public plugin_precache()
+{
+	precache_sound("misc/gag.wav")
+}
 public plugin_cfg()
 {
 	static dir[ 64 ];
@@ -100,7 +104,8 @@ public gag_cmd( id, level, cid )
 	g_Gaged[target] = true;
 	g_GagTime[ target ] = minutes;
 	
-	print( 0, "^x04[JB EVILS] %s:^x01 Gag jucatorul^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
+	print( 0, "^x04[JB LALEAGANE RO] %s:^x01 I-a dat Gag jucatorului^x03 %s^x01 pentru^x03 [%d]^x01 minut(e). Motiv:^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet, minutes, reason );
+	client_cmd(0,"spk misc/gag.wav")
 	
 	if( get_pcvar_num( toggle_tag ) == 1 )
 	{
@@ -149,7 +154,7 @@ public ungag_cmd( id,level, cid )
 	
 	remove_task( target + 123 );
 	
-	print( 0, "^x04[JB EVILS] %s:^x01 UnGag jucatorul^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
+	print( 0, "^x04[JB LALEAGANE RO] %s:^x01 i-a dat Ungag jucatorului^x03 %s",get_pcvar_num( point ) == 2 ? name : "", namet );
 	
 	return PLUGIN_HANDLED;
 }

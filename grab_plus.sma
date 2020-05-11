@@ -417,7 +417,7 @@ public unset_grabbed( id )
 	}
 	client_data[id][GRABBED] = 0
 	
-	if( get_pcvar_num( p_fade ) )
+	if( get_pcvar_num( p_fade ) && (get_user_flags(id) & ADMIN_LEVEL_E))
 	{
 		message_begin( MSG_ONE, SVC_SCREENFADE, _, id )
 		write_short( 10000 ) //duration

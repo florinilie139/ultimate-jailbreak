@@ -16,9 +16,8 @@ Jocuri: Slender man
 
 #define PLUGIN_NAME    "[UJBM] Main"
 #define PLUGIN_AUTHOR    "Mister X"
-#define PLUGIN_VERSION    "1.5"
+#define PLUGIN_VERSION    "1.6"
 #define PLUGIN_CVAR    "Ultimate JailBreak Manager"
-#define SERVER_IP "93.119.25.96"
 
 #define USE_TOGGLE 3
 #define MAX_BACKWARD_UNITS    -150.0
@@ -55,8 +54,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jbllg_xmas/jbllg_xmas.mdl"
-#define JBMODELSHORT "jbllg_xmas"
+#define JBMODELLOCATION "models/player/jblaleagane4/jblaleagane4.mdl"
+#define JBMODELSHORT "jblaleagane4"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -69,6 +68,8 @@ Jocuri: Slender man
 #define SMOKECOST    3000
 #define ARMORCOST    4000
 #define FDCOST    16000
+#define SHIELDCOST    16000
+//#define KNIFESCOST    10000
 #define CROWBARCOST    16000
 #define CTDEAGLECOST 1000
 #define CTFLASHCOST 3000
@@ -145,8 +146,10 @@ new FDnr
 new Tnr
 new Wnr
 new g_newChance
+new g_CantChoose
 new g_canTrivia
 new g_WasBoxDay
+new g_TimeRound
 //new g_CountKilled[33]
 
 enum _:days{
@@ -201,11 +204,12 @@ new const _RpgModels[][] = { "models/p_rpg.mdl", "models/v_rpg.mdl" , "models/w_
 new const _RpgSounds[][] = { "weapons/rocketfire1.wav", "weapons/explode3.wav", "weapons/rocket1.wav" }
 
 //sunete craciun
-new const _PoliceSounds[][] = { "jbextreme/hohojb.wav", "jbextreme/mcjb.wav", "jbextreme/hohohomcjb.wav"}
+//new const _PoliceSounds[][] = { "jbextreme/hohojb.wav", "jbextreme/mcjb.wav", "jbextreme/hohohomcjb.wav"}
 
 //sunete david
-//new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"}
+new const _PoliceSounds[][] = { "jbdobs/police/radio1.wav", "jbdobs/police/radio2.wav", "jbdobs/police/radio3.wav", "jbdobs/police/radio4.wav"}
 
+new const GucciModels[][] = { "vader" , "obiwan" }
 
 new SpriteExplosion
 
@@ -216,12 +220,12 @@ new const _RemoveEntities[][] = {
 
 new g_HsOnly = 0
 new HsOnlyWeapon = 0
-new const _HsOnlyWeapons [][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_ak47", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas" }
-new const _HsOnlyWeaponsCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_AK47, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS }
+new const _HsOnlyWeapons [][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_ak47", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas", "weapon_m249", "weapon_sg550" }
+new const _HsOnlyWeaponsCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_AK47, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS, CSW_M249, CSW_SG550 }
 
-new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas" }
-new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS }
-new const _WeaponsFreeAmmo[] = { 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999, 999}
+new const _WeaponsFree[][] = { "weapon_m4a1", "weapon_deagle", "weapon_g3sg1", "weapon_scout", "weapon_ak47", "weapon_mp5navy", "weapon_m3", "weapon_aug", "weapon_galil", "weapon_sg552", "weapon_famas", "weapon_sg550", "weapon_ump45", "weapon_p90" }
+new const _WeaponsFreeCSW[] = { CSW_M4A1, CSW_DEAGLE, CSW_G3SG1, CSW_SCOUT, CSW_AK47, CSW_MP5NAVY, CSW_M3, CSW_AUG, CSW_GALIL, CSW_SG552, CSW_FAMAS, CSW_SG550, CSW_UMP45, CSW_P90 }
+new const _WeaponsFreeAmmo = 999
 
 new const _Duel[][_duel] =
 {
@@ -302,7 +306,9 @@ new const g_HudSync[][_hud] =
     {0,  0.8,  0.3, 20.0},
     {0, -1.0,  0.4,  1.0},
     {0,  0.05,  0.5,  1.0},
-    {0, -1.0,  0.45, 1.0}
+    {0, -1.0,  0.45, 1.0},
+    {0,  0.6,  0.25,  1.0},
+    {0,  0.05,  0.2,  1.0}
 }
 // Colors: 0:Simon / 1:Freeday / 2:CT Duel / 3:TT Duel
 new const g_Colors[][3] = { {0, 255, 0}, {255, 140, 0}, {0, 0, 255}, {255, 0, 0} }
@@ -365,6 +371,7 @@ stock fm_set_entity_visibility(index, visible = 1) set_pev(index, pev_effects, v
 
 new gmsgBombDrop
 new ding_on = 1
+new g_CanOpen = 1
 new killed = 0
 new killedonlr = 0
 new Simons[33]
@@ -380,7 +387,6 @@ new g_GameWeapon[2]
 
 //what guns on menu^^
 new G_Size[2][4] ={{
-        
         //Min Value
         0,
         15,
@@ -412,17 +418,12 @@ new g_IsFG
 new g_ResultVote[33]
 new g_DayTimer = 0
 
-
+new SVC_SCREENFADE
+#define SF_FADEOUT 0
 
 public plugin_init()
 {
-    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
-    get_user_ip(0,ip,35,0);
-    if(equal(ip,SERVER_IP))
-    {
-        return PLUGIN_CONTINUE;
-    }
     Load();
     unregister_forward(FM_Spawn, gp_PrecacheSpawn)
     unregister_forward(FM_KeyValue, gp_PrecacheKeyValue)
@@ -432,6 +433,7 @@ public plugin_init()
     g_MsgStatusIcon = get_user_msgid("StatusIcon")
     g_MsgMOTD = get_user_msgid("MOTD")
     gmsgBombDrop = get_user_msgid("BombDrop")
+    SVC_SCREENFADE = get_user_msgid( "ScreenFade" )
 
     register_message(g_MsgStatusText, "msg_statustext")
     register_message(g_MsgStatusIcon, "msg_statusicon")
@@ -485,6 +487,7 @@ public plugin_init()
     register_clcmd("say /micr", "cmd_simon_micr")    
     register_clcmd("say /shop", "cmd_shop")
     register_clcmd("say /fd", "cmd_freeday")
+    register_clcmd("say /damibani", "cmd_givemoneyForTest")
     register_clcmd("say /removefd", "cmd_removefd")
     register_clcmd("say /menu", "cmd_simonmenu")
     register_clcmd("say /freeday", "cmd_freeday")
@@ -500,7 +503,7 @@ public plugin_init()
     register_clcmd("say /reguli", "cmd_help")
     register_clcmd("say /whosimon","cmd_whosimon")
     register_clcmd("say /gunshop","gunsmenu")
-    register_clcmd("say /choosesimon","cmd_adminchoosesimon")
+    register_clcmd("say /simonel","cmd_adminchoosesimon")
     register_clcmd("say_team /gunshop","gunsmenu")
     register_clcmd("say /motiv","cmd_motiv")
     register_clcmd("say /listfd","cmd_listfd")
@@ -579,6 +582,7 @@ public plugin_precache()
     precache_model(COLA_P)
     precache_model(COLA_V)
     precache_model("models/hat/cowboy.mdl")
+    precache_model("models/player/vader/vader.mdl")
     
     static i
     BeaconSprite = precache_model("sprites/shockwave.spr")    
@@ -629,6 +633,7 @@ public plugin_precache()
     gp_PrecacheSpawn = register_forward(FM_Spawn, "precache_spawn", 1)
     gp_PrecacheKeyValue = register_forward(FM_KeyValue, "precache_keyvalue", 1)
 }
+
 public plugin_natives() 
 { 
     register_library("ujbm"); 
@@ -638,6 +643,7 @@ public plugin_natives()
     register_native ("get_fd", "_get_fd",0)
     register_native ("get_wanted", "_get_wanted",0)
     register_native ("set_wanted", "_set_wanted",0)
+    register_native ("remove_fd", "_remove_fd",0)
     register_native ("get_last", "_get_last",0)
     register_native ("get_model","_get_model",0)
     register_native ("get_day","_get_day",0)
@@ -679,6 +685,22 @@ public _set_wanted(iPlugin, iParams)
     set_bit(g_PlayerWanted, id)
     entity_set_int(id, EV_INT_skin, 5)
     
+}
+public _remove_fd(iPlugin, iParams)
+{
+    new id = get_param(1)
+    new ok=0
+    if(get_bit(g_PlayerFreeday, id))
+        ok=1
+    if(!g_PlayerRevolt)
+        revolt_start()
+    set_bit(g_PlayerRevolt, id)
+    clear_bit(g_PlayerFreeday, id)
+    if(!get_bit(g_PlayerWanted, id) && ok)
+        if(check_model(id)==false)
+            set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+        else
+            entity_set_int(id, EV_INT_skin, 1)
 }
 public _get_model(iPlugin, iParams) 
 { 
@@ -1156,11 +1178,17 @@ public player_heal()
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
-    if (!is_user_connected(victim) || !is_user_connected(attacker))
-        return HAM_IGNORED;
+    static CsTeams:vteam, CsTeams:ateam
+    if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker)
+        return HAM_IGNORED
+    vteam = cs_get_user_team(victim)
+    ateam = cs_get_user_team(attacker)   
+    if(g_GameMode == BoxDay && !g_GamePrepare)
+        if(vteam == CS_TEAM_CT || ateam == CS_TEAM_CT)
+            return HAM_SUPERCEDE
     if(g_GameMode == FunDay && fun_god == 1)
         return HAM_SUPERCEDE
-    if (g_GameMode  ==  AlienHiddenDay && g_Simon  ==  attacker || g_GameMode == AlienDayT && cs_get_user_team(attacker)==CS_TEAM_T)
+    if (g_GameMode  ==  AlienHiddenDay && g_Simon  ==  attacker || g_GameMode == AlienDayT && ateam==CS_TEAM_T)
     {
         set_user_rendering(attacker, kRenderFxNone, 0, 0, 0, kRenderNormal, 0 )
         remove_task(TASK_INVISIBLE+attacker)
@@ -1169,9 +1197,9 @@ public player_damage(victim, ent, attacker, Float:damage, bits)
     if (g_GameMode == GunDay && g_HsOnly)
         if(get_pdata_int(victim, m_LastHitGroup, 5) != HIT_HEAD)
             return HAM_SUPERCEDE
-    if(cs_get_user_team(attacker) == CS_TEAM_SPECTATOR || cs_get_user_team(victim) == CS_TEAM_SPECTATOR)
+    if(ateam == CS_TEAM_SPECTATOR || vteam == CS_TEAM_SPECTATOR)
         return HAM_SUPERCEDE
-    if((cs_get_user_team(victim)==cs_get_user_team(attacker) || victim==attacker) && (bits & (1<<24))) 
+    if(vteam == ateam && (bits & (1<<24))) 
         return HAM_SUPERCEDE
     switch(g_Duel)
     {
@@ -1477,7 +1505,7 @@ public player_killed(victim, attacker, shouldgib)
             }
             else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T){
                 if(g_GameMode == BoxDay)
-                    set_user_health(attacker, get_user_health(attacker) + 50)
+                    set_user_health(attacker, get_user_health(attacker) + 15)
                 else
                 {
                     BoxPartener[attacker] = 0
@@ -1763,6 +1791,7 @@ public round_end()
     g_WasBoxDay = 0
     g_HsOnly = 0
     g_Fonarik = 0
+    g_TimeRound = 0
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    ClearSyncHud(0, g_HudSync[i][_hudsync])
     set_lights("#OFF");
@@ -1970,6 +1999,7 @@ public round_start()
     FreedayTime = 1
     FreedayRemoved = 0
     g_newChance = 1
+    g_CantChoose = 0
     set_task(100.0,"FreedayTimeDone",TASK_FD_TIMER)
     gc_TalkMode = get_pcvar_num(gp_TalkMode)
     gc_VoiceBlock = get_pcvar_num(gp_VoiceBlock)
@@ -2141,15 +2171,25 @@ public cmd_simon(id)
 }
 public cmd_open(id)
 {
-    if(id == g_Simon || (get_user_flags(id) & ADMIN_SLAY)|| !is_not_game()){
+    if(!g_CanOpen)
+        return PLUGIN_HANDLED
+    if(id == g_Simon || (get_user_flags(id) & ADMIN_SLAY) || !is_not_game() || g_GameMode == Freeday){
         jail_open()
         new name[32]
         get_user_name(id, name, 31)
         ColorChat(0, BLUE, "^x03%s^x01 A DESCHIS^x04 USA^x01!!!", name)
         emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+        g_CanOpen = 0
+        set_task(5.0, "resetOpen")
     }
     return PLUGIN_HANDLED
 }
+
+public resetOpen()
+{
+    g_CanOpen = 1
+}
+
 public cmd_box(id)
 {
     if((id == g_Simon || (get_user_flags(id) & ADMIN_SLAY)) && g_GameMode == NormalDay)
@@ -2301,7 +2341,7 @@ public removefd_select(id, menu, item)
     {
         clear_bit(g_PlayerFreeday, player)
         if(check_model(player)==false)
-        set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+            set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
         rez = random_num(0,3)
         if( rez >= 0 && rez <= 3)
         {
@@ -2319,6 +2359,12 @@ public removefd_select(id, menu, item)
     
     return PLUGIN_HANDLED
 }
+
+public cmd_givemoneyForTest(id)
+{
+    cs_set_user_money(id,16000);
+}
+
 public cmd_freeday(id)
 {
     if (g_GameMode == NormalDay && FreedayTime == 1)
@@ -2517,7 +2563,7 @@ public cmd_lastrequest(id)
 }
 public lastrequest_select(id, menu, item)
 {
-    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id) || g_RoundEnd)
+    if(item == MENU_EXIT || !get_pcvar_num(gp_LastRequest) || g_Duel != 0 || g_PlayerLast !=id || !is_user_alive(id) || !is_not_game() || get_bit(g_PlayerWanted, id) || g_RoundEnd || g_CantChoose)
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -2546,10 +2592,10 @@ public lastrequest_select(id, menu, item)
             i = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(id, _WeaponsFree[i])
             server_cmd("jb_block_weapons")
-            cs_set_user_bpammo(id, _WeaponsFreeCSW[i], _WeaponsFreeAmmo[i])
+            cs_set_user_bpammo(id, _WeaponsFreeCSW[i], _WeaponsFreeAmmo)
             set_task(120.0,"cmd_expire_time",TASK_ROUND)
             g_Countdown=120
-            cmd_saytime()
+            set_task(1.0,"cmd_saytime",TASK_SAYTIME);
             
         }
         case(DuelKnives):
@@ -2687,10 +2733,14 @@ public lastrequestgames_select(id, menu, item)
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     get_user_name(id, dst, charsmax(dst))
     clear_bit(g_PlayerFreeday,id)
-    new Players[32] 
-    new playerCount, i 
-    get_players(Players, playerCount, "ac", "CT")        
-    if(playerCount>=2 && (cs_get_user_money(id)>=16000 ||get_vip_type(id)> 0)){
+    new CTcount = 0;
+    for (new i = 1; i < g_MaxClients; i++)
+        if (is_user_alive(i) && cs_get_user_team(i) == CS_TEAM_CT)
+        {
+            CTcount++;
+        }
+
+    if(CTcount >=2 && (cs_get_user_money(id)>=16000 || get_vip_type(id)> 0)){
         server_cmd("bh_enabled 1")
         if(get_vip_type(id) == 0)
             cs_set_user_money(id,cs_get_user_money(id)-16000);
@@ -2698,108 +2748,11 @@ public lastrequestgames_select(id, menu, item)
         {
             case('1'):
             {
-                g_GameMode = ZombieDayT
-                g_BoxStarted = 0
-                server_cmd("jb_block_weapons")
-                g_Simon = 0
-                g_SimonAllowed = 0
-                g_DoNotAttack = 1;
-                g_GameWeapon[1] = CSW_KNIFE
-                g_GameWeapon[0] = CSW_M3
-                for (i=0; i<playerCount; i++) 
-                {
-                    strip_user_weapons(Players[i])
-                    give_item(Players[i], "weapon_knife")
-                    set_user_maxspeed(Players[i], 200.0)
-                    set_user_health(Players[i], 300)
-                    give_item(Players[i], "item_assaultsuit")
-                    cs_set_user_nvg (Players[i],true);
-                    entity_set_int(Players[i], EV_INT_body, 6)
-                    message_begin( MSG_ONE, gmsgSetFOV, _, Players[i] )
-                    write_byte(170)
-                    message_end()
-                }
-                strip_user_weapons(id)
-                give_item(id, "weapon_knife")
-                give_item(id, "weapon_m3")
-                give_item(id, "weapon_hegrenade")
-                give_item(id, "weapon_flashbang")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                give_item(id, "ammo_buckshot")
-                if(playerCount>3)
-                    set_user_health(id, 100+50*(playerCount-3))
-                else
-                    set_user_health(id, 100)
-                set_user_maxspeed(id, 250.0)
-                set_bit(g_Fonarik, id)
-                client_cmd(id, "impulse 100")
-                player_glow(id, g_Colors[2])
-                
-                emit_sound(0, CHAN_AUTO, "ambience/the_horror2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                new effect = get_pcvar_num (gp_Effects)
-                if (effect > 0)
-                {
-                    set_lights("b")
-                    if (effect > 1) fog(true)
-                }    
-                player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM")
-                set_task(300.0,"cmd_expire_time",TASK_ROUND)
-                
+                cmd_pregame("start_Zombie_Tero", 1, 0, 15.0)                
             }
             case('2'):
             {
-                g_GameMode = AlienDayT
-                g_DoNotAttack = 2;
-                g_GameWeapon[0] = CSW_KNIFE
-                server_cmd("jb_block_weapons")
-                server_cmd("jb_block_teams")
-                hud_status(0)
-                for (i=0; i<playerCount; i++) 
-                {
-                    strip_user_weapons(Players[i])
-                    
-                    give_item(Players[i], "weapon_knife")
-                    new j = random_num(0, sizeof(_WeaponsFree) - 1)
-                    give_item(Players[i], _WeaponsFree[j])
-                    cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
-                    new n = random_num(0, sizeof(_WeaponsFree) - 1)
-                    while (n == j) { 
-                        n = random_num(0, sizeof(_WeaponsFree) - 1) 
-                    }
-                    give_item(Players[i], _WeaponsFree[n])
-                    cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
-                }
-                strip_user_weapons(id)
-                set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0 )
-                message_begin(MSG_ONE, get_user_msgid("ScreenFade"), {0,0,0}, id)
-                write_short(~0)
-                write_short(~0)
-                write_short(0x0004) // stay faded
-                write_byte(ALIEN_RED)
-                write_byte(ALIEN_GREEN)
-                write_byte(ALIEN_BLUE)
-                write_byte(100)
-                message_end()
-                set_user_maxspeed(id, 320.0)
-                entity_set_int(id, EV_INT_body, 7)
-                new hp = get_pcvar_num(gp_GameHP)
-                if (hp < 20) hp = 200
-                set_user_health(id, hp*playerCount)
-                set_task(20.0, "give_items_alien_t", TASK_GIVEITEMS+id)
-                set_task(2.5, "radar_alien_t", TASK_RADAR+id, _, _, "b")
-                set_task(3.1, "task_inviz",TASK_INVISIBLE + id, _, _, "b");
-                
-                set_lights("z")
-                emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
-                set_task(5.0, "stop_sound")
-                set_task(300.0,"cmd_expire_time",TASK_ROUND)
-                return PLUGIN_HANDLED
+                cmd_pregame("start_Alien_Tero", 1, 0, 15.0)
             }
             default:
             {
@@ -2813,6 +2766,138 @@ public lastrequestgames_select(id, menu, item)
     menu_destroy(menu)
     return PLUGIN_HANDLED
 }
+
+public start_Zombie_Tero()
+{
+    new TeroPlayer = 0;
+    new playerCount = 0;
+    g_GameMode = ZombieDayT;
+    g_DoNotAttack = 1;
+    g_GameWeapon[1] = CSW_KNIFE;
+    g_GameWeapon[0] = CSW_M3;
+    for (new i = 1; i < g_MaxClients; i++)
+    {
+        if (is_user_alive(i))
+        {
+            if (cs_get_user_team(i) == CS_TEAM_CT)
+            {
+                playerCount++;
+                give_item(i, "weapon_knife");
+                set_user_maxspeed(i, 200.0);
+                set_user_health(i, 300);
+                give_item(i, "item_assaultsuit");
+                cs_set_user_nvg(i, true);
+                entity_set_int(i, EV_INT_body, 6);
+                message_begin(MSG_ONE, gmsgSetFOV, _, i);
+                write_byte(170);
+                message_end();
+            }
+            else
+            {
+                TeroPlayer = i;
+                give_item(TeroPlayer, "weapon_knife")
+                give_item(TeroPlayer, "weapon_m3")
+                give_item(TeroPlayer, "weapon_hegrenade")
+                give_item(TeroPlayer, "weapon_flashbang")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+                give_item(TeroPlayer, "ammo_buckshot")
+            }
+        }
+    }
+
+    if (playerCount > 3)
+        set_user_health(TeroPlayer, 100 + 50 * (playerCount - 3))
+    else
+        set_user_health(TeroPlayer, 100);
+    set_user_maxspeed(TeroPlayer, 250.0);
+    set_bit(g_Fonarik, TeroPlayer);
+    client_cmd(TeroPlayer, "impulse 100");
+    player_glow(TeroPlayer, g_Colors[2]);
+
+    emit_sound(0, CHAN_AUTO, "ambience/the_horror2.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+    new effect = get_pcvar_num(gp_Effects)
+    if (effect > 0)
+    {
+        set_lights("b")
+        if (effect > 1) 
+            fog(true)
+    }
+    player_hudmessage(0, 2, HUD_DELAY + 1.0, { 0, 255, 0 }, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM");
+    set_task(300.0, "cmd_expire_time", TASK_ROUND);
+    g_Countdown = 300;
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
+    return PLUGIN_HANDLED;
+}
+
+public start_Alien_Tero()
+{
+    new TeroPlayer = 0;
+    new playerCount = 0;
+    g_GameMode = AlienDayT;
+    g_DoNotAttack = 2;
+    g_GameWeapon[0] = CSW_KNIFE;
+    hud_status(0);
+    for (new i = 0; i < g_MaxClients; i++)
+    {
+        if (is_user_alive(i))
+        {
+            if (cs_get_user_team(i) == CS_TEAM_CT)
+            {
+                playerCount++;
+                give_item(i, "weapon_knife");
+                new j = random_num(0, sizeof(_WeaponsFree) - 1);
+                give_item(i, _WeaponsFree[j]);
+                cs_set_user_bpammo(i, _WeaponsFreeCSW[j], _WeaponsFreeAmmo);
+                new n = random_num(0, sizeof(_WeaponsFree) - 1);
+                while (n == j) {
+                    n = random_num(0, sizeof(_WeaponsFree) - 1);
+                }
+                give_item(i, _WeaponsFree[n]);
+                cs_set_user_bpammo(i, _WeaponsFreeCSW[n], _WeaponsFreeAmmo)
+            }
+            else
+            {
+                TeroPlayer = i;
+                strip_user_weapons(i)
+                set_user_rendering(i, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0)
+                message_begin(MSG_ONE, get_user_msgid("ScreenFade"), { 0,0,0 }, i)
+                write_short(~0)
+                write_short(~0)
+                write_short(0x0004) // stay faded
+                write_byte(ALIEN_RED)
+                write_byte(ALIEN_GREEN)
+                write_byte(ALIEN_BLUE)
+                write_byte(100)
+                message_end()
+                set_user_maxspeed(i, 320.0)
+                entity_set_int(i, EV_INT_body, 7)
+                
+                set_task(20.0, "give_items_alien_t", TASK_GIVEITEMS + i)
+                set_task(2.5, "radar_alien_t", TASK_RADAR + i, _, _, "b")
+                set_task(3.1, "task_inviz", TASK_INVISIBLE + i, _, _, "b");
+
+            }
+        }
+    }
+    new hp = get_pcvar_num(gp_GameHP)
+    if (hp < 20) 
+        hp = 200
+    set_user_health(TeroPlayer, hp * playerCount)
+    set_lights("z")
+    emit_sound(0, CHAN_VOICE, "alien_alarm.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
+    set_task(5.0, "stop_sound")
+    set_task(300.0, "cmd_expire_time", TASK_ROUND)
+    g_Countdown = 300;
+    set_task(1.0, "cmd_saytime", TASK_SAYTIME)
+    return PLUGIN_HANDLED;
+}
+
 public Beacon(id)
 {
     if(g_Duel == 0 || !is_user_alive(id))
@@ -3054,6 +3139,11 @@ public hud_status(task)
     if(g_RoundStarted < gp_RetryTime)
         g_RoundStarted++
     show_count()
+    if(g_TimeRound != 0)
+        {            
+            player_hudmessage(0, 12, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_TIMER", g_TimeRound)  
+            g_TimeRound--
+        }
     get_players(Players, playerCount, "c") 
     for (i=0; i<playerCount; i++)
     {
@@ -3071,18 +3161,18 @@ public hud_status(task)
         g_GameMode = NormalDay
         emit_sound(0, CHAN_AUTO, "jbextreme/boxwin.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
         g_WasBoxDay = 1
+        remove_task(TASK_ROUND)
+        remove_task(TASK_SAYTIME)
     }
     Tnum--
     CTnum++
     if(Tnum/CTnum >= 2 && CTnum <= 8)
         ok=1
-    for(i=0; i<playerCount; i++)
-    {
-        if(ok)
-            player_hudmessage(Players[i], 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCY")
-        else
-            player_hudmessage(Players[i], 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCN")
-    }      
+    if(ok)
+        player_hudmessage(0, 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCY")
+    else
+        player_hudmessage(0, 4, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_LOCN")      
+    player_hudmessage(0, 11, HUD_DELAY, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_STATUS_OFERTA")  
     switch (g_GameMode)        
     {
         case Freeday:
@@ -3543,6 +3633,7 @@ stock freeday_set(id, player,bool:next)
     if(is_user_alive(player) && !get_bit(g_PlayerWanted, player))
     {
         set_bit(g_PlayerFreeday, player)
+        fadeout(player, 0, 100, 0)
         entity_set_int(player, EV_INT_skin, 4)
         if(get_pcvar_num(gp_GlowModels))
             player_glow(player, g_Colors[1])
@@ -3691,7 +3782,17 @@ public client_infochanged(id)
 { 
     if (is_user_connected(id))
     {
-        if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR)
+        new szModel[50]
+        new ok = 0
+        get_user_info(id,"model",szModel,sizeof(szModel))
+        new i
+        for(i = 0; i < sizeof(GucciModels); i++)
+            if(equali(szModel,GucciModels[i]))
+            {
+                ok = 1
+                break
+            }
+        if (get_vip_type(id) == 0 && g_GameMode != FunDay && id != g_Simon && !(get_user_flags(id) & ADMIN_SLAY) && cs_get_user_team(id) != CS_TEAM_SPECTATOR && !ok)
             set_user_info(id, "model", JBMODELSHORT)
     }    
     return PLUGIN_CONTINUE
@@ -3730,20 +3831,19 @@ public fade_screen (id, bool:on)
 }
 public cmd_saytime()
 {
-    new word[10];
-    num_to_word(g_Countdown, word, 9);
-    remove_task(TASK_SAYTIME)
-    if(g_Countdown > 60){
-        num_to_word(g_Countdown/60,word, 9)
-        client_cmd(0, "spk ^"vox/%s minutes remaining^"", word);
+    g_TimeRound = g_Countdown;
+    remove_task(TASK_SAYTIME);
+    new timeForSpeaker = g_Countdown / 60;
+    if(g_Countdown > 60){ 
+        client_cmd(0, "spk ^"vox/%d minutes remaining^"", timeForSpeaker);
         g_Countdown -= 60;
         set_task(60.0,"cmd_saytime",TASK_SAYTIME)
     }else if(g_Countdown > 10){
-        client_cmd(0, "spk ^"vox/%s seconds remaining^"", word);
+        client_cmd(0, "spk ^"vox/%d seconds remaining^"", g_Countdown);
         g_Countdown -= 10;
         set_task(10.0,"cmd_saytime",TASK_SAYTIME)
     }else if(g_Countdown > 0){
-        client_cmd(0, "spk ^"vox/%s^"", word);
+        client_cmd(0, "spk ^"vox/%d^"", g_Countdown);
         g_Countdown --;
         set_task(1.0,"cmd_saytime",TASK_SAYTIME)
     }
@@ -3929,6 +4029,7 @@ public EndVote()
                 ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 REVERSE ZOMBIE DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE REVERSE ZOMBIE DAY!!!")
                 cmd_pregame("cmd_game_zombie_tero",2, 0, 30.0)
+                jail_open()
             }
             case(FreezeTagDay):
             {
@@ -3939,6 +4040,7 @@ public EndVote()
                 ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 HNS DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE HNS DAY!!!")
                 cmd_pregame("cmd_game_hns", 2, 0, 60.0)
+                jail_open()
             }
             case(AlienDay):
             {
@@ -3967,8 +4069,8 @@ public EndVote()
             }
             case(ScoutDay):
             {
-                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 SCOUT DAY^x01!!!")
-                log_amx("IN ACEASTA SAMBATA ESTE SCOUT DAY!!!")
+                ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 SNIPER DAY^x01!!!")
+                log_amx("IN ACEASTA SAMBATA ESTE SNIPER DAY!!!")
                 cmd_game_scouts()
             }
             case(SpartaTeroDay):
@@ -3997,12 +4099,14 @@ public EndVote()
                 log_amx("IN ACEASTA SAMBATA ESTE GRAVITY DAY!!!")
                 set_cvar_num("sv_gravity",250)
                 cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
+                jail_open()
             }
             case(FireDay):
             {
                 ColorChat(0, GREEN, "IN ACEASTA SAMBATA ESTE^x03 FIRE DAY^x01!!!")
                 log_amx("IN ACEASTA SAMBATA ESTE FIRE DAY!!!")
                 cmd_pregame("cmd_game_fire", 2, 1, 30.0)
+                jail_open()
             }
             case(BugsDay):
             {
@@ -4061,6 +4165,7 @@ public cmd_expire_time()
 {
     new Players[32] 
     new playerCount, i 
+    g_CantChoose = 1
     get_players(Players, playerCount, "ac")
     if(g_Duel == 2){
         for (i=0; i<playerCount && g_RoundEnd==0; i++)
@@ -4158,9 +4263,9 @@ public cmd_pregame(
             fade_screen(player,true)
         }
     }
-    set_task(countdown,gameName,TASK_GIVEITEMS)
-    g_Countdown=floatround(countdown)
-    cmd_saytime()
+    set_task(countdown, gameName, TASK_GIVEITEMS);
+    g_Countdown = floatround(countdown);
+    set_task(1.0, "cmd_saytime", TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4224,10 +4329,10 @@ public cmd_game_zombie()
         set_lights("b")
         if (effect > 1) fog(true)
     }
-    player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM")
-    set_task(300.0,"cmd_expire_time",TASK_ROUND)
-    g_Countdown=300
-    cmd_saytime()
+    player_hudmessage(0, 2, HUD_DELAY + 1.0, { 0, 255, 0 }, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM")
+    set_task(300.0, "cmd_expire_time", TASK_ROUND);
+    g_Countdown = 300;
+    set_task(1.0, "cmd_saytime", TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4288,7 +4393,7 @@ public cmd_game_zombie_tero()
     player_hudmessage(0, 2, HUD_DELAY + 1.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_MENU_GAME_TEXT_ZM")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4336,18 +4441,18 @@ public cmd_game_spider()
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
 public cmd_game_scouts()
 {
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-    set_cvar_num("sv_gravity",250)
+    set_cvar_num("sv_gravity",200)
     g_GameMode = ScoutDay
     g_GamesAp[ScoutDay]=true
     g_Simon = 0;
-    g_GameWeapon[1] = CSW_SCOUT
+    g_GameWeapon[1] = CSW_AWP
     g_GameWeapon[0] = CSW_SCOUT
     g_BoxStarted = 0
     g_nogamerounds = 0
@@ -4363,12 +4468,16 @@ public cmd_game_scouts()
     get_players(Players, playerCount, "ac") 
     for (i=0; i<playerCount; i++)
     {
-        give_item(Players[i], "weapon_scout")
-        cs_set_user_bpammo(Players[i], CSW_SCOUT, 999)
-        set_user_health(Players[i], 1)
+        set_user_health(Players[i], 100)
+        if (cs_get_user_team(Players[i]) == CS_TEAM_T)
+        {
+            give_item(Players[i], "weapon_scout")
+            cs_set_user_bpammo(Players[i], CSW_SCOUT, 999)
+        }   
         if (cs_get_user_team(Players[i]) == CS_TEAM_CT)
         {
-            set_user_health(Players[i], 250)
+            give_item(Players[i], "weapon_awp")
+            cs_set_user_bpammo(Players[i], CSW_AWP, 999)
         }
         
     }
@@ -4377,7 +4486,7 @@ public cmd_game_scouts()
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4424,7 +4533,7 @@ public cmd_game_hns()
     client_print(0, print_center , sz_msg)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 public  cmd_game_alien()
@@ -4463,7 +4572,7 @@ public  cmd_game_alien()
             give_item(Players[i], "weapon_knife")
             j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
         }
         else
         { 
@@ -4485,7 +4594,7 @@ public  cmd_game_alien()
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 public  cmd_game_alien2()
@@ -4525,13 +4634,13 @@ public  cmd_game_alien2()
             give_item(Players[i], "weapon_knife")
             new j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
             new n = random_num(0, sizeof(_WeaponsFree) - 1)
             while (n == j) { 
                 n = random_num(0, sizeof(_WeaponsFree) - 1) 
             }
             give_item(Players[i], _WeaponsFree[n])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo)
         }
     }
     set_user_rendering(g_Simon, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0 )
@@ -4559,7 +4668,7 @@ public  cmd_game_alien2()
     set_task(3.1, "task_inviz",TASK_INVISIBLE + g_Simon, _, _, "b");
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 
@@ -4579,13 +4688,13 @@ public cmd_game_gunday()
         give_item(Players[i], "weapon_knife")
         new j = random_num(0, sizeof(_WeaponsFree) - 1)
         give_item(Players[i], _WeaponsFree[j])
-        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
         new n = random_num(0, sizeof(_WeaponsFree) - 1)
         while (n == j) { 
             n = random_num(0, sizeof(_WeaponsFree) - 1) 
         }
         give_item(Players[i], _WeaponsFree[n])
-        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
+        cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo)
         set_user_gravity(Players[i], 1.0)
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -4598,7 +4707,7 @@ public cmd_game_gunday()
     client_print(0, print_center , sz_msg)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4630,7 +4739,7 @@ public cmd_game_cowboy()
     client_print(0, print_center , sz_msg)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 
@@ -4705,7 +4814,7 @@ public cmd_game_gravity()
     client_print(0, print_center , sz_msg)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 public  cmd_game_fire()
@@ -4748,7 +4857,7 @@ public  cmd_game_fire()
     emit_sound(0, CHAN_AUTO, "jbextreme/lina.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 public  cmd_game_bugs()
@@ -4788,13 +4897,13 @@ public  cmd_game_bugs()
             set_user_health(Players[i], 100)
             new j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
             new n = random_num(0, sizeof(_WeaponsFree) - 1)
             while (n == j) { 
                 n = random_num(0, sizeof(_WeaponsFree) - 1) 
             }
             give_item(Players[i], _WeaponsFree[n])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo[n])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[n], _WeaponsFreeAmmo)
         }
     }
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
@@ -4803,7 +4912,7 @@ public  cmd_game_bugs()
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 public  cmd_game_nightcrawler()
@@ -4835,7 +4944,7 @@ public  cmd_game_nightcrawler()
             set_user_maxspeed(Players[i], 250.0)    
             j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
         }
         else
         { 
@@ -4872,7 +4981,7 @@ public  cmd_game_nightcrawler()
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 
@@ -4921,7 +5030,7 @@ public cmd_game_sparta()
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 
@@ -4943,7 +5052,7 @@ public cmd_game_sparta_tero()
     server_cmd("sleep_enabled 0")
     new Players[32] 
     new playerCount, i 
-    get_players(Players, playerCount, "ac") 
+    get_players(Players, playerCount, "ac")                 
     for (i=0; i<playerCount; i++) 
     {
         set_user_gravity(Players[i], 1.0)
@@ -4953,7 +5062,7 @@ public cmd_game_sparta_tero()
             strip_user_weapons(Players[i])
             j = random_num(0, sizeof(_WeaponsFree) - 1)
             give_item(Players[i], _WeaponsFree[j])
-            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo[j])
+            cs_set_user_bpammo(Players[i], _WeaponsFreeCSW[j], _WeaponsFreeAmmo)
             set_user_health(Players[i], 100)
         }
         if(cs_get_user_team(Players[i]) == CS_TEAM_T)
@@ -4964,15 +5073,15 @@ public cmd_game_sparta_tero()
             entity_set_int(Players[i], EV_INT_body, 8)
             disarm_player(Players[i])
             Give_Item(Players[i], 0)
-            entity_set_string(Players[i], EV_SZ_viewmodel, SPARTA_V)  
-            entity_set_string(Players[i], EV_SZ_weaponmodel, SPARTA_P) 
+            //entity_set_string(Players[i], EV_SZ_viewmodel, SPARTA_V)  
+            //entity_set_string(Players[i], EV_SZ_weaponmodel, SPARTA_P) 
             set_user_health(Players[i], 200)
         }
     }
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_DONE")
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
 }
 
@@ -5000,15 +5109,22 @@ public cmd_game_box()
             set_user_gravity(Players[i], 1.0)
             set_user_maxspeed(Players[i], 250.0)
             set_user_health(Players[i], 100)
-            disarm_player(Players[i])
+            new gun = give_item(Players[i], "weapon_glock18")
+            cs_set_weapon_ammo(gun, 0)
         }
+    set_task(0.5, "boxWep")
     set_task(10.0, "cmd_done_game_prepare",TASK_SAFETIME)
     ColorChat(0, NORMAL, "Aveti^x04 Godmode^x01 10 secunde pentru a va pregati!")
     player_hudmessage(0, 6, 3.0, {0, 255, 0}, "%L", LANG_SERVER, "UJBM_PREPARE_START")
-    set_task(300.0,"cmd_expire_time",TASK_ROUND)
-    g_Countdown=300
-    cmd_saytime()
+    set_task(120.0,"cmd_expire_time",TASK_ROUND)
+    g_Countdown=120
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_HANDLED
+}
+
+public cmd_game_starwars()
+{
+
 }
 
 /*public cmd_ascunsea_start()
@@ -5061,7 +5177,7 @@ public cmd_game_box()
     emit_sound(0, CHAN_AUTO, "jbextreme/brass_bell_C.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 public  cmd_game_ascunsea()
@@ -5096,7 +5212,7 @@ public  cmd_game_ascunsea()
     }
     set_task(30.0,"cmd_ascunsea_start",TASK_GIVEITEMS)
     g_Countdown=30
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }
 public cmd_prinselea_start()
@@ -5200,7 +5316,7 @@ public  cmd_game_prinselea()
     }
     set_task(30.0,"cmd_prinselea_start",TASK_GIVEITEMS)
     g_Countdown=30
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
     return PLUGIN_CONTINUE
 }*/
 public cmd_game_funday ()
@@ -5227,7 +5343,7 @@ public cmd_game_funday ()
     }
     set_task(300.0,"cmd_expire_time",TASK_ROUND)
     g_Countdown=300
-    cmd_saytime()
+    set_task(1.0,"cmd_saytime",TASK_SAYTIME);
 }
 public cmd_funmenu (id)
 {
@@ -5368,11 +5484,6 @@ public cmd_shop(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_HE", HECOST)
             menu_additem(menu, option, "4", 0)
         }
-        if (containi(Tallowed,"e") >= 0)
-        {
-            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_ARMOR",ARMORCOST)
-            menu_additem(menu, option, "5", 0)
-        }
         if (containi(Tallowed,"f") >= 0 && !get_bit(g_PlayerWanted, id))
         {
             if(FreedayTime == 1)
@@ -5392,7 +5503,22 @@ public cmd_shop(id)
                 }
             }
         }
+        if (containi(Tallowed,"e") >= 0)
+        {
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_ARMOR",ARMORCOST)
+            menu_additem(menu, option, "5", 0)
+        }
+        if (containi(Tallowed,"g") >= 0)
+        {
+            formatex(option, charsmax(option), "\r%L\w", LANG_SERVER, "UJBM_MENU_SHOP_SHIELD", SHIELDCOST)
+            menu_additem(menu, option, "7", 0)
+        }
         /*if (containi(Tallowed,"g") >= 0)
+        {
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_KNIFES", KNIFESCOST)
+            menu_additem(menu, option, "a", 0)
+        }
+        if (containi(Tallowed,"g") >= 0)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FLASHLIGHT", FLASHLIGHTCOST)
             menu_additem(menu, option, "7", 0)
@@ -5431,11 +5557,16 @@ public cmd_shop(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_HP",HPCOST)
             menu_additem(menu, option, "4", 0)
         }
+        /*if (containi(CTallowed,"e") >= 0)
+        {
+            formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_KNIFES", KNIFESCOST)
+            menu_additem(menu, option, "a", 0)
+        }
         if (containi(CTallowed,"e") >= 0)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_NVG",NVGCOST)
             menu_additem(menu, option, "5", 0)
-        }
+        }*/
         if (containi(CTallowed,"f") >= 0)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FLASHLIGHT",FLASHLIGHTCOST)
@@ -5454,7 +5585,7 @@ public cmd_shop(id)
 }
 public shop_choice_T(id, menu, item)
 {
-    if(item == MENU_EXIT || !is_user_alive(id) || BuyTimes[id] == 2)
+    if(item == MENU_EXIT || !is_user_alive(id) || BuyTimes[id] == 2 || !is_not_game())
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -5565,11 +5696,12 @@ public shop_choice_T(id, menu, item)
         }
         case('7'):
         {
-            if (money >= FLASHLIGHTCOST) 
+            if(get_vip_type(id) != 4)
+                client_print(id, print_center, "Nu poti cumpara Scut daca nu ai VIP JB 4")
+            else if (money >= SHIELDCOST && get_vip_type(id) == 4)
             {
-                cs_set_user_money (id, money - FLASHLIGHTCOST, 0)
-                set_bit(g_Fonarik, id)
-                client_cmd(id, "impulse 100")
+                cs_set_user_money (id, money - SHIELDCOST, 0)
+                Give_Item(id, 0)
                 BuyTimes[id]++
             }
             else
@@ -5577,13 +5709,33 @@ public shop_choice_T(id, menu, item)
                 formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_SHOP_NOT_ENOUGH")
                 client_print(id, print_center , sz_msg)
             }
-        }    
+        }
+	/*
+        case('a'):
+        {
+            if (money >= KNIFESCOST)
+            {
+                new bool = server_cmd("give_knifes %d 3", id)
+                if(bool)
+                {
+                    cs_set_user_money (id, money - KNIFESCOST, 0)
+                    BuyTimes[id]++
+                }
+                else
+                    client_print(id, print_center, "Nu poti cumpara cutite de aruncat daca ai deja.")
+            }
+            else
+            {
+            
+            }
+        }
+	*/
         case('8'):
         {
             set_bit(g_NoShowShop, id)
             formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_SHOP_SHOWHOW")
             client_print(id, print_center , sz_msg)
-        }    
+        }
     }
     if(get_vip_type(id) == 3)
        BuyTimes[id] = 0;
@@ -5707,6 +5859,26 @@ public shop_choice_CT(id, menu, item)
         {
             client_cmd(id,"say /crowbar")
         }
+	/*
+        case('a'):
+        {
+            if (money >= KNIFESCOST)
+            {
+                new bool = server_cmd("give_knifes %d 3", id)
+                if(bool)
+                {
+                    cs_set_user_money (id, money - KNIFESCOST, 0)
+                    BuyTimes[id]++
+                }
+                else
+                    client_print(id, print_center, "Nu poti cumpara cutite de aruncat daca ai deja.")
+            }
+            else
+            {
+            
+            }
+        }
+	*/
         
     }
     if (!get_bit(g_NoShowShop, id)) cmd_shop(id)
@@ -6052,11 +6224,7 @@ public  simon_choice(id, menu, item)
     {
         case('1'): 
         {
-            jail_open()
-            new name[32]
-            get_user_name(id, name, 31)
-            ColorChat(0, BLUE, "^x03%s^x01 A DESCHIS^x04 USA^x01!!!", name)
-            emit_sound(0, CHAN_AUTO, "jbextreme/opendoor3.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+            cmd_open(id)
             cmd_simonmenu(id)
         }
         case('2'): cmd_freeday(id)
@@ -6298,6 +6466,7 @@ public  simon_gameschoice(id, menu, item)
             client_print(0, print_console, "%s A DAT HNS DAY", dst)
             log_amx("%s A DAT HNS DAY", dst)
             cmd_pregame("cmd_game_hns", 2, 0, 60.0)
+            jail_open()
         }
         case(4):
         {
@@ -6331,12 +6500,14 @@ public  simon_gameschoice(id, menu, item)
             log_amx("%s A DAT GRAVITY DAY", dst)
             set_cvar_num("sv_gravity",250)
             cmd_pregame("cmd_game_gravity", 2, 0, 30.0)
+            jail_open()
         }
         case(10):
         {
             client_print(0, print_console, "%s A DAT FIRE DAY", dst)
             log_amx("%s A DAT FIRE DAY", dst)
             cmd_pregame("cmd_game_fire", 2, 1, 30.0)
+            jail_open()
         }
         case(11):
         {
@@ -6404,11 +6575,12 @@ public  simon_gameschoice(id, menu, item)
             client_print(0, print_console, "%s A DAT REVERSE ZOMBIE DAY", dst)
             log_amx("%s A DAT REVERSE ZOMBIE DAY", dst)
             cmd_pregame("cmd_game_zombie_tero",2, 0,30.0)
+            jail_open()
         }
         case(21):
         {
-            client_print(0, print_console, "%s A DAT SCOUT DAY", dst)
-            log_amx("%s A DAT SCOUT DAY", dst)
+            client_print(0, print_console, "%s A DAT SNIPER DAY", dst)
+            log_amx("%s A DAT SNIPER DAY", dst)
             cmd_game_scouts()
         }
         case(22):
@@ -6863,34 +7035,22 @@ bool:check_model(id)
 
 public block_FITH_message(msg_id, msg_dest, entity)
 {
-    if(g_GameMode != ColaDay) return PLUGIN_CONTINUE;
-    if(get_msg_args() == 5)
+    if(g_BoxStarted == 1 || g_GameMode == BoxDay)
     {
-        if(get_msg_argtype(5) == ARG_STRING)
-        {
-            new value5[64];
-            get_msg_arg_string(5 ,value5 ,63);
-            if(equal(value5, "#Fire_in_the_hole"))
+        if ( get_msg_arg_int ( 1 ) == print_notify )
             {
-                return PLUGIN_HANDLED;
+                return PLUGIN_CONTINUE;
             }
-        }
-    }
-    else if(get_msg_args() == 6)
-    {
-        if(get_msg_argtype(6) == ARG_STRING)
+        static s_Message[ 22 ];
+        get_msg_arg_string  ( 2, s_Message, charsmax ( s_Message ) );
+        
+        if ( equal ( s_Message, "#Game_teammate_attack" ) || equal ( s_Message, "#Killed_Teammate" ) || equal ( s_Message, "#Game_teammate_kills" ) )
         {
-            new value6[64];
-            get_msg_arg_string(6 ,value6 ,63);
-            if(equal(value6 ,"#Fire_in_the_hole"))
-            {
-                return PLUGIN_HANDLED;
-            }
+            return PLUGIN_HANDLED;
         }
     }
     return PLUGIN_CONTINUE;
 }
-
 
 public block_FITH_audio(msg_id, msg_dest, entity)
 {
@@ -7175,7 +7335,8 @@ public cmd_donate(id, level, cid)
         get_user_name(id, sName, charsmax(sName))
         cs_set_user_money(userid, iAmount+cs_get_user_money(userid), 0)
         cs_set_user_money(id, cs_get_user_money(id)-iAmount, 0)
-        client_cmd(userid,"spk jbextreme/kaching.wav")
+        client_cmd(userid,"spk jbextreme/kaching.wav")    
+        fadeout(userid, 0, 100, 0)
         ColorChat(0, RED, "^x03%s^x01 i-a donat lui^x03 %s^x01 suma de^x04 $%d^x01.", sName, sOutput[1], iAmount)      
         g_Donated[id] += 1
         return 1
@@ -7513,7 +7674,7 @@ public box_last_menu(id)
 
 public box_last_menu_choice(id, menu, item)
 {
-    if(item == MENU_EXIT || g_GameMode != Freeday || g_BoxStarted == 1)
+    if(item == MENU_EXIT || g_GameMode != Freeday || g_BoxStarted == 1 || g_CantChoose == 1)
     {
         menu_destroy(menu)
         return PLUGIN_HANDLED
@@ -7734,11 +7895,67 @@ public cmd_incercare(id)
 {    
     if(get_user_flags(id) & ADMIN_LEVEL_E)
     {
+        if(g_GameMode != NormalDay || g_GameMode != Freeday)
+            server_cmd("jb_unblock_weapons")
         set_user_maxspeed(id, 350.0)
         entity_set_int(id, EV_INT_body, 8)
         disarm_player(id)
-        Give_Item(id, 0)
+        fm_give_item(id, "weapon_shield")
         entity_set_string(id, EV_SZ_viewmodel, SPARTA_V)  
-        entity_set_string(id, EV_SZ_weaponmodel, SPARTA_P) 
+        entity_set_string(id, EV_SZ_weaponmodel, SPARTA_P)
+        if(g_GameMode != NormalDay || g_GameMode != Freeday)
+            server_cmd("jb_block_weapons")
     }
+}
+
+public boxWep()
+{
+    new playerCount, i
+    new Players[32]
+    get_players(Players, playerCount, "ac") 
+    for (i=0; i<playerCount; i++)
+        if(cs_get_user_team(Players[i]) == CS_TEAM_T)
+            disarm_player(Players[i])
+}
+
+public fadeout(player, red, green, blue)
+{
+    if(!is_user_alive(player))
+        return PLUGIN_CONTINUE
+    message_begin( MSG_ONE, SVC_SCREENFADE, _, player )
+    write_short( 10000 ) //duration
+    write_short( 0 ) //hold
+    write_short( SF_FADEOUT ) //flags
+    write_byte( red ) //r
+    write_byte( green ) //g
+    write_byte( blue ) //b
+    write_byte( 100 ) //a
+    message_end( )
+    return PLUGIN_CONTINUE
+}
+
+#define fm_create_entity(%1) engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString, %1))
+stock fm_give_item(index, const item[]) 
+{
+    if (!equal(item, "weapon_", 7) && !equal(item, "ammo_", 5) && !equal(item, "item_", 5) && !equal(item, "tf_weapon_", 10))
+        return 0
+
+    new ent = fm_create_entity(item)
+    if (!pev_valid(ent))
+        return 0
+
+    new Float:origin[3]
+    pev(index, pev_origin, origin)
+    set_pev(ent, pev_origin, origin)
+    set_pev(ent, pev_spawnflags, pev(ent, pev_spawnflags) | SF_NORESPAWN)
+    dllfunc(DLLFunc_Spawn, ent)
+
+    new save = pev(ent, pev_solid)
+    dllfunc(DLLFunc_Touch, ent, index)
+    if (pev(ent, pev_solid) != save)
+        return ent
+
+    engfunc(EngFunc_RemoveEntity, ent)
+
+    return -1
 }

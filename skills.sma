@@ -15,7 +15,7 @@
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
 #define PLUGIN_CVAR    "Skills Mod"
-#define SERVER_IP "93.119.25.96"
+#define SERVER_IP "178.32.241.0"
 
 #define NO_RECOIL_WEAPONS_BITSUM  (1<<2 | 1<<CSW_KNIFE | 1<<CSW_HEGRENADE | 1<<CSW_FLASHBANG | 1<<CSW_SMOKEGRENADE | 1<<CSW_C4)
 #define BASE_COUNTER_CAMO 30
@@ -79,9 +79,10 @@ new bool:g_PlayerRevived[MAX_PLAYERS+1]
 
 new const g_Prices[] = { 5, 10, 15, 20, 25, 30, 35, 40} //  5, 10, 15, 20, 25, 30, 35, 40
 new const g_Alpha[] =  { 255, 140, 80, 15, 0}
-new const Float:g_Gravity[] = { 1.0, 0.8125, 0.625, 0.4375, 0.25}
+new const Float:g_Gravity[] = { 1.0, 0.8, 0.65, 0.5, 0.25}
+//new const Float:g_Gravity[] = { 1.0, 0.8125, 0.625, 0.4375, 0.25}
 new const g_maxhp[] = { 100, 125, 150, 200, 300}
-new const Float:g_freezet[] = {0.0, 0.5, 1.0, 1.5, 2.0}
+new const Float:g_freezet[] = {0.0, 0.4, 0.8, 1.2, 2.0}
 
 new laser
 
@@ -90,6 +91,7 @@ new g_UsedDisguise[MAX_PLAYERS+1];
 new g_UsedThief[MAX_PLAYERS+1];
 new bool:g_Players4[MAX_PLAYERS+1];
 new g_IsCamo[MAX_PLAYERS+1];
+new g_IsHeal[MAX_PLAYERS+1];
 new bool:g_UseInfra[MAX_PLAYERS+1];
 new origins[MAX_PLAYERS+1][3], tmp_origin[3], counter[MAX_PLAYERS+1];
 new g_Killed[MAX_PLAYERS+1];
@@ -116,16 +118,12 @@ new Leaved[200][_arg]
 new TotalSaved
 new gp_SpecialVip
 
+new SVC_SCREENFADE
+#define SF_FADEOUT 0
+
 public plugin_init ()
 {
-    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
-    
-    get_user_ip(0,ip,35,0);
-    if(equal(ip,SERVER_IP))
-    {
-        return PLUGIN_CONTINUE;
-    }
     LoadVips()
     
     register_cvar(PLUGIN_CVAR, PLUGIN_VERSION, FCVAR_SERVER|FCVAR_SPONLY)
@@ -175,6 +173,9 @@ public plugin_init ()
     set_task(REFRESH_TIME, "check_players", _, _, _, "b")
     if(skillh == 1)
         set_task(120.0, "helps", _, _, _, "b")
+        
+    SVC_SCREENFADE = get_user_msgid( "ScreenFade" )
+    
     return PLUGIN_CONTINUE
 }
 public plugin_natives() 
@@ -186,9 +187,9 @@ public _get_disguise(iPlugin, iParams)
 {
     new id = get_param(1);
     if(g_IsDisguise[id]==1)
-	    return true
-	else
-	    return false
+        return true
+    else
+        return false
 }
 public _give_points (id,level,cid)
 {
@@ -277,7 +278,7 @@ public reload_skills(id)
     g_PlayerRevived[id] = false
     g_UseInfra[id] = false
     g_Killed[id] = 0
-    ShowAc[id] = false
+    ShowAc[id] = true
     IsVip[id] = 0
     Resetused[id] = false
     set_user_rendering(id)
@@ -416,7 +417,7 @@ public setData(player) {
     return PLUGIN_CONTINUE
 }
 stock getData(player) {
-    // Crash für den Compiler
+    // Crash f?r den Compiler
     // if (myVault == INVALID_HANDLE) return "empty"
     
     new name[35]
@@ -590,6 +591,39 @@ stock askwhy(id, callback[], title[], any:...)
     
     menu_display(id, menu)
 }
+
+public fadeout(player, red, green, blue)
+{
+    if(!is_user_alive(player))
+        return PLUGIN_CONTINUE
+    message_begin( MSG_ONE, SVC_SCREENFADE, _, player )
+    write_short( 10000 ) //duration
+    write_short( 0 ) //hold
+    write_short( SF_FADEOUT ) //flags
+    write_byte( red ) //r
+    write_byte( green ) //g
+    write_byte( blue ) //b
+    write_byte( 100 ) //a
+    message_end( )
+    return PLUGIN_CONTINUE
+}
+
+public fadein(player, red, green, blue)
+{
+    if(!is_user_alive(player))
+        return PLUGIN_CONTINUE
+    message_begin( MSG_ONE, SVC_SCREENFADE, _, player )
+    write_short( 10000 ) //duration
+    write_short( 0 ) //hold
+    write_short( SF_FADE_IN + SF_FADE_ONLYONE ) //flags
+    write_byte( red ) //r
+    write_byte( green ) //g
+    write_byte( blue ) //b
+    write_byte( 100 ) //a
+    message_end( )
+    return PLUGIN_CONTINUE
+}
+
 public check_players ()
 {
     g_Simon = get_simon()
@@ -608,22 +642,41 @@ public check_players ()
                     if(counter[player] == BASE_COUNTER_CAMO - g_PlayerSkill[player][CAMUFLAJ]*6){
                         set_user_rendering(player, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, g_Alpha[g_PlayerSkill[player][CAMUFLAJ]]);
                         g_IsCamo[player]=1;
+                        fadein(player, 0, 0, 100)
                     }
                     client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_CAMO_DONE");    
                 }
                 if(counter[player] >= BASE_COUNTER_HEAL && cs_get_user_team(player)== CS_TEAM_CT && get_user_health(player) < g_maxhp[g_PlayerSkill[player][VINDECARE]] && is_skills_ok()){  //player was not moving during last HEAL_INTERVAL seconds
                     new health = get_user_health(player)
+                    
+                    if(!g_IsHeal[player])
+                    {
+                        g_IsHeal[player] = 1
+                        fadein(player, 100, 0, 0)
+                    }
+                    
                     if(health + g_PlayerSkill[player][VINDECARE]> g_maxhp[g_PlayerSkill[player][VINDECARE]])
+                    {
                         set_user_health(player, g_maxhp[g_PlayerSkill[player][VINDECARE]])
+                        g_IsHeal[player] = 0 
+                        fadeout(player, 100, 0, 0)
+                    }
                     else
                         set_user_health(player, health + g_PlayerSkill[player][VINDECARE])
-                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");    
+                    client_print(player, print_center, "%L", LANG_SERVER, "SKILLS_HEALING_DONE");
+                    
                 }
             }else{
                 counter[player] = 0 //player has moved since last check
-                if(cs_get_user_team(player) == CS_TEAM_T){
+                if(cs_get_user_team(player) == CS_TEAM_T && g_IsCamo[player]){
                     set_user_rendering(player)
                     g_IsCamo[player]=0
+                    fadeout(player, 0, 0, 100)
+                }
+                if(g_IsHeal[player])
+                {
+                    g_IsHeal[player] = 0
+                    fadeout(player, 100, 0, 0)
                 }
                 origins[player][0] = tmp_origin[0]
                 origins[player][1] = tmp_origin[1]
@@ -722,7 +775,7 @@ public client_PreThink(id)
     if(is_user_alive(id) && is_skills_ok()){
         if(g_PlayerSkill[id][VITEZA]!=0){
             //if(get_user_button(id) & IN_FORWARD)
-                set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][VITEZA] * 30 )
+                set_user_maxspeed(id, 250.0 + g_PlayerSkill[id][VITEZA] * 25 )
             //else if(!(get_user_button(id) & IN_FORWARD))
             //    set_user_maxspeed(id, 250.0)
         }
@@ -775,9 +828,9 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-	if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6)
-		return true
-	return false
+    if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6 && g_DayOfTheWeek%7!=3)
+        return true
+    return false
 }
 
 public disguise_done (id)
@@ -826,12 +879,12 @@ public cmd_thief (id)
             }
         }
         if (last_dist<80) {
-			if(g_PlayerSkill[last_id][FURT] != 0){
-				if(!get_wanted(id))
-				    set_wanted(id)
-				client_print(id,print_center,"Ai gresit buzunarul baiatul meu")
-				return PLUGIN_HANDLED
-			}
+            if(g_PlayerSkill[last_id][FURT] != 0){
+                if(!get_wanted(id))
+                    set_wanted(id)
+                client_print(id,print_center,"Ai gresit buzunarul baiatul meu")
+                return PLUGIN_HANDLED
+            }
             if(g_UsedThief[last_id] < 2){
                 if(random_num(0,(3 + g_UsedThief[last_id] - g_PlayerSkill[id][FURT])*2) == 0){
                     g_UsedThief[last_id] ++
@@ -1049,29 +1102,29 @@ public round_end()
                 if(g_Killed[Players[i]] == CTtotal && CTtotal>1 && g_Duel!=2 && (g_Gamemode == Freeday || g_Gamemode == NormalDay)){
                     sum += CTtotal*2;
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+%d Spaima gardienilor",CTtotal*2);    
+                        client_print(Players[i], print_chat, "Ai primit +%d puncte. Esti spaima gardienilor!",CTtotal*2);    
                 }
                 if(Talive == 1 && g_Duel!= 2)
                 {
                     if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Killed[Players[i]]==0 && CTtotal>1){
                         sum+=10;
                         if(ShowAc[Players[i]]==true)
-                            client_print(Players[i], print_chat, "+10 Ultimul in viata si nu esti rebel")
+                            client_print(Players[i], print_chat, "Ai primit +10 puncte. Ai ramas ultimul in viata si nu esti rebel.")
                     }else{
                         sum+=5
                         if(ShowAc[Players[i]]==true)
-                            client_print(Players[i], print_chat, "+5 Ultimul in viata")
+                            client_print(Players[i], print_chat, "Ai primit +5 puncte. Ai ramas ultimul in viata.")
                     }
                 }
                 else if(g_Gamemode > NormalDay || g_Gamemode < Freeday ){
                     sum+=3;
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+3 Ai castigat un joc")
+                        client_print(Players[i], print_chat, "Ai primit +3 puncte pentru ca ai castigat un joc.")
                 }
                 else if(Talive <= Ttotal/3){
                     sum+=2;
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+2 Ai ramas in viata")
+                        client_print(Players[i], print_chat, "Ai primit +2 puncte pentru ca ai ramas in viata.")
                 }
                 if(sum!=0)
                     add_points(Players[i],sum);
@@ -1081,19 +1134,19 @@ public round_end()
                 if(g_Duel == 2){
                     add_points(Players[i],5)
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+5 Ai scapat de masacrul prizonierului")
+                        client_print(Players[i], print_chat, "Ai primit +5 puncte pentru ca ai scapat de masacrul prizonierului.")
                 }else if(CTalive == 1){
                     add_points(Players[i],5)
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+5 Ultimul in viata")
+                        client_print(Players[i], print_chat, "Ai primit +5 puncte pentru ca ai ramas ultimul in viata")
                 }else if(g_Gamemode > 1 || g_Gamemode<0){
                     add_points(Players[i],3)
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+3 Ai castigat un joc")
+                        client_print(Players[i], print_chat, "Ai primit +3 puncte pentru ca ai castigat un joc.")
                 }else{
                     add_points(Players[i],2)
                     if(ShowAc[Players[i]]==true)
-                        client_print(Players[i], print_chat, "+2 Ai ramas in viata")
+                        client_print(Players[i], print_chat, "Ai primit +2 puncte pentru ca ai ramas in viata.")
                 }
             }
         }
@@ -1125,36 +1178,57 @@ public fw_primary_attack_post(ent)
 
 public player_damage(victim, ent, attacker, Float:damage, bits)
 {
+    static CsTeams:vteam, CsTeams:ateam
+    vteam = cs_get_user_team(victim)
     if(!is_skills_ok())
         return HAM_IGNORED
-    if(is_user_connected(attacker) && is_user_connected(victim)){
-        if(damage / 100 >= 1 && get_user_weapon(attacker)==CSW_KNIFE && damage/100<3){
-            new sum = floatround(damage)
-            sum /= 100
-            add_points(attacker,sum)
-            if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat, "+%d pentru %.2f damage",sum,damage)
-        }
-        if(cs_get_user_team(attacker) == CS_TEAM_CT && get_user_weapon(attacker) == CSW_GLOCK18 && g_PlayerSkill[attacker][INGHETARE] > 0)
-        {
-            set_pev(victim, pev_flags, pev(victim, pev_flags)| FL_FROZEN)
-            set_task(g_freezet[g_PlayerSkill[attacker][INGHETARE]],"unfreeze",5300 + victim)
-            return HAM_SUPERCEDE
-        }
-    }
-    if(is_user_alive(attacker) && get_user_weapon(attacker)!=CSW_KNIFE && 
-        g_PlayerSkill[victim][DODGE] && random_num(0,DODGE_CHANCE) == 0)
+    if(is_user_alive(attacker))
     {
-        SetHamParamFloat(4, 0.0)
-        return HAM_OVERRIDE
+        ateam = cs_get_user_team(attacker)   
+        if(is_user_alive(victim))
+        {
+            if(get_vip_type(attacker) == 4 && vteam != ateam)
+            {
+                new heal = floatround(damage)/5
+                if(heal > 20)
+                    heal = 20
+                if(get_user_health(attacker) < 150)
+                {
+                    set_user_health(attacker, get_user_health(attacker) + heal)
+                    if(get_user_health(attacker) > 150)
+                        set_user_health(attacker, 150)
+                }
+            }
+    
+            if(damage / 100 >= 1 && get_user_weapon(attacker) == CSW_KNIFE && damage/100<3){
+                new sum = floatround(damage)
+                sum /= 100
+                add_points(attacker,sum)
+                if(ShowAc[attacker]==true)
+                    client_print(attacker, print_chat, "Ai primit +%d puncte pentru ca ai dat %.2f damage.",sum,damage)
+            }
+            if(CS_TEAM_CT == ateam && get_user_weapon(attacker) == CSW_GLOCK18 && g_PlayerSkill[attacker][INGHETARE] > 0)
+            {
+                set_pev(victim, pev_flags, pev(victim, pev_flags)| FL_FROZEN)
+                set_task(g_freezet[g_PlayerSkill[attacker][INGHETARE]],"unfreeze",5300 + victim)
+                return HAM_SUPERCEDE
+            }
+        }
+        if(get_user_weapon(attacker) != CSW_KNIFE && 
+            g_PlayerSkill[victim][DODGE] && random_num(0,DODGE_CHANCE) == 0)
+        {
+            SetHamParamFloat(4, 0.0)
+            return HAM_OVERRIDE
+        }
     }
     new Float:dmg = 0.0
-	const m_LastHitGroup = 75; 
+    const m_LastHitGroup = 75; 
     if(is_user_alive(attacker) && get_user_weapon(attacker) == CSW_KNIFE)
-        dmg = damage * (15 * g_PlayerSkill[attacker][PUTERE])/100
-	if(get_pdata_int(victim, m_LastHitGroup ) != HIT_HEAD)
-        dmg = dmg - damage * (15 * g_PlayerSkill[victim][REZISTENTA])/100
+        dmg = damage * (13 * g_PlayerSkill[attacker][PUTERE])/100
+    if(get_pdata_int(victim, m_LastHitGroup ) != HIT_HEAD)
+        dmg = dmg - damage * (13 * g_PlayerSkill[victim][REZISTENTA])/100
     SetHamParamFloat(4, (damage + dmg > 0)?(damage + dmg):(0.0))
+      
     return HAM_OVERRIDE
     
 }
@@ -1190,26 +1264,26 @@ public player_killed(victim, attacker,Float:damage)
             else
                 sum +=3
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+3 ai omorat un gardian la un joc")
+                client_print(attacker, print_chat,"Ai primit +3 puncte pentru ca ai omorat un gardian la un joc.")
         }else{
             sum +=1
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+1 ai omorat un gardian")
+                client_print(attacker, print_chat,"Ai primit +1 punct pentru ca ai omorat un gardian.")
         }
         if(g_Simon== victim){
             sum*=2;
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"X2 L-ai omorat pe sefu")
+                client_print(attacker, print_chat,"Ai primit +%d puncte bonus pentru ca ai omorat Simonul.", sum/2)
         }
         if(g_IsDisguise[attacker]==1 && g_Duel==0){
             sum+=1
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+1 ai omorat fiind deghizat")
+                client_print(attacker, print_chat,"Ai primit +1 punct pentru ca ai omorat fiind deghizat.")
         }
         if(g_Duel > 2){
             sum += 1
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+1 ai omorat la un duel")
+                client_print(attacker, print_chat,"Ai primit +1 punct pentru ca ai omorat la un duel.")
         }
         if(g_Duel < 2 && g_PlayerRevived[victim] == false)
             g_Killed[attacker] ++;
@@ -1226,25 +1300,25 @@ public player_killed(victim, attacker,Float:damage)
             }else
                 sum += 3
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+3 Ai omorat un prizonnier la un joc")
+                client_print(attacker, print_chat,"Ai primit +3 puncte pentru ca ai omorat un prizonier la un joc.")
         }else if(g_Duel> 2){
             sum += 4
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+4 I-ai indeplinit ultima dorinta")
+                client_print(attacker, print_chat,"Ai primit +4 puncte pentru ca i-ai indeplinit prizonierului ultima dorinta.")
         }else if(get_user_weapon(victim)!= CSW_KNIFE){
             sum += 1
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+1 fiindca avea arma")
+                client_print(attacker, print_chat,"Ai primit +1 punct pentru ca prizonierul avea arma.")
         }
         if(g_Killed[victim] > 0 && get_wanted(victim)){
             sum += g_Killed[victim] * 2
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+%d ai omorat un prizonnier rebel",g_Killed[victim] * 2)
+                client_print(attacker, print_chat,"Ai primit +%d puncte pentru ca ai omorat un prizonier rebel.",g_Killed[victim] * 2)
         }
         if(g_IsDisguise[victim]==1){
             sum += 2
             if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+2 ai omorat un prizonnier deghizat")
+                client_print(attacker, print_chat,"Ai primit +2 puncte pentru ca ai omorat un prizonier deghizat.")
         }
         add_points(attacker, sum)
         if(g_Gamemode == NormalDay){
@@ -1263,27 +1337,30 @@ public player_killed(victim, attacker,Float:damage)
             {
                 add_points(victim, 3)
                 if(ShowAc[victim]==true)
-                    client_print(victim, print_chat,"+3 atat de aproape")
+                    client_print(victim, print_chat,"Ai primit +3 puncte. Atat de aproape!")
             }
             else if(Talive == 2 && Talive<=Ttotal/3)
             {
                 add_points(victim, 2)
                 if(ShowAc[victim]==true)
-                    client_print(victim, print_chat,"+2 si locul 3 e bun")
+                    client_print(victim, print_chat,"Ai primit +2 puncte. Si locul 3 e bun!")
             }
             else if(Talive+1<=Ttotal/3 && Talive!=1)
             {
                 add_points(victim, 1)
                 if(ShowAc[victim]==true)
-                    client_print(victim, print_chat,"+1 te-ai straduit")
+                    client_print(victim, print_chat,"Ai primit +1 punct. Te-ai straduit!")
             }
         }
     }
     if(cs_get_user_team(attacker) == CS_TEAM_T && cs_get_user_team(victim) == CS_TEAM_T && !get_wanted(attacker))
-    {
-        add_points(attacker,1)
-        if(ShowAc[attacker]==true)
-                client_print(attacker, print_chat,"+1 ai omorat un prizonnier la box")
+    {    
+        if(victim != attacker)
+        {
+            add_points(attacker,1)
+            if(ShowAc[attacker]==true)
+                client_print(attacker, print_chat,"Ai primit +1 punct pentru ca ai omorat un prizonier la box.")
+        }
     }
     return HAM_IGNORED
 }

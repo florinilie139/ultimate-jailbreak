@@ -78,14 +78,43 @@ public client_disconnect(id) asleep[id]=false
 
 public cmd_wakeup(id)
 {
-    if(!asleep[id]) client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOWAKEUP")
-    else asleep[id]=false
+    if(!asleep[id]) 
+        client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOWAKEUP")
+    else
+    {
+        asleep[id]=false
+		client_cmd(id,"-duck")
+
+        if(playsound2) emit_sound(id,CHAN_VOICE,sound2,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
+        client_print(id,print_center,"[AMXX] %L",id,"MSG_WAKEUP2")
+
+        set_user_rendering(id)
+
+        message_begin(MSG_ONE,get_user_msgid("ScreenFade"),{0,0,0},id)
+        write_short(~0)
+        write_short(~0)
+        write_short(1<<12)
+        write_byte(0)
+        write_byte(0)
+        write_byte(0)
+        write_byte(0)
+        message_end()
+        remove_task(id)
+    }
 }
 
 public cmd_sleep(id)
 {
-    if(asleep[id]) client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOSLEEP")
-    else if(!is_user_alive(id)) client_print(id,print_chat," %L",id,"MSG_NOSLEEP2")
+    if(asleep[id]) 
+    {
+        client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOSLEEP")
+        return PLUGIN_HANDLED
+    }
+    else if(!is_user_alive(id)) 
+    {
+        client_print(id,print_chat," %L",id,"MSG_NOSLEEP2")
+        return PLUGIN_HANDLED
+    }
     else
     {
         asleep[id]=true
@@ -95,6 +124,7 @@ public cmd_sleep(id)
         get_user_origin(id, origins[id]);
         if(playsound1) emit_sound(id,CHAN_VOICE,sound1,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
     }
+    return PLUGIN_HANDLED
 }
 
 public fadeout(id)
@@ -134,6 +164,23 @@ public fadeout(id)
         if(health>=get_pcvar_num(max_health) || tmp_origin[0] != origins[id][0] ||  tmp_origin[1] != origins[id][1])
         {
             asleep[id]=false
+			client_cmd(id,"-duck")
+
+			if(playsound2) emit_sound(id,CHAN_VOICE,sound2,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
+			client_print(id,print_center,"[AMXX] %L",id,"MSG_WAKEUP2")
+
+			set_user_rendering(id)
+
+			message_begin(MSG_ONE,get_user_msgid("ScreenFade"),{0,0,0},id)
+			write_short(~0)
+			write_short(~0)
+			write_short(1<<12)
+			write_byte(0)
+			write_byte(0)
+			write_byte(0)
+			write_byte(0)
+			message_end()
+			remove_task(id)
         }
         else
         {

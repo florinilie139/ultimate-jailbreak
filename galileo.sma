@@ -157,10 +157,9 @@ public plugin_init()
 	register_clcmd("say currentmap", "cmd_currentmap", 0, "- display current map");
 	register_clcmd("say ff", "cmd_ff", 0, "- display friendly fire status");	// grrface
 	register_clcmd("votemap", "cmd_HL1_votemap");
-    register_clcmd("listmaps", "cmd_HL1_listmaps");
-    register_concmd("amx_rtvall", "daivotfmm", ADMIN_LEVEL_E, "rtv automat");
+	register_clcmd("listmaps", "cmd_HL1_listmaps");
 
-    register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
+	register_concmd("gal_startvote", "cmd_startVote", ADMIN_MAP);
 	register_concmd("gal_createmapfile", "cmd_createMapFile", ADMIN_RCON);
 
 	register_cvar("amx_nextmap", "", FCVAR_SERVER|FCVAR_EXTDLL|FCVAR_SPONLY);
@@ -2382,12 +2381,6 @@ Float:map_getMinutesElapsed()
 {
 	dbg_log(2, "%32s mp_timelimit: %f", "map_getMinutesElapsed(in/out)", get_cvar_float("mp_timelimit"));		
 	return get_cvar_float("mp_timelimit") - (float(get_timeleft()) / 60.0);
-}
-
-public daivotfmm(id)
-{
-    if(get_user_flags(id) & ADMIN_LEVEL_E)
-        vote_startDirector(true);
 }
 
 public vote_rock(id)

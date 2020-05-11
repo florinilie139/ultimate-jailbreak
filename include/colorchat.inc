@@ -1,59 +1,18 @@
-/*
- * Fun functions
- *
- * by Numb
- *
- * This file is provided as is (no warranties).
- *
- */
+/* Fun functions
+*
+* by Numb
+*
+* This file is provided as is (no warranties).
+*/
 
 #if defined _colorchat_included
-	#endinput
+  #endinput
 #endif
 #define _colorchat_included
-#define ColorChat_Version 1.6
 
-#if !defined _fakemeta_included
-	#include <fakemeta>
-#endif
-
-
-enum
+enum Color
 {
-	proprint_console = 0,
-	proprint_center,
-	proprint_chat,
-};
-
-stock ProPrint(id, type, const msg[], {Float,Sql,Result,_}:...)
-{
-	if( (id!=0 && !is_user_connected(id)) || (!get_playersnum() && !id) )
-		return 0;
-	
-	new message[192];
-	vformat(message, 192, msg, 4);
-	
-	if( id )
-		engfunc(EngFunc_ClientPrintf, id, clamp(type, 0, 2), message);
-	else
-	{
-		static maxclients;
-		if( !maxclients )
-			maxclients = get_maxplayers();
-		
-		for( new i=1; i<=maxclients; i++ )
-		{
-			if( is_user_connected(i) )
-				engfunc(EngFunc_ClientPrintf, i, clamp(type, 0, 2), message);
-		}
-	}
-	
-	return 1;
-}
-
-enum ColorChatType
-{
-	NORMAL = 1, // clients con_color cvar color
+	NORMAL = 1, // clients scr_concolor cvar color
 	GREEN, // Green Color
 	TEAM_COLOR, // Red, grey, blue
 	GREY, // grey
@@ -61,122 +20,126 @@ enum ColorChatType
 	BLUE, // Blue
 }
 
-stock ColorChat(id, ColorChatType:type, const msg[], {Float,Sql,Result,_}:...)
+new TeamName[][] = 
 {
-	if( (id!=0 && !is_user_connected(id)) || (!get_playersnum() && !id) )
-		return 0;
-	
-	new message[192], TeamName[4][] = 
-	{
-		"",
-		"TERRORIST",
-		"CT",
-		"SPECTATOR"
-	}
-	
-	vformat(message[1], 191, msg, 4);
-	if( message[1]==0x01 || message[1]==0x03 || message[1]==0x04 )
-		vformat(message, 192, msg, 4);
-	else
-	{
-		switch( type )
-		{
-			case NORMAL: message[0] = 0x01; // clients con_color cvar color
-			case GREEN: message[0] = 0x04; // Green
-			default: message[0] = 0x03; // White, Red, Blue
-		}
-	}
-	//replace_all(message, 192, "%", "%%");
-	// Make sure message is not longer than 192 character. Will crash the server.
-	//message[192] = '^0'; // max len is 192 anyway
-	
-	static get_user_msgid_saytext;
-	if( !get_user_msgid_saytext )
-		get_user_msgid_saytext = get_user_msgid("SayText");
-	
-	if( id )
-	{
-	
-		new ColorChange, team = get_user_team(id);
-		switch( type )
-		{
-			case RED: ColorChange = Team_Info(id, MSG_ONE_UNRELIABLE, TeamName[1]);
-			case BLUE: ColorChange = Team_Info(id, MSG_ONE_UNRELIABLE, TeamName[2]);
-			case GREY: ColorChange = Team_Info(id, MSG_ONE_UNRELIABLE, TeamName[0]);
-			//default: ColorChange = 0;
-		}
-	
-		message_begin(MSG_ONE_UNRELIABLE, get_user_msgid_saytext, _, id);
-		write_byte(id);
-		write_string(message);
-		message_end();
-		
-		if( ColorChange )
-			Team_Info(id, MSG_ONE_UNRELIABLE, TeamName[team]);
-		
-		return 1;
-	}
-	else
-	{
-		static maxclients;
-		if( !maxclients )
-			maxclients = get_maxplayers();
-		
-		if( type!=GREY && type!=RED && type!=BLUE )
-		{
-			for( new i=1; i<=maxclients; i++ )
-			{
-				if( is_user_connected(i) )
-				{
-					message_begin(MSG_ONE_UNRELIABLE, get_user_msgid_saytext, _, i);
-					write_byte(i);
-					write_string(message);
-					message_end();
-				}
-			}
-			
-			return 1;
-		}
-		
-		for( new i=1; i<=maxclients; i++ )
-		{
-			if( is_user_connected(i) )
-			{
-				new ColorChange, team = get_user_team(i);
-				switch( type )
-				{
-					case RED: ColorChange = Team_Info(i, MSG_ALL, TeamName[1]);
-					case BLUE: ColorChange = Team_Info(i, MSG_ALL, TeamName[2]);
-					case GREY: ColorChange = Team_Info(i, MSG_ALL, TeamName[0]);
-					//default: ColorChange = 0;
-				}
-				
-				message_begin(MSG_ALL, get_user_msgid_saytext, _, i);
-				write_byte(i);
-				write_string(message);
-				message_end();
-				
-				if( ColorChange )
-					Team_Info(i, MSG_ALL, TeamName[team]);
-				
-				return 1;
-			}
-		}
-	}
-	
-	return 0;
+	"",
+	"TERRORIST",
+	"CT",
+	"SPECTATOR"
 }
 
-stock Team_Info(id, type, team[])
+ColorChat(id, Color:type, const msg[], {Float,Sql,Result,_}:...)
 {
-	static get_user_msgid_teaminfo;
-	if( !get_user_msgid_teaminfo )
-		get_user_msgid_teaminfo = get_user_msgid("TeamInfo");
+	new message[256];
+
+	switch(type)
+	{
+		case NORMAL: // clients scr_concolor cvar color
+		{
+			message[0] = 0x01;
+		}
+		case GREEN: // Green
+		{
+			message[0] = 0x04;
+		}
+		default: // White, Red, Blue
+		{
+			message[0] = 0x03;
+		}
+	}
+
+	vformat(message[1], 251, msg, 4);
+
+	// Make sure message is not longer than 192 character. Will crash the server.
+	message[192] = '^0';
+
+	new team, ColorChange, index, MSG_Type;
 	
+	if(id)
+	{
+		MSG_Type = MSG_ONE;
+		index = id;
+	} else {
+		index = FindPlayer();
+		MSG_Type = MSG_ALL;
+	}
+	
+	team = get_user_team(index);
+	ColorChange = ColorSelection(index, MSG_Type, type);
+
+	ShowColorMessage(index, MSG_Type, message);
+		
+	if(ColorChange)
+	{
+		Team_Info(index, MSG_Type, TeamName[team]);
+	}
+}
+
+ShowColorMessage(id, type, message[])
+{
+	static bool:saytext_used;
+	static get_user_msgid_saytext;
+	if(!saytext_used)
+	{
+		get_user_msgid_saytext = get_user_msgid("SayText");
+		saytext_used = true;
+	}
+	message_begin(type, get_user_msgid_saytext, _, id);
+	write_byte(id)		
+	write_string(message);
+	message_end();	
+}
+
+Team_Info(id, type, team[])
+{
+	static bool:teaminfo_used;
+	static get_user_msgid_teaminfo;
+	if(!teaminfo_used)
+	{
+		get_user_msgid_teaminfo = get_user_msgid("TeamInfo");
+		teaminfo_used = true;
+	}
 	message_begin(type, get_user_msgid_teaminfo, _, id);
 	write_byte(id);
 	write_string(team);
 	message_end();
-	
+
 	return 1;
 }
+
+ColorSelection(index, type, Color:Type)
+{
+	switch(Type)
+	{
+		case RED:
+		{
+			return Team_Info(index, type, TeamName[1]);
+		}
+		case BLUE:
+		{
+			return Team_Info(index, type, TeamName[2]);
+		}
+		case GREY:
+		{
+			return Team_Info(index, type, TeamName[0]);
+		}
+	}
+
+	return 0;
+}
+
+FindPlayer()
+{
+	new i = -1;
+
+	while(i <= get_maxplayers())
+	{
+		if(is_user_connected(++i))
+			return i;
+	}
+
+	return -1;
+}
+/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
+*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1049\\ f0\\ fs16 \n\\ par }
+*/

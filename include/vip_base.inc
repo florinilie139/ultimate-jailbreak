@@ -44,4 +44,4 @@ sa te bagi ct cand vrei
 
 */
 
-native get_vip_type(id);// returns type of the last prisoner.
+native get_vip_type(id);// returns type of the vip

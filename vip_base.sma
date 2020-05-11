@@ -14,7 +14,6 @@
 #define PLUGIN_AUTHOR "Mister X"
 #define PLUGIN_VERSION "1"
 #define PLUGIN_CVAR "Vip Manager"
-#define SERVER_IP "93.119.25.96"
 #define VIP_TYPE_2_MONEY 5000
 
 enum _:_vip { _name[100], _pass[100], _tipvip };
@@ -27,14 +26,7 @@ new g_MaxClients;
 
 public plugin_init()
 {
-    new ip[36];
-    register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
-    
-    get_user_ip(0,ip,35,0);
-    if(equal(ip,SERVER_IP))
-    {
-        return PLUGIN_CONTINUE;
-    }
+    register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)    
     LoadVips();
 
     register_logevent("round_end", 2, "1=Round_End")
@@ -104,7 +96,7 @@ public LoadVips()
             Vip[i][_tipvip] = str_to_num(type);
             i++;
             if(i==100)
-			{
+            {
                 log_amx("Nu se pot incarca mai mult de 100")
             }
         }
@@ -158,6 +150,8 @@ public player_spawn(id)
                 set_task(3.0,"task_give_armor",id)
             }
         }
+        if(get_vip_type(id) == 4)
+            set_task(3.0,"task_give_nades",id)
         
     }
 
@@ -168,7 +162,7 @@ public task_give_armor (id)
 {
     if(id > g_MaxClients || !is_user_alive(id))
         return
-    cs_set_user_armor(id, 100, CS_ARMOR_KEVLAR)
+    give_item(id, "item_assaultsuit")
 }
 
 public task_give_deagle (id)
@@ -178,6 +172,16 @@ public task_give_deagle (id)
     new iEnt = give_item(id, "weapon_deagle")
     if (is_valid_ent(iEnt))
         cs_set_weapon_ammo(iEnt, 7)
+}
+
+public task_give_nades (id)
+{
+    if(id > g_MaxClients || !is_user_alive(id))
+        return
+    give_item(id,"weapon_flashbang")
+    give_item(id,"weapon_flashbang")
+    give_item(id,"weapon_smokegrenade")
+    give_item(id,"weapon_hegrenade")
 }
 
 public round_end()

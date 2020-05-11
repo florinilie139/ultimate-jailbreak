@@ -32,6 +32,8 @@ new LeftTopTrivia[33]
 new LeftTopTriviaName[33][30]
 new LeftTrivia
 new DuelTrivia,DuelA,DuelB
+new MoneyMade[33]
+new g_MaxClients
 
 enum _hud { _hudsync, Float:_x, Float:_y, Float:_time }
 
@@ -56,6 +58,8 @@ public plugin_init()
     register_srvcmd("simon_trivia","simon_trivia");
     register_srvcmd("duel_trivia","duel_trivia")
     
+	g_MaxClients = get_global_int(GL_maxClients)
+	
     //for(new i = 0; i < sizeof(g_HudSync); i++)
     //    g_HudSync[i][_hudsync] = CreateHudSyncObj()
 }
@@ -135,6 +139,8 @@ public round_end ()
     DuelA = 0
     DuelB = 0
     remove_task(222200);
+	for(new i = 1; i <= g_MaxClients; i++)
+		MoneyMade[i] = 0
 }
 
 public Trivia (id)
@@ -284,6 +290,14 @@ public cmd_trivia (id)
         read_argv(1, Args[line], 255)
         if((equali(Args,"trivia",6) || equali(Args,"say /r ",7)) && (cmd_is_in_trivia(id) != 0)){
             if(cmd_is_in_trivia(id) == 1 && containi(Args, TriviaList[CurrentTrivia][_ras]) != -1){
+				if(MoneyMade[id] > 16000)
+				{
+				    message_begin( MSG_ONE, get_user_msgid("SayText"), {0,0,0}, id );
+                    write_byte  ( id );
+                    write_string( "^x03[Trivia]^x04 Nu mai poti raspunde la intrebari deoarece deja ai facut ^x01$16000!");
+                    message_end ();
+					return PLUGIN_CONTINUE
+				}
                 if(get_vip_type(id) == 2)
 				{
 					cs_set_user_money(id, cs_get_user_money(id) + TimeTrivia*40);
@@ -297,6 +311,7 @@ public cmd_trivia (id)
                 get_players(Players, Num, "bh");
                 get_user_name(id,Name,49)
                 new text [250]
+				MoneyMade[id] += TimeTrivia*20
                 format(text,249,"^x03[Trivia]^x01 %s a raspuns correct, a castigat %d $",Name, TimeTrivia*20)
                 Toptrivia[id] ++
                 if(Toptrivia[id]%20 == 0)

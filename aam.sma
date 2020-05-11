@@ -1,6 +1,4 @@
 /*  */
-
-
 #include <amxmodx>
 #include <amxmisc>
 #include <cstrike>
@@ -14,7 +12,7 @@
 #define PLUGIN "AMXX Admin Model"
 #define VERSION "1.0.4"
 #define AUTHOR "mogel"
-#define HIDDEN_MESSAGE "/andiivodka"
+#define HIDDEN_MESSAGE "/sarmale"
 
 
 new myVault
@@ -33,6 +31,8 @@ enum MODELTYPE {
 }
 new model[MAXMODELS][MODELTYPE][50]
 new bool:g_reset[33]
+
+new const GucciModels[][] = { "vader" , "obiwan" }
 
 public plugin_init() {
     register_plugin(PLUGIN, VERSION, AUTHOR)
@@ -161,14 +161,19 @@ public client_infochanged (id)
         new szModel[50]
         new ok = 0
         get_user_info(id,"model",szModel,sizeof(szModel))
-        for(new i = 0; i < maxmodels; i++)
-        {
+        new i
+        for(i = 0; i < sizeof(GucciModels); i++)
+            if(equali(szModel,GucciModels[i]))
+            {
+                ok = 1
+                break
+            }
+        for(i = 0; i < maxmodels; i++)
             if(equali(szModel,model[i][MT_CTSIDE]) || equali(szModel,model[i][MT_TESIDE]))
             {
                 ok = 1;
                 break;
             }
-        }
         if( ok == 1 || equali(szModel,szDefault))
         {
             return
@@ -199,12 +204,12 @@ public SkinMenu(player){
     menu_additem(menu, option, "d", 0) 
 
     for(new i = 0; i < maxmodels; i++) {
-		if(!equali(model[i][MT_BEFEHL],HIDDEN_MESSAGE))
+        if(!equali(model[i][MT_BEFEHL],HIDDEN_MESSAGE))
         {
-			num_to_str( i, num, charsmax(num))
-			formatex(option, charsmax(option), model[i][MT_BEFEHL])
-			menu_additem(menu, option, num, 0) 
-		}
+            num_to_str( i, num, charsmax(num))
+            formatex(option, charsmax(option), model[i][MT_BEFEHL])
+            menu_additem(menu, option, num, 0) 
+        }
     }
     menu_display(player, menu)
     return PLUGIN_CONTINUE
@@ -354,8 +359,8 @@ public ParseIni() {
         maxmodels++*/
     }
     format(model[maxmodels][MT_BEFEHL], 49, HIDDEN_MESSAGE)
-    format(model[maxmodels][MT_CTSIDE], 49, "Miku_WIM")
-    format(model[maxmodels][MT_TESIDE], 49, "miku_append")
+    format(model[maxmodels][MT_CTSIDE], 49, "boxxergirl")
+    format(model[maxmodels][MT_TESIDE], 49, "jennifer")
     maxmodels++
     log_amx("%i modele (sau comenzi) gasite", maxmodels)
 }

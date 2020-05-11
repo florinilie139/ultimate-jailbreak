@@ -30,7 +30,7 @@ enum _:days{
     FreezeTagDay,     //16
     ZombieTeroDay,    //17
     ScoutDay,         //18
-    BoxDay,           //19
+	BoxDay,           //19
     StarWarsDay,      //20
     RipperDay,        //21
     FunDay,           //22
@@ -53,3 +53,5 @@ native get_last();// returns ID of the last prisoner.
 native get_model(buffer[], lenght)
 
 native get_day();
+
+native remove_fd(id)

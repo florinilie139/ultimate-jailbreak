@@ -50,7 +50,7 @@ public plugin_precache()
 		costume_array[i] = ArrayCreate(100, 1); 
 	}
 	
-	new sFile[64], file_name[] = "jailbreak_costumes.ini";
+	new sFile[64], file_name[] = "jailbreak_costumes2.ini";
 	get_configsdir(sFile, charsmax(sFile))
 	format(sFile, charsmax(sFile), "%s/%s", sFile, file_name)
 	
@@ -121,7 +121,7 @@ public plugin_init()
 {
 	register_plugin(PLUGIN, VERSION, AUTHOR)
 	
-	register_clcmd("say /costume", "clcmd_costume")
+	register_clcmd("say /costume2", "clcmd_costume")
 	
 	const NO_ACCESS = (1<<26);
 	
@@ -269,7 +269,7 @@ public menu_handler(id, menu, item)
 
 public clcmd_costume(id)
 {
-	if(get_vip_type(id) > 0)
+	if((get_user_flags(id) & ADMIN_LEVEL_E))
 		menu_display(id, COSTUME_MENU)
 	else
 		cprint_chat(id, _, "^4**^1* Nu ai acces sa iti pui costume *^4**")
@@ -331,6 +331,3 @@ public costume(id, _:part, model[], anim)
 	set_pev(ent, pev_animtime, get_gametime())
 	set_pev(ent, pev_framerate, 1.0)
 }
-/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
-*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang1033\\ f0\\ fs16 \n\\ par }
-*/

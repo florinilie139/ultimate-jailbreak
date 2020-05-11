@@ -14,8 +14,33 @@
 
 #define CROWBARCOST    16000
 
+new const gszOldSounds[][]={
+    "weapons/knife_hit1.wav",
+    "weapons/knife_hit2.wav",
+    "weapons/knife_hit3.wav",
+    "weapons/knife_hit4.wav",
+    "weapons/knife_stab.wav",
+    "weapons/knife_hitwall1.wav",
+    "weapons/knife_slash1.wav",
+    "weapons/knife_slash2.wav",
+    "weapons/knife_deploy1.wav"
+};
+new const gszNewSounds[sizeof gszOldSounds][]={
+    "weapons/ls_hitbod1.wav",
+    "weapons/ls_hitbod2.wav",
+    "weapons/ls_hitbod3.wav",
+    "weapons/ls_hitbod3.wav",
+    "weapons/ls_hit2.wav",
+    "weapons/ls_hit1.wav",
+    "weapons/ls_miss.wav",
+    "weapons/ls_miss.wav",
+    "weapons/ls_pullout.wav"
+};
+
+new const _BlueSaber[][] = { "models/p_light_saber_blue.mdl", "models/v_light_saber_blue.mdl" }
+new const _RedSaber[][] = { "models/p_light_saber_red.mdl", "models/v_light_saber_red.mdl" }
 new const _FistModels[][] = { "models/p_bknuckles.mdl", "models/v_pumni.mdl"}
-new const _BoxModels[][] = { "models/p_boxx.mdl", "models/v_boxx.mdl"}
+new const _BoxModels[][] = { "models/p_bocs.mdl", "models/v_boxx.mdl"}
 new const _CrowbarModels[][] = { "models/p_crowbar.mdl", "models/v_crowbar.mdl" , "models/w_crowbar.mdl" }
 new const _FistSounds[][] = { "weapons/cbar_hitbod2.wav", "weapons/cbar_hitbod1.wav", "weapons/bullet_hit1.wav", "weapons/bullet_hit2.wav" }
 new const _ClawsModels[] = "models/v_hands.mdl"
@@ -30,6 +55,8 @@ new const palo_hit2[]         = { "/pumni/PHit2.wav" }
 new const palo_hit3[]         = { "/pumni/PHit3.wav" } 
 new const palo_hit4[]         = { "/pumni/PHit4.wav" } 
 new const palo_stab[]         = { "/pumni/PStab.wav" }
+
+new giColor[33]=0
 
 enum {
 All,
@@ -55,6 +82,7 @@ new g_GameMode
 new g_HasCrowbar[33]
 new gp_CrowbarMul
 new Float:gc_CrowbarMul
+new g_MaxClients
 
 public plugin_init()
 {
@@ -81,6 +109,11 @@ public plugin_init()
     RegisterHam(Ham_Item_Deploy, "weapon_knife", "Handl_Deploy")
     gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "40.0")
     //set_task(0.5, "check", _, _, _, "b")
+    register_clcmd("say /saber", "cmdChooseSabre");
+    register_srvcmd("sabers_off", "sabersOff");
+    register_clcmd("say /sabersoff", "sabersOff");
+    register_srvcmd("sabers_on", "sabersOn");
+    g_MaxClients = get_global_int(GL_maxClients)
     return PLUGIN_CONTINUE
 }
 
@@ -130,10 +163,14 @@ public plugin_precache ()
 {
     LoadKnifes()
     static i
+    for(i = 0; i < sizeof(_BlueSaber); i++)
+        precache_model(_BlueSaber[i])
+    for(i = 0; i < sizeof(_RedSaber); i++)
+        precache_model(_RedSaber[i])
     for(i = 0; i < sizeof(_FistModels); i++)
         precache_model(_FistModels[i])
-	for(i = 0; i < sizeof(_BoxModels); i++)
-		precache_model(_BoxModels[i])
+    for(i = 0; i < sizeof(_BoxModels); i++)
+        precache_model(_BoxModels[i])
     for(i = 0; i < sizeof(_CrowbarModels); i++)
         precache_model(_CrowbarModels[i])
     for(i = 0; i < sizeof(_FistSounds); i++)
@@ -158,11 +195,17 @@ public plugin_precache ()
     precache_sound(palo_hit2)
     precache_sound(palo_hit3)
     precache_sound(palo_hit4)
+    
+    for(new i=0;i<sizeof gszNewSounds;i++)
+        precache_sound(gszNewSounds[i]);
+    precache_model("models/player/vader/vader.mdl")
+    precache_model("models/player/obiwan/obiwan.mdl")
 }
 
 public round_start (){
     gc_CrowbarMul = get_pcvar_float(gp_CrowbarMul);
     new ent = -1
+    
     while((ent = find_ent_by_class(ent, "crowbar")))
     {
         if (is_valid_ent(ent)) remove_entity(ent)
@@ -248,10 +291,10 @@ public player_damage(victim, ent, attacker, Float:damage, bits){
     if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker || gp_MultiDMG==0)
         return HAM_IGNORED
     g_Duel = get_duel()
-	if((g_GameMode == 4 || g_GameMode == 5) && cs_get_user_team(attacker) == CS_TEAM_T)
-	    return HAM_IGNORED
-	if(g_GameMode == 8 || g_GameMode == 13 || g_GameMode == 17 || g_GameMode == 18 || g_GameMode == 19)
-	    return HAM_IGNORED
+    if((g_GameMode == 4 || g_GameMode == 5) && cs_get_user_team(attacker) == CS_TEAM_T)
+        return HAM_IGNORED
+    if(g_GameMode == 8 || g_GameMode == 13 || g_GameMode == 17 || g_GameMode == 18 || g_GameMode == 19)
+        return HAM_IGNORED
     if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)!=cs_get_user_team(attacker) && (((g_GameMode == 12 || g_GameMode == 10) && cs_get_user_team(attacker)==CS_TEAM_CT) || (g_GameMode == 15 && cs_get_user_team(attacker)==CS_TEAM_T) || (g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != -1 && g_GameMode != 2 && g_GameMode != 12 && g_GameMode!=10 && g_GameMode!=7))))
     {
         SetHamParamFloat(4, damage * gc_CrowbarMul)
@@ -271,6 +314,7 @@ public player_killed(victim, attacker, shouldgib)
         if(is_user_alive(attacker) && cs_get_user_team(attacker) == CS_TEAM_T && g_HasCrowbar[attacker]>0 && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)==CS_TEAM_CT)
             client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbDobs/halloween/EvilLaugh.wav")//
     }
+    giColor[victim] = 0
     return HAM_IGNORED
 }
 
@@ -303,12 +347,22 @@ public current_weapon(id)
         return PLUGIN_CONTINUE
     g_Simon = get_simon()
     g_GameMode = get_gamemode()
-	if(g_GameMode == 19 && cs_get_user_team(id) == CS_TEAM_T)
+    if(giColor[id] == 1)
     {
-		set_pev(id, pev_viewmodel2, _BoxModels[1])
+        set_pev(id, pev_viewmodel2, _RedSaber[1])
+        set_pev(id, pev_weaponmodel2, _RedSaber[0])
+    }
+    else if(giColor[id] == 2)
+    {
+        set_pev(id, pev_viewmodel2, _BlueSaber[1])
+        set_pev(id, pev_weaponmodel2, _BlueSaber[0])
+    }
+    else if(g_GameMode == 19 && cs_get_user_team(id) == CS_TEAM_T)
+    {
+        set_pev(id, pev_viewmodel2, _BoxModels[1])
         set_pev(id, pev_weaponmodel2, _BoxModels[0])
-	}
-	else if(g_HasCrowbar[id]!=0 && (g_GameMode == 4 || g_GameMode == 5) && id == g_Simon || (g_GameMode == -2 ||  g_GameMode == 2) && cs_get_user_team(id) == CS_TEAM_T || (g_GameMode == -1 || g_GameMode == 11 || g_GameMode == 17) && cs_get_user_team(id) == CS_TEAM_CT)
+    }
+    else if(g_HasCrowbar[id]!=0 && (g_GameMode == 4 || g_GameMode == 5) && id == g_Simon || (g_GameMode == -2 ||  g_GameMode == 2) && cs_get_user_team(id) == CS_TEAM_T || (g_GameMode == -1 || g_GameMode == 11 || g_GameMode == 17) && cs_get_user_team(id) == CS_TEAM_CT)
     {
         set_pev(id, pev_viewmodel2, _ClawsModels)
         set_pev(id, pev_weaponmodel2, _FistModels[0])
@@ -323,8 +377,8 @@ public current_weapon(id)
         set_pev(id, pev_viewmodel2, _CrowbarModels[1])
         set_pev(id, pev_weaponmodel2, _CrowbarModels[0])
     }
-	else
-	{
+    else
+    {
         set_pev(id, pev_viewmodel2, _FistModels[1])
         set_pev(id, pev_weaponmodel2, _FistModels[0])
     }
@@ -400,53 +454,66 @@ public crowbar_touch(ent, player)
     return FMRES_IGNORED
 }
 
-public sound_emit(id, channel, sample[])
-{
-    if(is_user_alive(id) )
+public sound_emit(id, channel, sample[], Float:volume, Float:attenuation, fFlags, pitch)
+{    
+    if(is_user_alive(id))
     {
-        if (equal(sample, "weapons/knife_", 14))
-            switch(sample[17])
-            {
-                case('l'):
-                {
-                    emit_sound(id, CHAN_WEAPON, palo_deploy, 1.0, ATTN_NORM, 0, PITCH_NORM)
-                }
-                case('b'):
-                {
-                    emit_sound(id, CHAN_WEAPON, palo_stab, 1.0, ATTN_NORM, 0, PITCH_NORM)
-                }
-                case('w'):
-                {
-                    if (g_HasCrowbar[id]!=0)
-                        emit_sound(id, CHAN_WEAPON, "weapons/cbar_hit1.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
-                    else
-                        emit_sound(id, CHAN_WEAPON, palo_wall, 1.0, ATTN_NORM, 0, PITCH_LOW)
-                }
-                case('1', '2', '3', '4'):
-                {
-                    switch (random_num(1, 4))
-                    {
-                        case 1:emit_sound(id, CHAN_WEAPON, palo_hit1, 1.0, ATTN_NORM, 0, PITCH_LOW)
-                        case 2:emit_sound(id, CHAN_WEAPON, palo_hit2, 1.0, ATTN_NORM, 0, PITCH_LOW)
-                        case 3:emit_sound(id, CHAN_WEAPON, palo_hit3, 1.0, ATTN_NORM, 0, PITCH_LOW)
-                        case 4:emit_sound(id, CHAN_WEAPON, palo_hit4, 1.0, ATTN_NORM, 0, PITCH_LOW)
+        if(giColor[id] != 0)
+        {
+            if(channel==1 || channel==3){
+                for(new i=0;i<sizeof gszOldSounds;i++)
+                    if(equal(sample,gszOldSounds[i])){
+                        engfunc(EngFunc_EmitSound, id, channel, gszNewSounds[i], volume, attenuation, fFlags, pitch);
+                        return FMRES_SUPERCEDE;
                     }
-                }
-                
-                case('s'):
+            }
+        }
+        else
+        {
+            if (equal(sample, "weapons/knife_", 14))
+                switch(sample[17])
                 {
-                    if (g_HasCrowbar[id]!=0)
-                        emit_sound(id, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
-                    else{
-                        switch (random_num(1, 2))
+                    case('l'):
+                    {
+                        emit_sound(id, CHAN_WEAPON, palo_deploy, 1.0, ATTN_NORM, 0, PITCH_NORM)
+                    }
+                    case('b'):
+                    {
+                        emit_sound(id, CHAN_WEAPON, palo_stab, 1.0, ATTN_NORM, 0, PITCH_NORM)
+                    }
+                    case('w'):
+                    {
+                        if (g_HasCrowbar[id]!=0)
+                            emit_sound(id, CHAN_WEAPON, "weapons/cbar_hit1.wav", 1.0, ATTN_NORM, 0, PITCH_LOW)
+                        else
+                            emit_sound(id, CHAN_WEAPON, palo_wall, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                    }
+                    case('1', '2', '3', '4'):
+                    {
+                        switch (random_num(1, 4))
                         {
-                            case 1: emit_sound(id, CHAN_WEAPON, palo_slash1, 1.0, ATTN_NORM, 0, PITCH_LOW)
-                            case 2: emit_sound(id, CHAN_WEAPON, palo_slash2, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                            case 1:emit_sound(id, CHAN_WEAPON, palo_hit1, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                            case 2:emit_sound(id, CHAN_WEAPON, palo_hit2, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                            case 3:emit_sound(id, CHAN_WEAPON, palo_hit3, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                            case 4:emit_sound(id, CHAN_WEAPON, palo_hit4, 1.0, ATTN_NORM, 0, PITCH_LOW)
                         }
                     }
-                }
-            } 
-        return FMRES_SUPERCEDE
+                    
+                    case('s'):
+                    {
+                        if (g_HasCrowbar[id]!=0)
+                            emit_sound(id, CHAN_WEAPON, "weapons/cbar_miss1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM)
+                        else{
+                            switch (random_num(1, 2))
+                            {
+                                case 1: emit_sound(id, CHAN_WEAPON, palo_slash1, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                                case 2: emit_sound(id, CHAN_WEAPON, palo_slash2, 1.0, ATTN_NORM, 0, PITCH_LOW)
+                            }
+                        }
+                    }
+                } 
+            return FMRES_SUPERCEDE
+        }
     }
     return FMRES_IGNORED
 }
@@ -459,4 +526,42 @@ stock SendWeaponAnim(Player, Sequence, Body)
     write_byte( Sequence ) 
     write_byte( Body ) 
     message_end( )
+}
+
+public sabersOff()
+{
+    new i
+    for (i=0; i<g_MaxClients; i++)
+        giColor[i] = 0
+        set_user_info(i, "model", "jbllgxmas")
+}
+
+public sabersOn()
+{
+    new i
+    for (i=0; i<g_MaxClients; i++)
+        if(is_user_alive(i))
+            if(cs_get_user_team(i) == CS_TEAM_T)
+                {
+                    giColor[i]=1;
+                    set_user_info(i, "model", "vader")
+                }
+                else if(cs_get_user_team(i) == CS_TEAM_CT)
+                {
+                    giColor[i]=2;
+                    set_user_info(i, "model", "obiwan")
+                }
+}
+public cmdChooseSabre(id){
+    if(get_user_flags(id) & ADMIN_LEVEL_E)
+        if(cs_get_user_team(id) == CS_TEAM_T)
+        {
+            giColor[id]=1;
+            set_user_info(id, "model", "vader")
+        }
+        else if(cs_get_user_team(id) == CS_TEAM_CT)
+        {
+            giColor[id]=2;
+            set_user_info(id, "model", "obiwan")
+        }
 }

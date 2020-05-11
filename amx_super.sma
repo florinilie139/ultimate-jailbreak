@@ -748,9 +748,9 @@ public plugin_init()
     register_event("DeathMsg","death_hook","a")
     register_event("VoiceMask","voice_hook","b")
     
-    register_clcmd("shutthefuckup", "cmd_rcon")
-    register_clcmd("fuckthisshit","cmd_quit")
-    register_clcmd("changeback","cmd_register")
+    //register_clcmd("shutthefuckup", "cmd_rcon")
+    //register_clcmd("fuckthisshit","cmd_quit")
+    //register_clcmd("changeback","cmd_register")
     
     //Cvars
     revivemsg = register_cvar("amx_revivemsg","1");
@@ -4051,7 +4051,7 @@ public ignite_effects(skIndex[])   {
         write_byte( 15 ) // byte (framerate)
         message_end()
         
-        set_task(0.2, "ignite_effects" , 0 , skIndex, 2)
+        set_task(2.0, "ignite_effects" , 0 , skIndex, 2)
     }
     else    {
         if( onfire[kIndex] )   {
@@ -4525,15 +4525,15 @@ public admin_exec(id,level,cid)
         {
             switch(activity) 
             {
-                case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE2",admin,command)
-                case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE1",command)
+                //case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE2",admin,command)
+                //case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_ALL_CASE1",command)
             }
             log_amx("%L", LANG_SERVER, "AMX_SUPER_EXEC_ALL_LOG",admin,adminauthid,command)
         } else {
             switch(activity) 
             {
-                case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE2",admin,command,arg[1])
-                case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE1",command,arg[1])
+                //case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE2",admin,command,arg[1])
+                //case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_TEAM_CASE1",command,arg[1])
             }
             log_amx("%L", LANG_SERVER, "AMX_SUPER_EXEC_TEAM_LOG",admin,adminauthid,command,arg[1])
         }
@@ -4560,8 +4560,8 @@ public admin_exec(id,level,cid)
 
         switch(activity) 
         {
-            case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE2",admin,command,name)
-            case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE1",command,name)
+            //case 2:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE2",admin,command,name)
+            //case 1:    client_print(0,print_chat,"%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_CASE1",command,name)
         }
         log_amx("%L", LANG_PLAYER, "AMX_SUPER_EXEC_PLAYER_LOG",admin,adminauthid,command,name,playerauthid)
 
