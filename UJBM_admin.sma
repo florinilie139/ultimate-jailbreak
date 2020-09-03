@@ -292,7 +292,6 @@ public chooseteamfunc(id)
 
 public drop(id)
 {
-    
     if (WeaponsLocked) return PLUGIN_HANDLED
     return PLUGIN_CONTINUE
 }

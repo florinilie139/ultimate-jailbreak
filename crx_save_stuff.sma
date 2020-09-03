@@ -32,9 +32,24 @@ public client_putinserver(id)
 	}
 }
 
-public client_disconnect(id)
+public client_disconnected(id)
 {
 	new szStuff[32]
-	formatex(szStuff, charsmax(szStuff), "%i %i %i", get_user_frags(id), cs_get_user_deaths(id), cs_get_user_money(id))
+	new frags = 0
+	new deaths = 0
+	new money = 0
+	if (is_user_connected(id))
+	{
+		frags = get_user_frags(id)
+	}
+	if (is_user_connected(id))
+	{
+		deaths = cs_get_user_deaths(id)
+	}
+	if (is_user_connected(id))
+	{
+		money = cs_get_user_money(id)
+	}
+	formatex(szStuff, charsmax(szStuff), "%i %i %i", frags, deaths, money)
 	TrieSetString(g_tStuff, g_szIP[id], szStuff)
 }

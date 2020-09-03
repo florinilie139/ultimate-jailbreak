@@ -54,8 +54,8 @@ Jocuri: Slender man
 #define vec_mul(%1,%2)        ( %1[0] *= %2, %1[1] *= %2, %1[2] *= %2)
 #define vec_copy(%1,%2)        ( %2[0] = %1[0], %2[1] = %1[1],%2[2] = %1[2])
 
-#define JBMODELLOCATION "models/player/jblaleagane4/jblaleagane4.mdl"
-#define JBMODELSHORT "jblaleagane4"
+#define JBMODELLOCATION "models/player/jblaleagane41/jblaleagane41.mdl"
+#define JBMODELSHORT "jblaleagane41"
 
 // Offsets
 #define m_iPrimaryWeapon    116
@@ -64,13 +64,13 @@ Jocuri: Slender man
 #define m_fNextHudTextArgsGameTime    198
 
 #define FLASHCOST    3500
-#define HECOST    4000    
+#define HECOST  4000    
 #define SMOKECOST    3000
 #define ARMORCOST    4000
 #define FDCOST    16000
 #define SHIELDCOST    16000
 //#define KNIFESCOST    10000
-#define CROWBARCOST    16000
+#define CROWBARCOST    20000
 #define CTDEAGLECOST 1000
 #define CTFLASHCOST 3000
 #define HPCOST 4000
@@ -765,6 +765,7 @@ public client_putinserver(id)
     g_iPlayerCamera[id] = 0
     g_camera_position[id] = -100.0;
 }
+
 public client_disconnect(id)
 {
     if(g_Simon == id)
@@ -1505,7 +1506,7 @@ public player_killed(victim, attacker, shouldgib)
             }
             else  if (vteam == CS_TEAM_T && kteam == CS_TEAM_T){
                 if(g_GameMode == BoxDay)
-                    set_user_health(attacker, get_user_health(attacker) + 15)
+                    set_user_health(attacker, 100)
                 else
                 {
                     BoxPartener[attacker] = 0
@@ -1993,6 +1994,7 @@ public FreedayTimeDone()
         }
     }
 }
+
 public round_start()
 {
     set_cvar_num("ers_enabled", 1)
@@ -3439,6 +3441,7 @@ public duel_knives(id, menu, item)
     set_task(1.0, "Beacon", g_DuelB)
     return PLUGIN_HANDLED
 }
+
 public duel_guns(id, menu, item)
 {
     static gun, dst[32], data[5], access, callback, option[256], player, src[32]
@@ -3576,6 +3579,7 @@ public duel_guns(id, menu, item)
     set_task(1.0, "Beacon", g_DuelB)
     return PLUGIN_HANDLED
 }
+
 public setup_buttons()
 {
     new ent[3]
@@ -3616,6 +3620,7 @@ public setup_buttons()
     }
     TrieDestroy(g_CellManagers)
 }
+
 stock in_array(needle, data[], size)
 {
     for(new i = 0; i < size; i++)
@@ -3625,6 +3630,7 @@ stock in_array(needle, data[], size)
     }
     return -1
 }
+
 stock freeday_set(id, player,bool:next)
 {
     static src[32], dst[32]
@@ -3665,6 +3671,7 @@ stock freeday_set(id, player,bool:next)
         }
     }
 }
+
 stock first_join(id)
 {
     if (get_bit(g_PlayerJoin, id)) return PLUGIN_CONTINUE
@@ -3832,18 +3839,20 @@ public fade_screen (id, bool:on)
 public cmd_saytime()
 {
     g_TimeRound = g_Countdown;
+    new word[10];
+    num_to_word(g_Countdown, word, 9);
     remove_task(TASK_SAYTIME);
-    new timeForSpeaker = g_Countdown / 60;
-    if(g_Countdown > 60){ 
-        client_cmd(0, "spk ^"vox/%d minutes remaining^"", timeForSpeaker);
+    if(g_Countdown > 60){
+        num_to_word(g_Countdown/60,word, 9);
+        client_cmd(0, "spk ^"vox/%s minutes remaining^"", word);
         g_Countdown -= 60;
-        set_task(60.0,"cmd_saytime",TASK_SAYTIME)
+        set_task(60.0,"cmd_saytime",TASK_SAYTIME);
     }else if(g_Countdown > 10){
-        client_cmd(0, "spk ^"vox/%d seconds remaining^"", g_Countdown);
+        client_cmd(0, "spk ^"vox/%s seconds remaining^"", word);
         g_Countdown -= 10;
         set_task(10.0,"cmd_saytime",TASK_SAYTIME)
     }else if(g_Countdown > 0){
-        client_cmd(0, "spk ^"vox/%d^"", g_Countdown);
+        client_cmd(0, "spk ^"vox/%s^"", word);
         g_Countdown --;
         set_task(1.0,"cmd_saytime",TASK_SAYTIME)
     }
@@ -4844,7 +4853,7 @@ public  cmd_game_fire()
         give_item(Players[i], "weapon_knife")
         set_user_gravity(Players[i], 1.0)
         set_user_maxspeed(Players[i], 250.0)
-        set_user_health(Players[i], 250)
+        set_user_health(Players[i], 500)
         fade_screen(Players[i],false)
         set_pev(Players[i], pev_flags, pev(Players[i], pev_flags) & ~FL_FROZEN) 
 
@@ -5523,6 +5532,15 @@ public cmd_shop(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_FLASHLIGHT", FLASHLIGHTCOST)
             menu_additem(menu, option, "7", 0)
         }*/
+        formatex(option, charsmax(option), "\rMasca de fata\w $500")
+        menu_additem(menu, option, "a", 0)
+
+        formatex(option, charsmax(option), "\rServetel folosit\w $5000")
+        menu_additem(menu, option, "b", 0)
+
+        formatex(option, charsmax(option), "\Desface catusile\w $8000")
+        menu_additem(menu, option, "c", 0)
+
         formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_SHOP_NOSHOW")
         menu_additem(menu, option, "8", 0)
         menu_display(id, menu)
@@ -5709,6 +5727,18 @@ public shop_choice_T(id, menu, item)
                 formatex(sz_msg, charsmax(sz_msg), "^x03%L", LANG_SERVER, "UJBM_MENU_SHOP_NOT_ENOUGH")
                 client_print(id, print_center , sz_msg)
             }
+        }
+        case('a'):
+        {
+            client_cmd(id, "say /buymask")
+        }
+        case('b'):
+        {
+            client_cmd(id, "say /buyusedpaper")
+        }
+        case('c'):
+        {
+            client_cmd(id, "say /buyuncuffs")
         }
 	/*
         case('a'):
@@ -6177,23 +6207,32 @@ public cmd_simonmenu(id)
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_SIMON_GAMES")
             menu_additem(menu, option, "4", 0)
         }
+
         formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_SIMONMENU_GONG")
         menu_additem(menu, option, "5", 0)
+
         if(g_GameMode == NormalDay)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_HEAL")
             menu_additem(menu, option, "6", 0)
+
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_MENU_RANDOM")
             menu_additem(menu, option, "7", 0)
+
             formatex(option, charsmax(option), "\y%L\w", LANG_SERVER, "UJBM_MENU_REACTIONS")
             menu_additem(menu, option, "d", 0)
+
+            menu_additem(menu, "Pune catuse", "e", 0)
+
         }
-        
         else if(g_GameMode == FunDay)
         {
             formatex(option, charsmax(option), "%L", LANG_SERVER, "UJBM_SIMON_FUNMENU")
             menu_additem(menu, option, "9", 0)
         }
+
+        menu_additem(menu, "Desfa toate catusele", "f", 0)
+
         //formatex(option, charsmax(option), "%L",LANG_SERVER, "UJBM_MENU_BIND",bindstr)
         //menu_additem(menu, option, "8", 0)
         
@@ -6239,6 +6278,8 @@ public  simon_choice(id, menu, item)
         case('b'): cmd_punish(id)
         case('c'): cmd_simon_micr(id)
         case('d'): cmd_reactionsmenu(id)
+        case('e'): client_cmd(id, "say /buyhandcuffs")
+        case('f'): client_cmd(id, "say /uncuffall")
     }        
     return PLUGIN_HANDLED
 }

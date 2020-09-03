@@ -523,6 +523,13 @@ public FoodMenuSelect (id, menu, item)
         menu_destroy(menu)
         return PLUGIN_HANDLED
     }
+
+    if (!is_user_alive(id) || (get_gamemode() != 0 && get_gamemode() != 1) 
+        || get_wanted(id) || g_LastTouch[id] != CANTEEN || g_TotalEaten[id] >= MAX_EATEN)
+    {
+        menu_destroy(menu)
+        return PLUGIN_HANDLED
+    }
     static dst[32], data[5], access, callback
     menu_item_getinfo(menu, item, access, data, charsmax(data), dst, charsmax(dst), callback)
     menu_destroy(menu)

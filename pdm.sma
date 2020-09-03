@@ -21,7 +21,7 @@
 
 new moneybox[MAXENTS]
 new model[] = "models/w_money_david.mdl"
-new money_sound1[] = "money/money_sound.wav"
+new money_sound1[] = "money/money_sound2.wav"
 new allmoney = 0;
 
 new method, ison, m_amount, ran_money, random_nums, money_drop, money_drop_a, fadeon, money_sound, divide, force

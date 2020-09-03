@@ -222,7 +222,7 @@ public client_connect(id) {
 
 public fwd_touch(id, world)
 {
-	if(!is_user_alive(id) || !g_WallClimb[id])
+	if(!is_user_alive(id) || !g_WallClimb[id] || !pev_valid(world))
 		return FMRES_IGNORED
 	
 	new classname[STR_T]

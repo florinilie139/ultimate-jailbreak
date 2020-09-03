@@ -10,9 +10,8 @@
 #define PLUGIN_NAME    "Knife"
 #define PLUGIN_AUTHOR    "Mister X"
 #define PLUGIN_VERSION    "1.0"
-#define SERVER_IP "93.119.25.96"
 
-#define CROWBARCOST    16000
+#define CROWBARCOST    20000
 
 new const gszOldSounds[][]={
     "weapons/knife_hit1.wav",
@@ -37,18 +36,18 @@ new const gszNewSounds[sizeof gszOldSounds][]={
     "weapons/ls_pullout.wav"
 };
 
-new const _BlueSaber[][] = { "models/p_light_saber_blue.mdl", "models/v_light_saber_blue.mdl" }
-new const _RedSaber[][] = { "models/p_light_saber_red.mdl", "models/v_light_saber_red.mdl" }
-new const _FistModels[][] = { "models/p_bknuckles.mdl", "models/v_pumni.mdl"}
-new const _BoxModels[][] = { "models/p_bocs.mdl", "models/v_boxx.mdl"}
-new const _CrowbarModels[][] = { "models/p_crowbar.mdl", "models/v_crowbar.mdl" , "models/w_crowbar.mdl" }
-new const _FistSounds[][] = { "weapons/cbar_hitbod2.wav", "weapons/cbar_hitbod1.wav", "weapons/bullet_hit1.wav", "weapons/bullet_hit2.wav" }
-new const _ClawsModels[] = "models/v_hands.mdl"
+new const _BlueSaber[][]      = { "models/p_light_saber_blue.mdl", "models/v_light_saber_blue.mdl" }
+new const _RedSaber[][]       = { "models/p_light_saber_red.mdl", "models/v_light_saber_red.mdl" }
+new const _FistModels[][]     = { "models/p_bknuckles.mdl", "models/v_pumni.mdl"}
+new const _BoxModels[][]      = { "models/p_bocs.mdl", "models/v_boxx.mdl"}
+new const _CrowbarModels[][]  = { "models/jbdobs/p_rangallg.mdl", "models/jbdobs/v_rangallg.mdl" , "models/w_crowbar.mdl" }
+new const _FistSounds[][]     = { "weapons/cbar_hitbod2.wav", "weapons/cbar_hitbod1.wav", "weapons/bullet_hit1.wav", "weapons/bullet_hit2.wav" }
+new const _ClawsModels[]      = "models/v_hands.mdl"
 
 
-new const palo_deploy[]         = { "weapons/knife_deploy1.wav" }
-new const palo_slash1[]         = { "weapons/knife_slash1.wav" }
-new const palo_slash2[]         = { "weapons/knife_slash2.wav" }
+new const palo_deploy[]       = { "weapons/knife_deploy1.wav" }
+new const palo_slash1[]       = { "weapons/knife_slash1.wav" }
+new const palo_slash2[]       = { "weapons/knife_slash2.wav" }
 new const palo_wall[]         = { "/pumni/PHitWall.wav" } 
 new const palo_hit1[]         = { "/pumni/PHit1.wav" } 
 new const palo_hit2[]         = { "/pumni/PHit2.wav" } 
@@ -59,11 +58,11 @@ new const palo_stab[]         = { "/pumni/PStab.wav" }
 new giColor[33]=0
 
 enum {
-All,
-Tero,
-Counter,
-Admin,
-Vip
+    All,
+    Tero,
+    Counter,
+    Admin,
+    Vip
 }
 
 new _KnifesName[20][30]
@@ -86,14 +85,8 @@ new g_MaxClients
 
 public plugin_init()
 {
-    new ip[36];
     register_plugin(PLUGIN_NAME, PLUGIN_VERSION, PLUGIN_AUTHOR)
-    
-    get_user_ip(0,ip,35,0);
-    if(equal(ip,SERVER_IP))
-    {
-        return PLUGIN_CONTINUE;
-    }
+
     register_touch("crowbar", "worldspawn",    "cr_bar_snd")
     register_forward(FM_Touch, "crowbar_touch")
     register_forward(FM_EmitSound, "sound_emit")
@@ -109,6 +102,7 @@ public plugin_init()
     RegisterHam(Ham_Item_Deploy, "weapon_knife", "Handl_Deploy")
     gp_CrowbarMul = register_cvar("jb_crowbarmultiplier", "40.0")
     //set_task(0.5, "check", _, _, _, "b")
+    set_task(5.0, "get_jb_data", _, _, _, "b")
     register_clcmd("say /saber", "cmdChooseSabre");
     register_srvcmd("sabers_off", "sabersOff");
     register_clcmd("say /sabersoff", "sabersOff");
@@ -210,6 +204,8 @@ public round_start (){
     {
         if (is_valid_ent(ent)) remove_entity(ent)
     }
+
+    get_jb_data()
 }
 
 public give_crowbar_server ()
@@ -221,6 +217,14 @@ public give_crowbar_server ()
     new player = str_to_num(id);
     give_crowbar(player, crowbar)
 }
+
+public get_jb_data()
+{
+    g_Simon = get_simon()
+    g_GameMode = get_gamemode()
+    g_Duel = get_duel()
+}
+
 public give_crowbar (player, crowbar)
 {
     if(player){
@@ -234,7 +238,6 @@ public give_crowbar (player, crowbar)
     else{
         log_amx("Player not found");
     }
-
 }
 
 public cmdShopCrowbar (player){
@@ -263,6 +266,7 @@ public cmdShopCrowbar (player){
     menu_display(player, menu)
     return PLUGIN_CONTINUE
 }
+
 public CrowbarChoice (player, menu, item){
     if(item == MENU_EXIT || !is_user_alive(player)){
         menu_destroy(menu)
@@ -290,26 +294,72 @@ public CrowbarChoice (player, menu, item){
 public player_damage(victim, ent, attacker, Float:damage, bits){
     if(!is_user_connected(victim) || !is_user_connected(attacker) || victim == attacker || gp_MultiDMG==0)
         return HAM_IGNORED
-    g_Duel = get_duel()
-    if((g_GameMode == 4 || g_GameMode == 5) && cs_get_user_team(attacker) == CS_TEAM_T)
-        return HAM_IGNORED
-    if(g_GameMode == 8 || g_GameMode == 13 || g_GameMode == 17 || g_GameMode == 18 || g_GameMode == 19)
-        return HAM_IGNORED
-    if(attacker == ent && (g_Duel == 0 || g_Duel == 2) && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)!=cs_get_user_team(attacker) && (((g_GameMode == 12 || g_GameMode == 10) && cs_get_user_team(attacker)==CS_TEAM_CT) || (g_GameMode == 15 && cs_get_user_team(attacker)==CS_TEAM_T) || (g_HasCrowbar[attacker]!=0 && (g_Duel != 3 && g_GameMode != -1 && g_GameMode != 2 && g_GameMode != 12 && g_GameMode!=10 && g_GameMode!=7))))
+    //client_print(0, print_chat, "e %d", g_GameMode)
+    switch (g_GameMode)
     {
-        SetHamParamFloat(4, damage * gc_CrowbarMul)
-        return HAM_OVERRIDE
+    case Freeday, NormalDay:
+    {
+        if (attacker == ent && (g_Duel == 0 || g_Duel == 2) && g_HasCrowbar[attacker] != 0 &&
+            get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim) != cs_get_user_team(attacker))
+        {
+            SetHamParamFloat(4, damage * gc_CrowbarMul)
+            //client_print(0, print_chat, "Sunt aici, in cazul de ranga, in Freeday, NormalDay");
+            return HAM_OVERRIDE
+        }
+        //client_print(0, print_chat, "Sunt aici, afara, in Freeday, NormalDay");
+    }
+    case GravityDay, SpiderManDay, ZombieTeroDay, ScoutDay, BoxDay:
+    {
+        return HAM_IGNORED;
+    }
+    case AlienDay, AlienHiddenDay, SpartaDay, BugsDay:
+    {
+        if (attacker == ent && get_user_weapon(attacker) == CSW_KNIFE &&
+            cs_get_user_team(victim) != cs_get_user_team(attacker) && cs_get_user_team(attacker) == CS_TEAM_CT)
+        {
+            SetHamParamFloat(4, damage * gc_CrowbarMul)
+            //client_print(0, print_chat, "Sunt aici, in cazul de ranga, in AlienDay, AlienHiddenDay, SpartaDay, BugsDay");
+            return HAM_OVERRIDE
+        }
+        //client_print(0, print_chat, "Sunt aici, afara, in AlienDay, AlienHiddenDay, SpartaDay, BugsDay");
+    }
+    case SpartaTeroDay:
+    {
+        if (attacker == ent && get_user_weapon(attacker) == CSW_KNIFE &&
+            cs_get_user_team(victim) != cs_get_user_team(attacker) && cs_get_user_team(attacker) == CS_TEAM_T)
+        {
+            SetHamParamFloat(4, damage * gc_CrowbarMul)
+            //client_print(0, print_chat, "Sunt aici, in cazul de ranga, in SpartaTeroDay");
+            return HAM_OVERRIDE
+        }
+        //client_print(0, print_chat, "Sunt aici, afara, in SpartaTeroDay");
+    }
+    case ZombieDayT, ZombieDay, ColaDay:
+    {
+        //client_print(0, print_chat, "Sunt aici, in ZombieDayT, ZombieDay, ColaDay");
+    }
+    default:
+    {
+        if (attacker == ent && g_HasCrowbar[attacker] != 0 && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim) != cs_get_user_team(attacker))
+        {
+            SetHamParamFloat(4, damage * gc_CrowbarMul)
+            //client_print(0, print_chat, "Sunt aici, in cazul de ranga, in default");
+            return HAM_OVERRIDE
+        }
+        //client_print(0, print_chat, "default");
+    }
     }
     return HAM_IGNORED
 }
 
 public player_killed(victim, attacker, shouldgib)
 {
-    if (g_GameMode == 0 || g_GameMode == 1) 
+    if (g_GameMode == Freeday || g_GameMode == NormalDay)
     {
         if(g_HasCrowbar[victim]>0){
             spawn_crowbar(victim)
             g_HasCrowbar[victim] = 0
+            client_print(0, print_chat, "Sunt aici, in dat ranga jos, pentru %d day", g_GameMode);
         }
         if(is_user_alive(attacker) && cs_get_user_team(attacker) == CS_TEAM_T && g_HasCrowbar[attacker]>0 && get_user_weapon(attacker) == CSW_KNIFE && cs_get_user_team(victim)==CS_TEAM_CT)
             client_cmd(0, "spk jbDobs/SurpriseMotherfucker.wav")//client_cmd(0, "spk jbDobs/halloween/EvilLaugh.wav")//
@@ -321,10 +371,8 @@ public player_killed(victim, attacker, shouldgib)
 public Handl_Animation (Entity, iAnim, skiplocal)
 {
     new iPlayer = pev( Entity, pev_owner)
-    g_Simon = get_simon()
-    g_GameMode = get_gamemode()
-    if ( is_user_connected( iPlayer )  ) {        
-        if(g_HasCrowbar[iPlayer]!=0 && (g_GameMode == 4 || g_GameMode == 5) && iPlayer == g_Simon || g_GameMode == -2  && cs_get_user_team(iPlayer) == CS_TEAM_T || g_GameMode == 11 && cs_get_user_team(iPlayer) == CS_TEAM_CT){
+    if ( is_user_connected( iPlayer )  ) {
+        if(g_HasCrowbar[iPlayer]!=0 && (g_GameMode == AlienDay || g_GameMode == AlienHiddenDay) && iPlayer == g_Simon || g_GameMode == AlienDayT && cs_get_user_team(iPlayer) == CS_TEAM_T || g_GameMode == NightDay && cs_get_user_team(iPlayer) == CS_TEAM_CT){
             SendWeaponAnim( iPlayer, iAnim, 1)
         }
         else if(g_HasCrowbar[iPlayer]>1)
@@ -345,8 +393,6 @@ public current_weapon(id)
 {
     if(!is_user_alive(id) || cs_get_user_shield(id) )
         return PLUGIN_CONTINUE
-    g_Simon = get_simon()
-    g_GameMode = get_gamemode()
     if(giColor[id] == 1)
     {
         set_pev(id, pev_viewmodel2, _RedSaber[1])
@@ -357,12 +403,14 @@ public current_weapon(id)
         set_pev(id, pev_viewmodel2, _BlueSaber[1])
         set_pev(id, pev_weaponmodel2, _BlueSaber[0])
     }
-    else if(g_GameMode == 19 && cs_get_user_team(id) == CS_TEAM_T)
+    else if(g_GameMode == BoxDay && cs_get_user_team(id) == CS_TEAM_T)
     {
         set_pev(id, pev_viewmodel2, _BoxModels[1])
         set_pev(id, pev_weaponmodel2, _BoxModels[0])
     }
-    else if(g_HasCrowbar[id]!=0 && (g_GameMode == 4 || g_GameMode == 5) && id == g_Simon || (g_GameMode == -2 ||  g_GameMode == 2) && cs_get_user_team(id) == CS_TEAM_T || (g_GameMode == -1 || g_GameMode == 11 || g_GameMode == 17) && cs_get_user_team(id) == CS_TEAM_CT)
+    else if(g_HasCrowbar[id]!=0 && (g_GameMode == AlienDay || g_GameMode == AlienHiddenDay) && id == g_Simon 
+        || (g_GameMode == AlienDayT ||  g_GameMode == ZombieDay) && cs_get_user_team(id) == CS_TEAM_T ||
+        (g_GameMode == ZombieDayT || g_GameMode == NightDay || g_GameMode == ZombieTeroDay) && cs_get_user_team(id) == CS_TEAM_CT)
     {
         set_pev(id, pev_viewmodel2, _ClawsModels)
         set_pev(id, pev_weaponmodel2, _FistModels[0])
@@ -406,7 +454,7 @@ public spawn_crowbar(id)
     set_pev(ent, pev_solid, SOLID_TRIGGER)
     set_pev(ent, pev_movetype, MOVETYPE_BOUNCE)
     set_pev(ent, pev_groupinfo, g_HasCrowbar[id])
-    entity_set_model(ent, "models/w_crowbar.mdl")
+    entity_set_model(ent, _CrowbarModels[2])
     pev(id, pev_origin, where)
     where[2] += 50.0;
     where[0] += random_float(-20.0, 20.0)
@@ -442,8 +490,8 @@ public crowbar_touch(ent, player)
         return FMRES_IGNORED
     pev(ent, pev_classname, touch_class, 31)
     if (!is_user_alive(player) || is_user_bot(player))
-            return FMRES_IGNORED
-    if (equal(touch_class, "crowbar") && g_GameMode < 2 && g_HasCrowbar[player]==0)
+        return FMRES_IGNORED
+    if (equal(touch_class, "crowbar") && (g_GameMode == Freeday || g_GameMode == NormalDay) && g_HasCrowbar[player]==0)
     {
         g_HasCrowbar[player] = pev(ent, pev_groupinfo)
         remove_entity(ent)
@@ -497,8 +545,7 @@ public sound_emit(id, channel, sample[], Float:volume, Float:attenuation, fFlags
                             case 3:emit_sound(id, CHAN_WEAPON, palo_hit3, 1.0, ATTN_NORM, 0, PITCH_LOW)
                             case 4:emit_sound(id, CHAN_WEAPON, palo_hit4, 1.0, ATTN_NORM, 0, PITCH_LOW)
                         }
-                    }
-                    
+                    }    
                     case('s'):
                     {
                         if (g_HasCrowbar[id]!=0)
@@ -530,38 +577,45 @@ stock SendWeaponAnim(Player, Sequence, Body)
 
 public sabersOff()
 {
-    new i
-    for (i=0; i<g_MaxClients; i++)
+    for (new i = 1; i <= g_MaxClients; i++)
+    {
         giColor[i] = 0
         set_user_info(i, "model", "jbllgxmas")
+    }
 }
 
 public sabersOn()
 {
-    new i
-    for (i=0; i<g_MaxClients; i++)
-        if(is_user_alive(i))
-            if(cs_get_user_team(i) == CS_TEAM_T)
-                {
-                    giColor[i]=1;
-                    set_user_info(i, "model", "vader")
-                }
-                else if(cs_get_user_team(i) == CS_TEAM_CT)
-                {
-                    giColor[i]=2;
-                    set_user_info(i, "model", "obiwan")
-                }
-}
-public cmdChooseSabre(id){
-    if(get_user_flags(id) & ADMIN_LEVEL_E)
-        if(cs_get_user_team(id) == CS_TEAM_T)
+    for (new i = 1; i <= g_MaxClients; i++)
+    {
+        if (!is_user_alive(i))
+            continue;
+        if (cs_get_user_team(i) == CS_TEAM_T)
         {
-            giColor[id]=1;
+            giColor[i] = 1;
+            set_user_info(i, "model", "vader")
+        }
+        else if (cs_get_user_team(i) == CS_TEAM_CT)
+        {
+            giColor[i] = 2;
+            set_user_info(i, "model", "obiwan")
+        }
+    }
+}
+
+public cmdChooseSabre(id)
+{
+    if (get_user_flags(id) & ADMIN_LEVEL_E)
+    {
+        if (cs_get_user_team(id) == CS_TEAM_T)
+        {
+            giColor[id] = 1;
             set_user_info(id, "model", "vader")
         }
-        else if(cs_get_user_team(id) == CS_TEAM_CT)
+        else if (cs_get_user_team(id) == CS_TEAM_CT)
         {
-            giColor[id]=2;
+            giColor[id] = 2;
             set_user_info(id, "model", "obiwan")
         }
+    }
 }
