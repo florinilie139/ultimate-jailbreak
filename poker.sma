@@ -7,7 +7,7 @@
 
 #define PLUGIN "AMXX Poker"
 #define VERSION "0.1"
-#define AUTHOR "(|EcLiPsE|)"
+#define AUTHOR "Florin Ilie aka (|Eclipse|)"
 
 enum _group {_name[30], _pass[30], _players, _game}
 enum _:Games{ None, Poker}

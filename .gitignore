@@ -7,6 +7,10 @@
 node_modules/
 dist/
 
+.vs/
+compiled/
+compile.dat
+
 # Compiled Java class files
 *.class
 
@@ -39,6 +43,7 @@ Thumbs.db
 *.app
 *.exe
 *.war
+*.dll
 
 # Large media files
 *.mp4
@@ -47,3 +52,5 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+*.vs

@@ -2,7 +2,7 @@
 #include <amxmisc>
 
 #define PLUG_NAME         "MOTD"
-#define PLUG_AUTH         "(|EcLiPsE|)"
+#define PLUG_AUTH         "Florin Ilie aka (|Eclipse|)"
 #define PLUG_VERS         "1.0"
 
 #define MAXCMDL 30

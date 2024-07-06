@@ -7,7 +7,7 @@
 #include <ujbm>
 
 #define PLUGIN_NAME      "Catuse"
-#define PLUGIN_AUTHOR    "Mister X"
+#define PLUGIN_AUTHOR    "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION   "1.0"
 
 new g_MaxClients = 32;

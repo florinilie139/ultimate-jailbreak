@@ -7,7 +7,7 @@
 #include <ujbm.inc>
 
 #define PLUGIN_NAME    "Corona Virus"
-#define PLUGIN_AUTHOR    "Mister X"
+#define PLUGIN_AUTHOR    "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION    "1.0"
 
 #define MAX_CLIENTS 32

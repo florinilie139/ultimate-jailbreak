@@ -20,7 +20,7 @@ new freestyle[][] =
 public plugin_init( ) {
 	new const VERSION[ ] = "1.0";
 	
-	register_plugin( "Deathrun: Free Round", VERSION, "xPaw & Mister X" );
+	register_plugin( "Deathrun: Free Round", VERSION, "xPaw & Florin Ilie aka (|Eclipse|)" );
 	
 	new p = register_cvar( "deathrun_freeround", VERSION, FCVAR_SERVER | FCVAR_SPONLY );
 	set_pcvar_string( p, VERSION );

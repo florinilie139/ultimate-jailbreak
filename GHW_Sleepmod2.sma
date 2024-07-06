@@ -78,12 +78,17 @@ public client_disconnect(id) asleep[id]=false
 
 public cmd_wakeup(id)
 {
-    if(!asleep[id]) 
+    if(!is_user_alive(id))
+        return PLUGIN_HANDLED
+    if(!asleep[id])
+    {
         client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOWAKEUP")
+        return PLUGIN_HANDLED
+    }
     else
     {
         asleep[id]=false
-		client_cmd(id,"-duck")
+        client_cmd(id,"-duck")
 
         if(playsound2) emit_sound(id,CHAN_VOICE,sound2,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
         client_print(id,print_center,"[AMXX] %L",id,"MSG_WAKEUP2")
@@ -101,10 +106,14 @@ public cmd_wakeup(id)
         message_end()
         remove_task(id)
     }
+
+    return PLUGIN_HANDLED
 }
 
 public cmd_sleep(id)
 {
+    if(!is_user_alive(id))
+        return PLUGIN_HANDLED
     if(asleep[id]) 
     {
         client_print(id,print_chat,"[AMXX] %L",id,"MSG_NOSLEEP")
@@ -164,23 +173,23 @@ public fadeout(id)
         if(health>=get_pcvar_num(max_health) || tmp_origin[0] != origins[id][0] ||  tmp_origin[1] != origins[id][1])
         {
             asleep[id]=false
-			client_cmd(id,"-duck")
+            client_cmd(id,"-duck")
 
-			if(playsound2) emit_sound(id,CHAN_VOICE,sound2,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
-			client_print(id,print_center,"[AMXX] %L",id,"MSG_WAKEUP2")
+            if(playsound2) emit_sound(id,CHAN_VOICE,sound2,VOL_NORM,ATTN_NORM,0,PITCH_NORM)
+            client_print(id,print_center,"[AMXX] %L",id,"MSG_WAKEUP2")
 
-			set_user_rendering(id)
+            set_user_rendering(id)
 
-			message_begin(MSG_ONE,get_user_msgid("ScreenFade"),{0,0,0},id)
-			write_short(~0)
-			write_short(~0)
-			write_short(1<<12)
-			write_byte(0)
-			write_byte(0)
-			write_byte(0)
-			write_byte(0)
-			message_end()
-			remove_task(id)
+            message_begin(MSG_ONE,get_user_msgid("ScreenFade"),{0,0,0},id)
+            write_short(~0)
+            write_short(~0)
+            write_short(1<<12)
+            write_byte(0)
+            write_byte(0)
+            write_byte(0)
+            write_byte(0)
+            message_end()
+            remove_task(id)
         }
         else
         {

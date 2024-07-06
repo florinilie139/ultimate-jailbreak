@@ -8,7 +8,7 @@
 #include <vip_base>
 
 #define PLUGIN_NAME    "Trivia Manager"
-#define PLUGIN_AUTHOR    "Mister X"
+#define PLUGIN_AUTHOR    "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION    "1.0"
 
 #define TASK_GLOW 1100
@@ -18,8 +18,10 @@ new gp_TriviaFilelist;
 new gp_TriviaSpecialFile;
 new gp_TriviaSpecialDelay;
 
+#define MAXTRIVIAQUESTIONS 1000
+
 enum _trivia { _enun[100], _ras[50], _ap, _type}
-new TriviaList[1000][_trivia]
+new TriviaList[MAXTRIVIAQUESTIONS][_trivia]
 new TriviaType[100][100]
 new TotalTrivia
 new TotalTriviaType
@@ -117,6 +119,11 @@ public LoadTriviaFromFile(const FilePath[], const ListToTriviaToAdd[][], IndexFr
             ListToTriviaToAdd[triviaAdded][_type] = TriviaType;
             triviaAdded++;
         }
+        if(triviaAdded >= MAXTRIVIAQUESTIONS)
+        {
+            log_amx("Nu se mai pot incarca intrebari, numarul maxim a fost atins");
+            return triviaAdded;
+        }
     }
     return triviaAdded;
 }
@@ -149,6 +156,10 @@ public LoadTrivia()
                         }
                     }
                     TotalTriviaType++
+                    if(TotalTrivia >= MAXTRIVIAQUESTIONS)
+                    {
+                        break;
+                    }
                 }
                 else{
                     log_amx("Nu sa gasit %s",TriviaType[TotalTriviaType])
@@ -517,7 +528,7 @@ public cmd_trivia (id)
 
                 cs_set_user_money(id, cs_get_user_money(id) + PrizeMoney);
                 Toptrivia[id] ++;
-                if (Toptrivia[id] % 20 == 0)
+                if (Toptrivia[id] % 20 == 0) //every 20 questions answered right, it gets a point
                     server_cmd("give_points %d 1", id);
 
                 format(PrizeString, 50, "^x01$%d!", PrizeMoney);

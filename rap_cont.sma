@@ -2,7 +2,7 @@
 #include <amxmisc>
 
 #define PLUGIN_NAME	"Rapoarte/Contacte"
-#define PLUGIN_AUTHOR	"Mister X"
+#define PLUGIN_AUTHOR	"Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION	"1.0"
 
 public plugin_init(){

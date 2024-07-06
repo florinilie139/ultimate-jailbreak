@@ -199,6 +199,15 @@ public make_money(id,money,Float:velo[]) {
     for(new i = 0; i < moneybags && allmoney<MAXMONEYS; ++i) 
     {
         new newent = engfunc(EngFunc_CreateNamedEntity, engfunc(EngFunc_AllocString,"info_target"))
+        if(newent < 0)
+            return FMRES_IGNORED;
+        if(newent > MAXENTS)
+        {
+            engfunc(EngFunc_RemoveEntity,newent)
+            return FMRES_IGNORED;
+        }
+
+
         if(!is_user_alive(id)) {
             velo[0] = random_float(1.0,150.0)
             velo[1] = random_float(1.0,150.0)

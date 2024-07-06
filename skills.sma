@@ -12,7 +12,7 @@
 #include <xs>
 
 #define PLUGIN_NAME    "Skills Mod"
-#define PLUGIN_AUTHOR    "Mister X"
+#define PLUGIN_AUTHOR    "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION    "1.0"
 #define PLUGIN_CVAR    "Skills Mod"
 #define SERVER_IP "178.32.241.0"
@@ -102,6 +102,7 @@ new g_PeaceTime;
 new g_DayOfTheWeek;
 new bool:ShowAc [MAX_PLAYERS+1]
 new bool:firstRound = false
+new dayWithoutSkill = -1
 
 new Float:cl_pushangle[MAX_PLAYERS+1][3]
 
@@ -211,8 +212,7 @@ public _give_points_all (id,level,cid)
         {
             add_points(i,str_to_num(points))
         }
-    }
-    
+    }    
 }
 
 public LoadVips ()
@@ -828,7 +828,7 @@ public cmd_disguise (id)
 
 bool:is_skills_ok()
 {
-    if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6 && g_DayOfTheWeek%7!=3)
+    if((g_Gamemode == Freeday || g_Gamemode == NormalDay) && g_Duel<2 && g_DayOfTheWeek%7!=6 && dayWithoutSkill != g_DayOfTheWeek)
         return true
     return false
 }
@@ -1052,6 +1052,10 @@ public return_peace()
 public get_dayoftheweek()
 {
     g_DayOfTheWeek = get_day()
+    if(g_DayOfTheWeek%7 == 0)
+    {
+        dayWithoutSkill = random_num(1,4);
+    }
 }
 
 public round_first()

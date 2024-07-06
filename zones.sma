@@ -16,7 +16,7 @@
 #define MAX_EATEN 300
 
 new const PLUGIN_NAME[] = "Zones"
-new const PLUGIN_AUTHOR[] = "(|EcLiPsE|)"
+new const PLUGIN_AUTHOR[] = Florin Ilie aka (|Eclipse|)
 new const PLUGIN_VERSION[] = "1.0"
 new const PLUGIN_PREFIX[] = "JB"
 

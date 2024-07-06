@@ -8,10 +8,10 @@
 #include <vip_base>
 
 #define PLUGIN_NAME    "Knife"
-#define PLUGIN_AUTHOR    "Mister X"
+#define PLUGIN_AUTHOR    "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION    "1.0"
 
-#define CROWBARCOST    20000
+#define CROWBARCOST    16000
 
 new const gszOldSounds[][]={
     "weapons/knife_hit1.wav",

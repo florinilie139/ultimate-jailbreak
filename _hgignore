@@ -1,7 +1,0 @@
-syntax: regexp
-amxxpc\.*
-compile\.*
-[^\.]*\.amxx
-syntax: glob
-desktop.ini
-dlsym

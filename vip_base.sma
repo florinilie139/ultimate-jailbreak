@@ -11,7 +11,7 @@
 #include <ujbm>
 
 #define PLUGIN_NAME "Vip Main"
-#define PLUGIN_AUTHOR "Mister X"
+#define PLUGIN_AUTHOR "Florin Ilie aka (|Eclipse|)"
 #define PLUGIN_VERSION "1"
 #define PLUGIN_CVAR "Vip Manager"
 #define VIP_TYPE_2_MONEY 5000

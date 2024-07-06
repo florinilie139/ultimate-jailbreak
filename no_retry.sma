@@ -3,7 +3,7 @@
 #include <hamsandwich>
 
 #define PLUGIN_NAME	"NoRetry"
-#define PLUGIN_AUTHOR	"(|EcLiPsE|)"
+#define PLUGIN_AUTHOR	Florin Ilie aka (|Eclipse|)
 #define PLUGIN_VERSION	"1.0"
 
 new bool:NoEntry = false

@@ -61,6 +61,8 @@ ColorChat(id, Color:type, const msg[], {Float,Sql,Result,_}:...)
         index = id;
     } else {
         index = FindPlayer();
+        if(index == -1)
+            return;
         MSG_Type = MSG_ALL;
     }
     
