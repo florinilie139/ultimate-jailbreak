@@ -1,0 +1,3 @@
+[en]
+RECORDINGIN = A inceput inregistrarea unui Demo, acesta se afla in cstrike cu numele
+RECORDINGAT = Inregistrarea Demo-ului a pornit la ora %s

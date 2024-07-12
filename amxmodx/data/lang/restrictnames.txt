@@ -1,0 +1,71 @@
+[en]
+CONFIG_LOADED = Loaded %d phrases from %s.
+CONFIG_LOAD_ERROR = Error loading config file from %s.
+
+RENAME_NOTIFY_PLAYER = You were renamed because your name is inappropriate.^n(%s)
+RENAME_NOTIFY_ALL = %s was renamed for having an inappropriate name (%s).
+RENAME_LOG_ENTRY = %s was renamed because "%s" matched regex #%d, "%s" (%s).
+
+KICK_NOTIFY_ALL = %s was kicked for having an inappropriate name (%s).
+KICK_LOG_ENTRY = %s was kicked because "%s" matched regex #%d, "%s" (%s).
+KICK_REASON = inappropriate name (%s)
+
+BAN_NOTIFY_ALL = %s was banned for having an inappropriate name (%s).
+BAN_LOG_ENTRY = %s was banned because "%s" matched regex #%d, "%s" (%s).
+BAN_REASON = inappropriate name (%s)
+
+[de]
+CONFIG_LOADED = %d Saetze von %s geladen.
+CONFIG_LOAD_ERROR = Es trat ein Fehler beim Laden der Datei %s auf.
+
+RENAME_NOTIFY_PLAYER = Du wurdest umbenannt, weil Dein Name nicht erlaubt ist.^n(%s)
+RENAME_NOTIFY_ALL = %s wurde umbenannt, weil sein Name nicht erlaubt ist (%s).
+RENAME_LOG_ENTRY = %s wurde umbenannt, weil "%s" uebereinstimmt mit regex #%d, "%s" (%s).
+
+KICK_NOTIFY_ALL = %s wurde aufgrund seines nicht erlaubten Namens gekickt (%s).
+KICK_LOG_ENTRY = %s wurde gekickt, weil "%s" uebereinstimmt mit regex #%d, "%s" (%s).
+KICK_REASON = Name nicht erlaubt (%s)
+
+BAN_NOTIFY_ALL = %s wurde aufgrund seines nicht erlaubten Namens gebannt (%s).
+BAN_LOG_ENTRY = %s wurde gebannt, weil "%s" uebereinstimmt mit regex #%d, "%s" (%s).
+BAN_REASON = Name nicht erlaubt (%s)
+
+[es]
+CONFIG_LOADED = %d frases han sido cargadas desde %s.
+CONFIG_LOAD_ERROR = Error al cargar el archivo de configuracion %s.
+
+[fr]
+CONFIG_LOADED = %d phrase charge du fichier %s .
+CONFIG_LOAD_ERROR = Erreur fatale en chargant le fichier %s . 
+
+[nl]
+CONFIG_LOADED =  %d zinnen geladen vanuit %s.
+CONFIG_LOAD_ERROR = Er is een fout opgetreden tijdens het laden van configuratiebestand vanuit %s.
+
+RENAME_NOTIFY_PLAYER = Je bent hernoemd omdat je vorige naam niet toegestaan is.^n(%s)
+RENAME_NOTIFY_ALL = %s is hernoemd wegens gebruik van een niet toegestane naam (%s).
+RENAME_LOG_ENTRY = %s is hernoemd omdat "%s" overeenkomt met regex #%d, "%s" (%s).
+
+KICK_NOTIFY_ALL = %s is gekickt wegens gebruik van een niet toegestane naam (%s).
+KICK_LOG_ENTRY = %s is gekickt omdat "%s" overeenkomt met regex #%d, "%s" (%s).
+KICK_REASON = naam niet toegestaan (%s)
+
+BAN_NOTIFY_ALL = %s is verbannen wegens gebruik van een niet toegestane naam (%s).
+BAN_LOG_ENTRY = %s is verbannen omdat "%s" overeenkomt met regex #%d, "%s" (%s).
+BAN_REASON = naam niet toegestaan (%s)
+
+[sr]
+CONFIG_LOADED = Ucitano %d fraza iz %s.
+CONFIG_LOAD_ERROR = Greska pri ucitavanju konfiguracije iz %s.
+
+RENAME_NOTIFY_PLAYER = Vase ime je promenjeno jer je neprokladno.^n(%s)
+RENAME_NOTIFY_ALL = %s je promenio ime jer je neprikladno (%s).
+RENAME_LOG_ENTRY = %s je promenio ime jer je "%s" nasao regex #%d, "%s" (%s).
+
+KICK_NOTIFY_ALL = %s je kikovan zbog neprikladnog imena (%s).
+KICK_LOG_ENTRY = %s je kikovan jer je "%s" nasao regex #%d, "%s" (%s).
+KICK_REASON = neprikladno ime (%s)
+
+BAN_NOTIFY_ALL = %s je banovan zbog neprikladnog imena (%s).
+BAN_LOG_ENTRY = %s je banovan jer je "%s" nasao regex #%d, "%s" (%s).
+BAN_REASON = neprikladno ime (%s)

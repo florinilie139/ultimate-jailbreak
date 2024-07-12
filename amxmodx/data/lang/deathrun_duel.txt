@@ -1,0 +1,290 @@
+﻿[ru]
+CHOOSE_DUEL = Выбирайте дуэль
+CHOOSE_ENEMY = Выбирайте противника
+
+DUEL_1 = Ножи
+DUEL_2 = Диглы
+DUEL_3 = Гранаты
+DUEL_4 = Скауты
+DUEL_5 = Дробовики
+DUEL_6 = Авп
+DUEL_7 = Фамасы
+DUEL_8 = Русская Рулетка
+DUEL_9 = Математическая
+DUEL_10 = Словесная
+DUEL_11 = Словесная
+DUEL_12 = Словесная
+DUEL_13 = Словесная
+
+ONLY_LAST = Только !gпоследний !teamспецназовец !yможет открыть это меню!
+ONLY_CTS = !teamТеррористы !yне могут открыть это меню!
+NOT_TS = Нету живого !teamтеррориста !yдля поединка.
+
+KNIFE_WAIT = Дуэль на ножах, приготовтесь!
+DEAGLE_WAIT = Дуэль на диглах, приготовтесь!
+GRENADE_WAIT = Дуэль на гранатах, приготовтесь!
+SCOUT_WAIT = Дуэль на скаутах, приготовтесь!
+DROB_WAIT = Дуэль на дробовиках, приготовтесь!
+AWP_WAIT = Дуэль на авп, приготовтесь!
+FAMAS_WAIT = Дуэль на фамасах, приготовтесь!
+MATH_WAIT = Математическа дуэль, приготовтесь!
+WORD_WAIT = Словесная дуэль, приготовтесь!
+STARTAFTER = Начинаем через %d секунд!
+
+KNIFE1 = Началась дуэль на ножах: %s против %s
+
+DEAGLE1 = Началась дуэль на диглах: !g%s !yпротив !g%s
+DEAGLE2 = Стрелять по 1 !yпатрону и строго !yпо очереди!
+
+GRENADE1 = Началась дуэль на гранатах: !g%s !yпротив !g%s
+GRENADE2 = Кидать по !g1 !yгранате и !gстрого !yпо очереди!
+
+SCOUT1 = Началась дуэль на скаутах: !g%s !yпротив !g%s
+SCOUT2 = Стрелять по !g1 !yпатрону и !gстрого !yпо очереди!
+
+DROB1 = Началась дуэль на дробовиках: !g%s !yпротив !g%s
+DROB2 = Стрелять по !g1 !yпатрону и !gстрого !yпо очереди!
+
+AWP1 = Началась дуэль на авп: !g%s !yпротив !g%s
+AWP2 = Стрелять по !g1 !yпатрону и !gстрого !yпо очереди!
+
+FAMAS1 = Началась дуэль на фамасах: !g%s !yпротив !g%s
+FAMAS2 = Стрелять по !g3 !yпатрона и !gстрого !yпо очереди!
+
+MATH1 = Началась математическая дуэль: !g%s !yпротив !g%s
+MATH2 = Кто первым решит задачу тот и победил!
+
+WORD1 = Началась словесная дуэль: !g%s !yпротив !g%s
+WORD2 = Кто перым повторит фразу тут и победил!
+
+RR1 = Началась русская рулетка: !g%s !yпротив !g%s
+RR2 = Крутим барабан !gстрого !yпо очереди!
+RR3 = Начинает: !g%s
+RRSTART = Русскую рулетку начинает %s^nВ барабане всего %d патрон(ов) из 7-ми...
+RRTITLE = Русская Рулетка
+RRDO = Крутить Барабан
+RRDOING = %s крутит барабан...
+RRPRESS = Барабан остановился, %s жми на курок!
+RRWAIT = Подожди, пока барабан остановится!
+RRBOOM = О нет, ему попался патрон!^nМозги %s раcтеклись по земле...
+RRNOTBOOM = О да, ему повезло!^nТеперь очередь %s...
+RRNOTYOU = Сейчас не твоя очередь!
+
+MATH_WINNER = Игрок %s первым решил задачу и победил!^nОтвет: %s
+WORD_WINNER = Игрок %s первым написал фразу и победил!
+NO_WINNER = Время вышло, дуэль закончилась в ничью!
+
+SPAWN_MENU_INFO = Чтобы войти в меню игрока, нажми !gF3
+SPAWN_YOU_TER = Ты !teamтеррорист!
+SPAWN_TER_MODES = Пиши !team/free !yдля свободного бега, !team/invis !yдля невидимости
+
+DUEL_TIMER2 = До конца дуэли осталось %d секунд!^nЗадание: %s
+DUEL_TIMER = До конца дуэли осталось %d секунд!
+DUELTASK = Задание: %s
+
+DD_MENU_BACK = Назад
+DD_MENU_EXIT = Выход
+DD_MENU_MORE = Дальше
+
+CURRENTMODE = Мод
+BUTTONS = норм
+FREE = фрии
+INVIS = инвиз
+DUEL = дуэль
+
+CURRENTTIME = Время
+TLEFT = Осталось
+LASTR = Последний раунд
+NMAP = Следующая
+CTER = Террорист
+TNONE = Нету
+ALIVECTS = Живых СТ
+APLAYERS = Всего игроков
+
+YOULAST = Ты последний! Желаешь дуэль с террористом?
+LASTYES = Да
+LASTNO = Нет
+FDUEL = Меню дуэлей можно найти нажав F3
+
+ORIGINS_TITLE = Сохранение позиций
+SAVE_POSITION = Сохранить позицию
+DELETE_POSITIONS = Удалить позиции
+
+ANNOUNCE = To start vote of FreeRun use /free
+FREERUN_VOTEMENU = Do you want enable FreeRun mode in this round?
+FREERUN_DISABLED = Option disabled
+FREERUN_VOTE_IS_NOW = Vote is already started
+FREERUN_TT_DECIDED = Terrorist decided - round with no traps
+FREERUN_NEXT_VOTE_TIME = Next vote avaible for %02d:%02d minutes
+FREERUN_NEXT_VOTE_ROUNDS = Next vote avaible for %d rounds
+FREERUN_RESULTS = End of vote! Results:
+FREERUN_TIE = Tie! Normal game
+FREERUN_WINOPTION = Win option
+BUTTON_FREERUN = We play FreeRun - do not use traps!
+BUTTON_NOMORE = You can`t use this trap!
+BUTTON_LEFT = %d uses of this trap left!
+BUTTON_ENDOFLIMIT = You will no more use this trap!
+MUST_B_ALIVE = You must be alive
+NOLIMIT = No limit
+DELAY_EDITOR = Delay Editor
+OPTIONS = Options
+GOTO = Go to
+NEAREST = The nearest
+NOTARGET = This one have not a target
+WORD_LESS = Less
+WORD_NEXT = Next
+WORD_SAVE = Save
+WORD_SAVED = Saved
+NO_BUTTONS = There are no buttons
+
+[en]
+CHOOSE_DUEL = Alegeti arma!
+CHOOSE_ENEMY = Alegeti inamicul!
+
+DUEL_1 = Knives
+DUEL_2 = Deagle
+DUEL_3 = M4A1
+DUEL_4 = AK47
+DUEL_5 = Mp5navy 
+DUEL_6 = HE
+DUEL_7 = Scouts
+DUEL_8 = ShotGuns
+DUEL_9 = AWP
+DUEL_10 = Famas
+DUEL_11 = Russian Roulette
+DUEL_12 = The mathematical
+DUEL_13 = Verbal
+
+ONLY_LAST = Doar ultimul !teamCT !gpoate deschide acest meniu!
+ONLY_CTS = !yEchipa !gTerorista !teamnu poate !gaccesa acest meniu!
+NOT_TS = !yNici un !teamterorist !gin viata, pentru !teamduel!
+
+KNIFE_WAIT = Duel cu, cutite, pregatiti-va!
+DEAGLE_WAIT = Duel in deagle, pregatiti-va!
+M4A1_WAIT = Duel cu m4a1, pregatiti-va!
+AK47_WAIT = Duel cu AK47, pregatiti-va!
+MP5NAVY_WAIT = Duel cu Mp5navy, pregatiti-va!
+GRENADE_WAIT = Duel in grenazi, pregatiti-va!
+SCOUT_WAIT = Duel cu scouts, pregatiti-va!
+DROB_WAIT = Duel cu shotgun, pregatiti-va!
+AWP_WAIT = Duel cu AWP, pregatiti-va!
+FAMAS_WAIT = Duel cu famas, pregatiti-va!
+MATH_WAIT = Duel v-a incepe, fiti gata!
+WORD_WAIT = Duel v-a incepe, fiti gata!
+STARTAFTER = Vom incepe in %d secunde!
+
+KNIFE1 = A inceput !teamduelul !gin cutite: !team%s !gImpotriva !glui !team%s
+
+DEAGLE1 = A inceput !teamduelul cu Deagle: !team%s !gImpotriva lui !team%s
+DEAGLE2 = Trageti !teamstrict !teamcate un !gglont pe rand!
+
+M4A11 = A inceput !teamduelul cu m4a1: !team%s !gImpotriva lui !team%s
+M4A12 = Trageti !teamstrict !teamcate 3 !ggloante pe rand!
+
+AK471 = A inceput !teamduelul cu Ak47: !team%s !gImpotriva lui !team%s
+AK472 = Trageti !teamstrict !teamcate 3 !ggloante pe rand!
+
+MP5NAVY1 = A inceput !teamduelul cu MP5NAVY: !team%s !gImpotriva lui !team%s
+MP5NAVY2 = Trageti !teamstrict !teamcate 3 !ggloante pe rand!
+
+GRENADE1 = A inceput !teamduelul cu grenazi: !team%s !gImpotriva lui !team%s
+GRENADE2 = Aruncati !teamstrict, !gcate o grenada !teampe rand!
+
+SCOUT1 = A inceput !teamduelul cu scouts: !team%s !gImpotriva lui !team%s
+SCOUT2 = Trageti !teamstrict !gcate un !teamglont !gpe rand!
+
+DROB1 = A inceput !teamduelul cu ShutGun: !team%s !gImpotriva lui !team%s
+DROB2 = Trageti !teamstrict !gcate un !teamglont !gpe rand!
+
+AWP1 = A inceput !teamduelul cu AWP: !team%s !gImpotriva lui !team%s
+AWP2 = Trageti !teamstrict !gcate un !teamglont !gpe rand!
+
+FAMAS1 =  A inceput !teamduelul cu Famas: !team%s !gImpotriva lui !team%s
+FAMAS2 = Trageti !teamstrict !gcate 3 !teamgloante !gpe rand!
+
+MATH1 = A inceput !teamduelul Matematic: !team%s !gImpotriva lui !team%s
+MATH2 = Care va raspunde !teamprimul, !gva castiga!
+
+WORD1 = A inceput !teamduelul: !team%s !gImpotriva lui !team%s
+WORD2 = Cine va fi primul care va repeta !teamfraza, !gva castiga
+
+RR1 = Ruleta ruseasca a inceput: !team%s !gImpotriva lui !team%s
+RR2 = Ne întoarcem toba strict pe coada!
+RR3 = Incepem: %s
+RRSTART = Ruleta ruseasca %s^nВ doar începutul %d se adauga un cartus tambur
+RRTITLE = Ruleta ruseasca
+RRDO = Invart tamburul
+RRDOING = %s invarte tamburul...
+RRPRESS = Tamburul sa oprit, %s Apasa pe tragaci!
+RRWAIT = Asteapta pana tamburul se opreste!
+RRBOOM = O, nu, arma sa descarcat!^nCreeri lui %s au zburat peste tot...
+RRNOTBOOM = Oh, da, a fost norocos!^nAcum cu totii %s...
+RRNOTYOU = Asteapta-ti randul!
+
+MATH_WINNER = Jucatorul %s a rezolvat prima problema si a castigat!^r Raspuns: %s
+WORD_WINNER = Jucatorul %s a scris prima teza şi a castigat!
+NO_WINNER = Timpul a expirat, duelul ia sfarsit o runda!
+
+SPAWN_MENU_INFO = Viziteaza-ne pe www.ilogicgroup.org
+SPAWN_YOU_TER = %s , adauga la favorite dr.ilogicgroup.org
+SPAWN_TER_MODES = Viziteaza-ne pe www.ilogicgroup.org
+
+DUEL_TIMER2 = Pana la sfarsitul duelului au mai ramas %d secunde!^n : %s
+DUEL_TIMER = Pana la sfarsitul duelului au mai ramas %d secunde!
+DUELTASK = Scrieti: %s
+
+DD_MENU_BACK = Inpoi
+DD_MENU_EXIT = Iesire
+DD_MENU_MORE = Urmatorul
+
+CURRENTMODE = Mod curent
+BUTTONS = Standard
+FREE = Liber
+INVIS = Invizibil
+DUEL = Duel
+FreeRun = FreeRun
+
+CURRENTTIME = Ceas
+TLEFT = Timp ramas
+LASTR = Ultima runda
+NMAP = Urmatoarea harta
+CTER = Terrorist
+TNONE = Nu
+ALIVECTS = CT in viata
+APLAYERS = Jucatori in total
+
+YOULAST = Vrei sa te duelezi cu Teroristul?
+LASTYES = Da
+LASTNO = Nu
+FDUEL = Daca vrei sa redeschizi meniul, scrie /duel
+
+ORIGINS_TITLE = Saving positions
+SAVE_POSITION = Save the position of
+DELETE_POSITIONS = Remove items
+
+ANNOUNCE = To start vote of FreeRun use /free
+FREERUN_VOTEMENU = Do you want enable FreeRun mode in this round?
+FREERUN_DISABLED = Option disabled
+FREERUN_VOTE_IS_NOW = Vote is already started
+FREERUN_TT_DECIDED = Terrorist decided - round with no traps
+FREERUN_NEXT_VOTE_TIME = Next vote avaible for %02d:%02d minutes
+FREERUN_NEXT_VOTE_ROUNDS = Next vote avaible for %d rounds
+FREERUN_RESULTS = End of vote! Results:
+FREERUN_TIE = Tie! Normal game
+FREERUN_WINOPTION = Win option
+BUTTON_FREERUN = We play FreeRun - do not use traps!
+BUTTON_NOMORE = You can`t use this trap!
+BUTTON_LEFT = %d uses of this trap left!
+BUTTON_ENDOFLIMIT = You will no more use this trap!
+MUST_B_ALIVE = You must be alive
+NOLIMIT = No limit
+DELAY_EDITOR = Delay Editor
+OPTIONS = Options
+GOTO = Go to
+NEAREST = The nearest
+NOTARGET = This one have not a target
+WORD_LESS = Less
+WORD_NEXT = Next
+WORD_SAVE = Save
+WORD_SAVED = Saved
+NO_BUTTONS = There are no buttons

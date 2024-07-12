@@ -1,0 +1,36 @@
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+</head>
+<body background="https://stmed.net/sites/default/files/dark-textures-wallpapers-25193-5657820.jpg" style="color: #8C8C8C">
+<center><b><font color="#ffffff"><span style="font-size:18px;"><strong><u>Preţurile gradelor sunt</u>:</strong></span></font>
+<br>
+<span style="color:#006600;"><strong>Administrator Capitan </strong></span>-> nu se cumpără
+<br>
+<span style="color:#ff6600;"><strong>Administrator Veteran </strong></span>-> nu se cumpără
+<br>
+<span style="color:#800080;"><strong>Administrator Avansat </strong></span>-> 20 euro
+<br>
+<span style="color:#3300ff;"><strong>Administrator Senior </strong></span>-> 15 euro
+<br>
+<span style="color:#ffd700;"><strong>Administrator Junior </strong></span>-> 10 euro
+<br>
+<span style="color:#00ffff;"><strong>Helper </strong></span> -> 5 euro
+<br>
+<br>    
+<font color="#ffffff"><span style="font-size:15px;"><strong>Contact OWNER pentru donaţii [David]</strong></span></font>
+<br>
+<font color="#00aff0"><span style="font-size:14px;"><strong>Skype:</font> reif_wiz</strong></span>
+<br>
+<font color="#7289da"><span style="font-size:14px;"><strong>Discord:</font> david#8484</strong></span>
+<br>
+(de preferabil pe <font color="#7289da">discord</font>)
+<br>
+<br>
+<font color="#e65c00"><span style="font-size:15px;"><strong>CUM POŢI PLĂTI:</strong></span></font>
+<br>
+PaySafeCard, PayPal, Transfer bancar
+<br>
+<br>
+<span style="color:#ffff00;">Vezi /vipjb şi /vipskill</span></center>
+</b>
+</body>

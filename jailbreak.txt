@@ -1,0 +1,20 @@
+<html>
+<head>
+<title>Motd server</title>
+<style type="text/css">
+<!--
+body {
+margin-left: 0px;
+margin-top: 0px;
+margin-right: 0px;
+margin-bottom: 0px;
+background-color: #000000;
+}
+-->
+</style>
+</head>
+<body>
+<img src="http://i.imgur.com/O7XBPM1.png" border="0" align="center" scrolling="yes">
+</html>
+
+

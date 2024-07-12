@@ -1,0 +1,62 @@
+﻿[en]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[mk]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[bg]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[sr]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[ro]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[nl]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[bp]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s
+
+[dk]
+JBR_TITLE_WHY = \r[Motive JailBreak]^n\yDe ce l-ai omorat pe \r%s\y?\d
+JBR_TITLE_CUSTOM = ^n\yApasa \r't' \ypentru a introduce alt motiv.\d
+JBR_MENU_BACK = Pagina anterioara
+JBR_MENU_NEXT = Pagina urmatoare
+JBR_MENU_EXIT = Inchide meniul
+JBR_KILL_REASON = !t%s !nl-a omorat pe !t%s!n. Motiv: !g%s

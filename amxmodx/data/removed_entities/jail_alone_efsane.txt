@@ -1,0 +1,4 @@
+"func_wall" "*90"
+"func_wall" "*89"
+"func_door" "*81"
+"func_wall" "*46"

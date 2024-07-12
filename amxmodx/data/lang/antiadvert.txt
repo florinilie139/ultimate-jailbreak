@@ -1,0 +1,13 @@
+[en]
+UAA_TITLE = \rCAUTION!^n\yYour CONFIG.CFG infected advertising spam!^nIt is recommended to clean up.
+UAA_CLEAR = Set config default
+UAA_QUIT = Leave the server
+UAA_PLAYER = * Set config default player: ^"%s^" <%d> [%s]
+UAA_REASON = Your CONFIG.CFG infected advertising spam!
+
+[ru]
+UAA_TITLE = \rВНИМАНИЕ!^n\yВаш конфиг заражен рекламным спамом!^nРекомендуется произвести очистку.
+UAA_CLEAR = Восстановить стандартный конфиг
+UAA_QUIT = Выйти с сервера
+UAA_PLAYER = * Восстановлен конфиг по-умолчанию игроку: ^"%s^" <%d> [%s]
+UAA_REASON = Ваш конфиг заражен рекламным спамом!

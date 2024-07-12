@@ -1,0 +1,57 @@
+[en]
+
+MSG_NOWAKEUP = Nu dormi ca sa te poti trezi
+
+MSG_NOSLEEP = Nu iti e somn ca sa te poti culca
+
+MSG_NOSLEEP2 = Nu poti sa te culci in timp ce esti mort.
+
+MSG_SLEEP =  * Ai inceput sa adormi *
+
+MSG_SLEEPY = Ti se face somn
+
+MSG_WAKEUP = Pentru a te trezi scrie /treaz.
+
+MSG_WAKEUP2 = Scularea.
+
+[de]
+
+MSG_NOWAKEUP = Du schlaefst nicht.
+
+MSG_NOSLEEP = Du schlaefst bereits.
+
+MSG_NOSLEEP2 = Nu poti sa te culci in timp ce esti mort.
+
+MSG_SLEEP =  * Du faengst an in den Schlaf zu fallen *
+
+MSG_WAKEUP = Pentru a te trezi scrie /treaz.
+
+MSG_WAKEUP2 = Zeit zum Aufwachen.
+
+[es]
+
+MSG_NOWAKEUP = No estas dormido.
+
+MSG_NOSLEEP = Ya estas durmiendo.
+
+MSG_NOSLEEP2 = Nu poti sa te culci in timp ce esti mort.
+
+MSG_SLEEP =  * Comienzas a quedarte dormido *
+
+MSG_WAKEUP = Pentru a te trezi scrie /treaz.
+
+MSG_WAKEUP2 = Hora de despertarse.
+
+[sv]
+
+MSG_NOWAKEUP = Du sover inte.
+
+MSG_NOSLEEP = Du sover redan.
+
+MSG_NOSLEEP2 = Nu poti sa te culci in timp ce esti mort.
+
+MSG_SLEEP =  * Du haller pa att somna *
+
+MSG_WAKEUP = Pentru a te trezi scrie /treaz.
+
+MSG_WAKEUP2 = Dags att vakna.

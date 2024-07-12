@@ -1,0 +1,170 @@
+[en]
+ALLTALK_STATUS		= Alltalk is %s
+ALLTALK_LOGGING		= %s<%s>, Called Alltalk to %s
+ADMINMODX_HOSTNAME_SET	= Server Host Name has been changed to %s
+ADMINMODX_HOSTNAME	= %s<%s>, Called for a hostname change
+ADMINMODX_PASSWORD_SET	= Server Host Name has been changed to %s
+ADMINMODX_PASSWORD	= %s<%s>, Called for a hostname change
+ADMINMODX_TIME_SET	= Changed timelimit to %d
+ADMINMODX_TIME_NOTSET	= Your time: %d is more than the servers time left to play: %d
+ADMINMODX_TIME_LIMIT	= %s<%s>, Called for a timelimit increase
+ADMINMODX_NO_MAPFILE	= Failed to find map.ini file
+ADMINMODX_MAP_LIST	= %s<%s>, Called for a listmaps
+ADMINMODX_SET_SLAPWRONG	= Slap damage must range between 0-10
+ADMINMODX_SET_SLAP	= %s<%s>, Called amx_slappower
+ADMINMODX_LLAMA_TRIED	= %s<%s> tried to change his name back
+ADMINMODX_LLAMA_SET	= Sorry Llama you cannot change your name
+ADMINMODX_GAGED_TRIED	= %s<%s> tried to change his voice_enable
+ADMINMODX_GAGED_SET	= Sorry buddy you cannot change your voice_enable
+ADMINMODX_LLAMA_WARN	= This is your %d Warning you only have %d before you get in trouble
+
+AMXX_LOGGING_NAMED	= %s: Has Called %s %s
+AMXX_LOGGING_UNNAMED	= Has Called %s %s
+NICK_NOT_FOUND		= Client with that part of name not found
+ADMINMODX_PLAYER_IMMUNE	= That player is Immune to your stupidity!  Hehehehe!
+ADMINMODX_REDIRECTED	= All Non-Clan Members are being Redirected to another server due to Clan Practice!
+ADMINMODX_PASSWORD	= The Server Password = %s
+ADMINMODX_SCRIM		= Clan %s vs %s All others will be Redirected!
+ADMINMODX_SAYREADY	= One person from each team type /ready when you are ready to start!
+ADMINMODX_TIMELEFT	= Scrim Time Left is %d:%d
+ADMINMODX_TEAMSAIDREADY	= Team %d Said they are Ready!  Team %d type /ready
+ADMINMODX_TEAMSREADY	= Both Teams are Ready!
+ADMINMODX_SCRIMSCORE	= Side is done, Please Check your score!
+ADMINMODX_SCRIMDONE	= The Scrim is Over, hope you had fun!  Cheers!
+ADMINMODX_SCRIMON	= There is a scrim on already...turn it off first!
+ADMINMODX_PRACTICEON	= There is a practice on already...turn it off first!
+PUBLIC_WAR_ON		= Public war is on!
+PUBLIC_WAR_OFF		= Public war is over! You can join whichever team!
+PUBLIC_WAR_STAY_CLAN	= Public war is on, You Have Joined the Best Team!
+PUBLIC_WAR_STAY_NONCLAN	= Public war is on, Stay on your team thanks!
+PUBLIC_WAR_TS_MESSAGE	= You have been switch to %s Please stay there!  Thank you, The Admins
+
+ADMINMODX_EXECALL_SUC	= amx_execall Succeeded
+ADMINMODX_EXEC_SUC	= amx_exec Succeeded
+ADMINMODX_EXECTEAM_SUC	= amx_execteam Succeeded
+ADMINMODX_EXEC		= %s<%s>, Called amx_exec: %s against %s<%s>
+ADMINMODX_EXECALL	= %s<%s>, Called amx_execall: %s against all
+ADMINMODX_EXETEAM	= %s<%s>, Called amx_execteam: %s against team %s
+
+ADMINMODX_ALLSLAPPED	= All players have been slapped!
+ADMINMODX_SLAPPED	= Player %s has been slapped!
+ADMINMODX_TEAMSLAPPED	= %s Team has been slapped!
+ADMINMODX_SLAPALL_SUC	= amx_slapall Succeeded
+ADMINMODX_SLAP_SUC	= amx_slap Succeeded
+ADMINMODX_SLAPTEAM_SUC	= amx_slapteam Succeeded
+ADMINMODX_SLAP		= %s<%s>, Called amx_slap against %s<%s>
+ADMINMODX_SLAPALL	= %s<%s>, Called amx_slapall
+ADMINMODX_SLAPTEAM	= %s<%s>, Called amx_slapteam against team %s
+
+ADMINMODX_ALLBEAT	= All players have been beaten Around!
+ADMINMODX_BEATED	= Player %s has been beaten Around!
+ADMINMODX_TEAMBEAT	= %s Team has been beaten Around!
+ADMINMODX_BEATALL_SUC	= amx_beatall Succeeded
+ADMINMODX_BEAT_SUC	= amx_beat Succeeded
+ADMINMODX_BEATTEAM_SUC	= amx_beatteam Succeeded
+ADMINMODX_BEAT		= %s<%s>, Called amx_beat against %s<%s>
+ADMINMODX_BEATALL	= %s<%s>, Called amx_beatall
+ADMINMODX_BEATTEAM	= %s<%s>, Called amx_beatteam against team %s
+
+ADMINMODX_ALLGODED	= All players have had God Mode turned %s!
+ADMINMODX_GODED		= Player %s has had God Mode turned %s!
+ADMINMODX_TEAMGODED	= %s Team has had God Mode turned %s!
+ADMINMODX_GODALL_SUC	= amx_godall Succeeded
+ADMINMODX_GOD_SUC	= amx_god Succeeded
+ADMINMODX_GODTEAM_SUC	= amx_godteam Succeeded
+ADMINMODX_GODMODE	= %s<%s>, Called amx_god for %s<%s>
+ADMINMODX_GODALL	= %s<%s>, Called amx_godall
+ADMINMODX_GODTEAM	= %s<%s>, Called amx_godteam for team %s
+
+ADMINMODX_ALLNOCLIPED	= All players have had No-Clipped turned %s!
+ADMINMODX_NOCLIPED	= Player %s has had No-Clipped turned %s!
+ADMINMODX_TEAMNOCLIPED	= %s Team has had No-Clipped turned %s!
+ADMINMODX_NOCLIPALL_SUC	= amx_noclipall Succeeded
+ADMINMODX_NOCLIP_SUC	= amx_noclip Succeeded
+ADMINMODX_NOCLIPTEAM_SUC = amx_noclipteam Succeeded
+ADMINMODX_NOCLIP	= %s<%s>, Called amx_noclip for %s<%s>
+ADMINMODX_NOCLIPALL	= %s<%s>, Called amx_noclipall
+ADMINMODX_NOCLIPTEAM	= %s<%s>, Called amx_noclipteam for team %s
+
+ADMINMODX_LLAMAOFF	= %s Has been Un-Llamafied! Be CAREFULL!!
+ADMINMODX_LLAMAON	= %s Has been Llamafied!
+ADMINMODX_LLAMA_SUC	= llama Succeeded
+ADMINMODX_LLAMA		= %s<%s> Called %sLlama against %s<%s>
+
+ADMINMODX_GAGON		= %s has had there typing fingers ripped off!!
+ADMINMODX_GAGOFF	= %s has had there typing fingers glued back on!!  BE CAREFULL!!!
+ADMINMODX_GAG_SUC	= Gag Succeeded
+ADMINMODX_GAG		= %s<%s> Called %sGag against %s<%s>
+
+ADMINMODX_SHUTUPON	= %s has had a pissy sock stuffed in their mouth!
+ADMINMODX_SHUTUPOFF	= %s has had the pissy sock yanked outa their mouth!  BE CAREFULL!!!
+ADMINMODX_SHUTUP_SUC	= Shutup Succeeded
+ADMINMODX_SHUTUP	= %s<%s> Called %sShutup against %s<%s>
+
+ADMINMODX_PIGON		= %s is a Pig! oink, oink!!
+ADMINMODX_PIGOFF	= %s is a Pig no More! Be Careful!!
+ADMINMODX_PIG_SUC	= Shutup Succeeded
+ADMINMODX_PIG		= %s<%s> Called %sPig against %s<%s>
+
+ADMINMODX_QUITTED	= %s Has been Removed for being bad!
+ADMINMODX_QUIT_SUC	= Quit Succeeded
+ADMINMODX_QUIT		= %s<%s> Called Quit against %s<%s>
+
+ADMINMODX_ALLRICH	= All players have been given %d Dollars!
+ADMINMODX_ALLRICH_SUC	= amx_give_moneyall Succeeded
+ADMINMODX_GIVEMONEYALL	= %s<%s>, Called amx_give_moneyall
+ADMINMODX_RICH		= Player %s has been given %d Dollars!
+ADMINMODX_RICH_SUC	= amx_give_money Succeeded
+ADMINMODX_GIVEMONEY	= %s<%s>, Called amx_give_money for %s<%s>
+ADMINMODX_TEAMRICH	= %s Team has been given %d Dollars!
+ADMINMODX_TEAMRICH_SUC	= amx_give_moneyteam Succeeded
+ADMINMODX_GIVEMONEYTEAM	= %s<%s>, Called amx_give_moneyteam for team %s
+
+ADMINMODX_ALLPOOR	= All players have been robbed of %d Dollars!
+ADMINMODX_ALLPOOR_SUC	= amx_take_moneyall Succeeded
+ADMINMODX_TAKEMONEYALL	= %s<%s>, Called amx_take_moneyall
+ADMINMODX_POOR		= Player %s has been robbed of %d Dollars!
+ADMINMODX_POOR_SUC	= amx_take_money Succeeded
+ADMINMODX_TAKEMONEY	= %s<%s>, Called amx_take_money for %s<%s>
+ADMINMODX_TEAMPOOR	= %s Team has been robbed of %d Dollars!
+ADMINMODX_TEAMPOOR_SUC	= amx_take_moneyteam Succeeded
+ADMINMODX_TAKEMONEYTEAM	= %s<%s>, Called amx_take_moneyteam for team %s
+
+ADMINMODX_HEAL		= Player %s was Healed by %d Health
+ADMINMODX_HEAL_SUC	= amx_heal Succeded
+ADMINMODX_HEALED	= %s<%s>, Called amx_heal for %s
+
+ADMINMODX_REVIVE	= Player %s was Revived
+ADMINMODX_REVIVE_SUC	= amx_revive Succeded
+ADMINMODX_REVIVED	= %s<%s>, Called amx_revive for %s
+ADMINMODX_REVIVE_NOWPNS	= You have not set the weapons for this team!
+
+ADMINMODX_ALLBURRIED	= All players have been Burried!
+ADMINMODX_BURRIED	= Player %s has been Burried!
+ADMINMODX_TEAMBURRIED	= %s Team has been Burried!
+ADMINMODX_BURYALL_SUC	= amx_buryall Succeeded
+ADMINMODX_BURY_SUC	= amx_bury Succeeded
+ADMINMODX_BURYTEAM_SUC	= amx_buryteam Succeeded
+ADMINMODX_BURY		= %s<%s>, Called amx_bury against %s<%s>
+ADMINMODX_BURYALL	= %s<%s>, Called amx_buryall
+ADMINMODX_BURYTEAM	= %s<%s>, Called amx_buryteam against team %s
+
+ADMINMODX_ALLUNBURRIED	= All players have been Un-Burried!
+ADMINMODX_UNBURRIED	= Player %s has been Un-Burried!
+ADMINMODX_TEAMUNBURRIED	= %s Team has been Un-Burried!
+ADMINMODX_UNBURYALL_SUC	= amx_unburyall Succeeded
+ADMINMODX_UNBURY_SUC	= amx_unbury Succeeded
+ADMINMODX_UNBURYTEAM_SUC = amx_unburyteam Succeeded
+ADMINMODX_UNBURY	= %s<%s>, Called amx_unbury against %s<%s>
+ADMINMODX_UNBURYALL	= %s<%s>, Called amx_unburyall
+ADMINMODX_UNBURYTEAM	= %s<%s>, Called amx_unburyteam against team %s
+
+ADMINMODX_ALLSLAYED	= All players have been brutally slain!
+ADMINMODX_SLAYED	= Player %s has been brutally slain!
+ADMINMODX_TEAMSLAYED	= %s Team has been brutally slain!
+ADMINMODX_SLAYALL_SUC	= amx_slayall Succeeded
+ADMINMODX_SLAY_SUC	= amx_slay Succeeded
+ADMINMODX_SLAYTEAM_SUC	= amx_slayteam Succeeded
+ADMINMODX_SLAY		= %s<%s>, Called amx_slay against %s<%s>
+ADMINMODX_SLAYALL	= %s<%s>, Called amx_slayall
+ADMINMODX_SLAYTEAM	= %s<%s>, Called amx_slayteam against team %s

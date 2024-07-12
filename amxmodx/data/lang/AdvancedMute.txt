@@ -1,0 +1,26 @@
+[en]
+ADVMUTE_CANT_MUTE = Nu &x03poti &x01sa ii dai mute deoarece are&x04imuniatate&x01.
+ADVMUTE_MENU_HEADER = \yAlege un jucator pentru a schimba \rmute status\y:\d
+ADVMUTE_MUTE_ALL = \yMute la toti playerii
+ADVMUTE_UNMUTE_ALL = \yUnmute la toti playerii
+ADVMUTE_NEXT_PAGE = \yUrmatoarea pagina
+ADVMUTE_PREVIOUS_PAGE = \yPaginea anterioara
+ADVMUTE_EXIT = \yInchide \rMeniul de Mute
+ADVMUTE_MUTED_ALL = Le-ai dat &x03mute la &x03toti&x01.
+ADVMUTE_UNMUTED_ALL = Le-ai scos &x03mute-ul &x03la toti&x01.
+ADVMUTE_MUTED_PLAYER = I-ai dat &x03mute la &x04%s&x01.
+ADVMUTE_UNMUTED_PLAYER = I-ai dat &x03unmute la &x04%s&x01
+
+[mk]
+ADVMUTE_CANT_MUTE = &x03Ne mozesh &x01da go mjutnesh ovoj igrach zatoa shto ima &x04imunitet&x01.
+ADVMUTE_MENU_HEADER = \yIzberi igrach za \rmjut\y:\d
+ADVMUTE_MUTE_ALL = \yMjutni gi site igrachi
+ADVMUTE_UNMUTE_ALL = \yOdmjutni gi site igrachi
+ADVMUTE_NEXT_PAGE = \ySledna stranica
+ADVMUTE_PREVIOUS_PAGE = \yPrethodna stranica
+ADVMUTE_EXIT = \yZatvori go \rMjut Menito
+ADVMUTE_MUTED_ALL = Gi &x03mjutna &x04site igrachi&x01.
+ADVMUTE_UNMUTED_ALL = Gi &x03odmjutna &x04site igrachi&x01
+ADVMUTE_MUTED_PLAYER = Go &x03mjutna &x04%s&x01.
+ADVMUTE_UNMUTED_PLAYER = Go &x03odmjutna &x04%s&x01.
+

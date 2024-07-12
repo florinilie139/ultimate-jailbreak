@@ -1,0 +1,94 @@
+﻿[en]
+FOUND = %s s-a conectat, el are interdictie CT!
+ADDED = SteamID ^"%s^" adaugat pe lista de interdictie.
+ALREADY = SteamID ^"%s^" este deja in lista de interdictie.
+NOT = SteamID ^"%s^" nu este in lista de interdictie.
+REMOVED = SteamID ^"%s^" a fost scos din lista de interdictie.
+CANT = Nu poti intra CT deoarece ai interdictie. 
+LOG_ADDED = %s <%s> banned player %s from the ct-team.
+LOG_REMOVED = %s <%s> removed player %s from the ct-banlist.
+ACTIVITY_ADDED_CASE1 = ADMIN i-a dat interdictie CT lui %s.
+ACTIVITY_ADDED_CASE2 = ADMIN %s i-a dat interdictie CT lui %s.
+ACTIVITY_REMOVED_CASE1 = ADMIN i-a scros interdictia CT lui %s.
+ACTIVITY_REMOVED_CASE2 = ADMIN %s i-a scos interdictia CT lui %s.
+MAINMENU_TITLE = Meniu interdictie CT
+BANNED = Banat
+NOT_BANNED = Nu a fost banat
+ENTER_REASON = Introdu un motiv:
+
+
+[nl]
+FOUND = %s komt meespelen en is verbannen van het ct team !
+NOT_FOUND = %s komt meespelen en is niet verbannen van het ct team !
+ADDED = SteamID ^"%s^" toegevoegd aan de verbannen ct's lijst.
+ALREADY = SteamID ^"%s^" bestaat al in de verbannen ct's lijst.
+NOT = SteamID ^"%s^" is niet op de verbannen ct's lijst.
+REMOVED = SteamID ^"%s^" is verwijderd van de verbannen ct's lijst.
+CANT = Je kunt niet meedoen met het CT-Team, je word automatisch bij het Terroristen team geplaatst. 
+LOG_ADDED = %s <%s> verbande speler %s van het CT team.
+LOG_REMOVED = %s <%s> verwijderde speler %s van de verbannen ct's lijst.
+ACTIVITY_ADDED_CASE1 = ADMIN banned speler %s van het CT team.
+ACTIVITY_ADDED_CASE2 = ADMIN %s verbande speler %s van het CT team.
+ACTIVITY_REMOVED_CASE1 = ADMIN verwijderde speler %s van de verbannen ct's lijst.
+ACTIVITY_REMOVED_CASE2 = ADMIN %s verwijderde speler %s van de verbannen ct's lijst.
+MAINMENU_TITLE = Ct-banner menu
+BANNED = Verbannen
+NOT_BANNED = Niet verbannen
+ENTER_REASON = Geef een reden aub:
+
+[bp]
+FOUND = %s conectou-se e foi encontrado na lista de ct-banido!
+NOT_FOUND = %s conectou-se e nao foi encontrado na lista de ct-banido!
+ADDED = Adicionado SteamID ^"%s^" na lista.
+ALREADY = SteamID ^"%s^" ja existe na lista.
+NOT = SteamID ^"%s^" nao esta na lista.
+REMOVED = SteamID ^"%s^" foi removido da lista.
+CANT = Voce nao pode ir para CT, voce foi banido. Indo para TR... 
+LOG_ADDED = %s <%s> ct-jogador banido: %s".
+LOG_REMOVED = %s <%s> removeu o jogador %s da lista de cts banidos.
+ACTIVITY_ADDED_CASE1 = ADMIN adicionou o jogador %s na lista de ct banido.
+ACTIVITY_ADDED_CASE2 = ADMIN %s adicionou o jogador %s na lista de ct banido.
+ACTIVITY_REMOVED_CASE1 = ADMIN removeu o jogador %s da lista de ct banido.
+ACTIVITY_REMOVED_CASE2 = ADMIN %s removeu o jogador %s da lista de ct banido.
+MAINMENU_TITLE = Banir CT - Menu Principal
+BANNED = Banido
+NOT_BANNED = Nao banido
+ENTER_REASON = Por favor, escreva o motivo.
+
+[he]
+FOUND = %s התחבר ונמצא ברשימת הבאנים של קבוצת השוטרים
+NOT_FOUND = %s התחבר ולא נמצא ברשימת הבאנים של קבוצת השוטרים
+ADDED = הוסיף SteamID ^"%s^" לרשימת המושעים של קבוצת השוטרים
+ALREADY = SteamID ^"%s^" קיים ברשימת המושעים
+NOT = SteamID ^"%s^" לא קיים ברשימת המושעים
+REMOVED = SteamID ^"%s^" נמחק מרשימת המושעים.
+CANT = אתה לא יכול להצתרף לקבוצה של השוטרים היות וקיבלתה השעיה מקבוצת השוטרים. אתה מועבר אוטומטי לקבוצת האסירים.
+LOG_ADDED = %s <%s> השעה את השחקן %s מקבוצת השוטרים.
+LOG_REMOVED = %s <%s> הוריד לשחקן את ההשעיה %s והסיר אותו מרשימת המושעים
+ACTIVITY_ADDED_CASE1 = המנהל השעה את השחקן %s מהצתרפות לקבוצת השוטרים
+ACTIVITY_ADDED_CASE2 = המנהל %s השעה את השחקן %s מקבוצת השוטרים.
+ACTIVITY_REMOVED_CASE1 = המנהל הסיר את השחקן %s מרשימת המושעים לקבוצת השוטרים.
+ACTIVITY_REMOVED_CASE2 = המנהל %s הסיר את השחקן %s מההשעיה להצתרפות לקבוצת השוטרים.
+MAINMENU_TITLE = תפריט מושעים לקבוצת השוטרים
+BANNED = מושעה
+NOT_BANNED = לא מושעה
+ENTER_REASON = רשום סיבה:
+
+[de]
+FOUND = %s verbunden und auf der CT-Bannliste gefunden!
+NOT_FOUND = %s verbunden und nicht auf der CT-Bannliste gefunden!
+ADDED = SteamID ^"%s^" zur CT-Bannliste hinzugefuegt.
+ALREADY = SteamID ^"%s^" existiert bereits auf der CT-Bannliste.
+NOT = SteamID ^"%s^" ist nicht auf der CT-Bannliste.
+REMOVED = SteamID ^"%s^" wurde von der CT-Bannliste entfernt.
+CANT = Du darfst dem CT-Team nicht beitreten, da Du von diesem Team gebannt wurdest. Du wirst automatisch dem T-Team zugewiesen. 
+LOG_ADDED = %s <%s> bannt Spieler %s vom CT-Team.
+LOG_REMOVED = %s <%s> entfernt Spieler %s von der CT-Bannliste.
+ACTIVITY_ADDED_CASE1 = ADMIN bannt Spieler %s vom CT-Team.
+ACTIVITY_ADDED_CASE2 = ADMIN %s bannt Spieler %s vom CT-Team.
+ACTIVITY_REMOVED_CASE1 = ADMIN entfernte Spieler %s von der CT-Bannliste.
+ACTIVITY_REMOVED_CASE2 = ADMIN %s entfernte Spieler %s von der CT-Bannliste.
+MAINMENU_TITLE = CT-Banner-Menue
+BANNED = Gebannt
+NOT_BANNED = Nicht gebannt
+ENTER_REASON = Bitte gib einen Grund an:
